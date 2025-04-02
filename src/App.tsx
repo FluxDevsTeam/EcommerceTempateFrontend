@@ -3,14 +3,14 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import Homepage from './pages/Homepage';
+import Homepage from './pages/homepage/Homepage';
 import Login from './pages/auth/Login';
 import SignUp from './pages/auth/Signup';
 import ForgottenPassword from './pages/auth/ForgottenPassword';
 import { Navigate } from 'react-router-dom';
 import Cart from './pages/cart/Cart';
 import Orders from './pages/orders/Order';
-import ProductDetail from './components/ProductDetail';
+import ProductDetail from './components/products/ProductDetail';
 
 const queryClient = new QueryClient();
 

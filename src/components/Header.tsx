@@ -14,18 +14,18 @@ const Header = () => {
   };
 
   return (
-    <div className="w-full md:px-24 py-6 font-poppins  ">
+    <div className="w-full md:px-24 py-6  ">
 
       <div className="hidden md:block">
       <div className="flex justify-between items-center my-6 ">
-        <p className="text-[32px] font-medium leading-[100%]">SHOP.CO</p> 
+        <p className="text-[32px] font-medium leading-[100%] font-poppins ">SHOP.CO</p> 
         <div className="flex space-x-4">
           < BsCart size={30}/>
-          < IoPersonCircleOutline size={30}/>
+          < IoPersonCircleOutline size={35}/>
         </div>
         </div>
         <div className="flex justify-between items-center">
-          <ul className="flex space-x-6 text-[16px] font-medium leading-[100%]">
+          <ul className="flex space-x-6 text-[16px] font-medium leading-[100%] font-poppins ">
             <li>New Arrivals</li>
             <li>Shoes</li>
             <li>Accesories</li>
