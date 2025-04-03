@@ -1,9 +1,9 @@
 import { FaRegHeart } from "react-icons/fa";
 
 const generateData = () => {
-  return Array.from({ length: 8 }, (_, index) => ({
+  return Array.from({ length: 20 }, (_, index) => ({
     id: index + 1,
-    title: `Port Generator`,
+    title: `Hard Generator`,
     price: 240,
     originalPrice: 260,
     discount: "-20%",
@@ -11,20 +11,16 @@ const generateData = () => {
   }));
 };
 
-const TopSelling = () => {
+const CategoryProducts = () => {
   const data = generateData();
   
   return (
-    <div className="px-4 sm:px-6 py-8 md:py-12"> 
-      <h2 className="text-3xl md:text-5xl ] font-medium leading-tight text-center mb-6 sm:mb-8 md:mb-10">
-        Top Selling Items
-      </h2>
-      
-      <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+    <div className="px-4 sm:px-6 py-6 md:py-8">
+      <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 ">
         {data.map((item) => (
-          <div key={item.id} className="group hover:shadow-lg transition-shadow duration-300 rounded-xl overflow-hidden">
-            <div className="bg-[#F0EEED] rounded-lg p-6 sm:p-8 md:p-10 lg:p-12 relative">
-              <div>
+          <div key={item.id} className="group hover:shadow-md transition-all duration-200 rounded-xl overflow-hidden">
+            <div className="bg-[#F0EEED] rounded-lg p-8 relative">
+              <div >
                 <img 
                   src={item.image} 
                   alt={item.title} 
@@ -34,13 +30,13 @@ const TopSelling = () => {
                   className="absolute top-2 right-2 text-gray-600 hover:text-red-500 p-2 transition-colors duration-200"
                   aria-label="Add to favorites"
                 >
-                  <FaRegHeart  className="text-2 md:text-5" />
+                  <FaRegHeart size={20} />
                 </button>
               </div>
             </div>
             
             <div className="p-3 sm:p-4">
-              <h3 className="text-base sm:text-lg font-medium text-gray-800 truncate">
+              <h3 className="text-base sm:text-lg font-medium text-gray-800 line-clamp-2">
                 {item.title}
               </h3>
               <div className="mt-2 flex flex-wrap items-center gap-1 sm:gap-2">
@@ -56,14 +52,8 @@ const TopSelling = () => {
           </div>
         ))}
       </div>
-      
-      <div className="flex justify-center items-center mt-8 sm:mt-10">
-        <button className="text-lg font-semibold hover:text-primary cursor-pointer transition-colors duration-200 border-b-2 border-transparent hover:border-primary">
-          View All
-        </button>
-      </div>
     </div>
   );
 };
 
-export default TopSelling;
+export default CategoryProducts;

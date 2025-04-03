@@ -1,31 +1,44 @@
-import image1 from "/images/Frame 1618876995 (1).png"
-import Products from "./components/products"
-import ImageGrid from "./components/ImageGrid"
-import TopSelling from "./components/TopSelling"
-import ImageSlider from "./components/ImageSlider"
+import image1 from "/images/Frame 1618876995 (1).png";
+import Products from "./components/products";
+import ImageGrid from "./components/ImageGrid";
+import TopSelling from "./components/TopSelling";
+import ImageSlider from "./components/ImageSlider";
 
 const Homepage = () => {
   return (
-    <div className="w-full min-h-full px-24">
-      <div className="grid grid-cols-2 gap-6 ">
-        <div className="flex flex-col space-y-6 pt-12 ">
-        <p className='text-[64px] font-bold leading-[63px] text-black'>Shop Smarter , Live Better - Find What you Love</p>
-        <p className='text-[#000000 font-medium text-5'>Access exclusive deals , track orders and enjoy a seamless shopping experience </p>
-        <button className="bg-black text-white border rounded-full p-3 w-[210px]">Shop Now</button>
+    <div className="w-full min-h-screen px-4 sm:px-6 md:px-12 lg:px-24">
+      {/* Hero Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="flex flex-col space-y-4 pt-8 lg:pt-12 px-4 md:px-0">
+          <h1 className='text-4xl sm:text-5xl md:text-6xl lg:text-[64px] font-bold leading-tight lg:leading-[63px] text-black'>
+            Shop Smarter, Live Better - Find What You Love
+          </h1>
+          <p className='text-[#000000] font-medium text-base md:text-lg'>
+            Access exclusive deals, track orders and enjoy a seamless shopping experience
+          </p>
+          <button className="bg-black text-white border rounded-full px-6 py-3 w-full sm:w-[210px] hover:bg-gray-800 transition-colors">
+            Shop Now
+          </button>
         </div>
         
-        <div >
-          <img src={image1} alt="Banner image"   />
-
+        <div className="flex justify-center lg:justify-end">
+          <img 
+            src={image1} 
+            alt="Banner image" 
+            className="w-full max-w-lg object-contain"
+          />
         </div>
       </div>
-      <Products/>
-      <ImageGrid />
-      <TopSelling />
-      <ImageSlider/>
-     
+
+      {/* Content Sections */}
+      <div className="mt-12 space-y-16 md:space-y-20">
+        <Products/>
+        <ImageGrid />
+        <TopSelling />
+        <ImageSlider/>
+      </div>
     </div>
   )
 }
 
-export default Homepage
+export default Homepage;
