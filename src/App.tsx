@@ -42,13 +42,13 @@ const AppContent: React.FC = () => {
                     <Route path="/signup" element={<SignUp />} />
                     <Route path="/forgotten-password" element={<ForgottenPassword />} />
                     <Route path="/products/:id" element={<ProductDetail />} />
-
+{/* d */}
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/confirm-order" element={<ConfirmOrder />} />
                     <Route path="/faqs" element={<FAQs />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/terms-of-service" element={<TermsOfService />} />
-                    
+
                     <Route path="/orders" element={<Orders />} />
                     
                     {/* Catch all route - 404 */}
