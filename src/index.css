@@ -1,7 +1,10 @@
-@import "tailwindcss";
+/* @import "tailwindcss"; */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
-  font-family: 'Poppins',sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 /* Add these styles to your index.css file */
@@ -15,7 +18,8 @@ body {
 
 /* Slide styling */
 .slick-slide {
-  padding: 0 10px; /* Adds some spacing between slides */
+  padding: 0 10px;
+  /* Adds some spacing between slides */
 }
 
 .slick-slide img {
@@ -60,7 +64,7 @@ body {
   .slick-carousel-container {
     width: 80%;
   }
-  
+
   .slick-slide img {
     max-height: 300px;
   }
@@ -70,7 +74,7 @@ body {
   .slick-carousel-container {
     width: 90%;
   }
-  
+
   .slick-slide img {
     max-height: 250px;
   }

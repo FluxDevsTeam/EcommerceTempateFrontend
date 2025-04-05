@@ -34,6 +34,7 @@ const Cart = () => {
       quantity: 1,
       image: `https://th.bing.com/th/id/OIP.pLy_d4q6NSl8Y5__dojzWAHaHa?w=205&h=205&c=7&r=0&o=5&pid=1.7`,
     },
+    
     {
       id: 3,
       name: `Skinny Fit Jeans`,
