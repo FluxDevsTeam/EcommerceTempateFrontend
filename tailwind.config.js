@@ -2,14 +2,14 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}"
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
       fontFamily: {
         poppins: ['Poppins', 'sans-serif'],
       },
-    }, // ← This closing brace was missing
+    },
   },
   plugins: [],
 }

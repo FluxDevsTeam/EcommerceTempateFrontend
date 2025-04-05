@@ -8,7 +8,13 @@ import Login from './pages/auth/Login';
 import SignUp from './pages/auth/Signup';
 import ForgottenPassword from './pages/auth/ForgottenPassword';
 import { Navigate } from 'react-router-dom';
+
 import Cart from './pages/cart/Cart';
+import ConfirmOrder from './pages/cart/ConfirmOrder';
+import FAQs from './pages/cart/FAQs';
+import Settings from './pages/cart/Settings';
+import TermsOfService from './pages/cart/TermsOfService';
+
 import Orders from './pages/orders/Order';
 import ProductDetail from './components/ProductDetail';
 
@@ -36,7 +42,13 @@ const AppContent: React.FC = () => {
                     <Route path="/signup" element={<SignUp />} />
                     <Route path="/forgotten-password" element={<ForgottenPassword />} />
                     <Route path="/products/:id" element={<ProductDetail />} />
+
                     <Route path="/cart" element={<Cart />} />
+                    <Route path="/confirm-order" element={<ConfirmOrder />} />
+                    <Route path="/faqs" element={<FAQs />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/terms-of-service" element={<TermsOfService />} />
+                    
                     <Route path="/orders" element={<Orders />} />
                     
                     {/* Catch all route - 404 */}
