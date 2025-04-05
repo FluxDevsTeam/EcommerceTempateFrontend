@@ -19,7 +19,7 @@ const Footer = () => {
 
         <div className="grid md:grid-cols-4 gap-8">
           {/* Shop Info */}
-          <div>
+          <div className="font-poppins ">
             <h2 className="text-xl font-semibold">SHOP.CO</h2>
             <p className="text-gray-600 mt-2">
               We have clothes that suit your style and which you’re proud to wear.
@@ -34,7 +34,7 @@ const Footer = () => {
           </div>
           
           {/* Legal */}
-          <div>
+          <div className="font-poppins ">
             <h3 className="font-semibold">LEGAL</h3>
             <ul className="mt-2 space-y-2 text-gray-600">
               <li>Terms & Conditions</li>
@@ -43,7 +43,7 @@ const Footer = () => {
           </div>
 
           {/* Company */}
-          <div>
+          <div className="font-poppins ">
             <h3 className="font-semibold">COMPANY</h3>
             <ul className="mt-2 space-y-2 text-gray-600">
               <li>Delivery Details</li>
@@ -54,7 +54,7 @@ const Footer = () => {
           </div>
 
           {/* Help */}
-          <div>
+          <div className="font-poppins ">
             <h3 className="font-semibold">HELP</h3>
             <ul className="mt-2 space-y-2 text-gray-600">
               <li>Customer Support</li>
@@ -64,7 +64,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-10 flex justify-between items-center flex-wrap">
+        <div className="mt-10 flex justify-between items-center flex-wrap font-poppins ">
           <p className="text-gray-600 text-sm">Shop.co © 2025, All Rights Reserved</p>
           <div className="flex gap-4">
             <SiVisa className="text-2xl text-gray-700" />
