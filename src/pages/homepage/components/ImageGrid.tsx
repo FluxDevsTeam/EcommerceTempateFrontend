@@ -1,4 +1,5 @@
 import { FaRegHeart } from "react-icons/fa";
+import Products from "./products";
 
 const generateData = () => {
   return Array.from({ length: 8 }, (_, index) => ({
@@ -15,19 +16,22 @@ const ImageGrid = () => {
   const data = generateData();
   
   return (
-    <div className=""> 
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+    <div className="my-4"> 
+    <div className="mb-6 sm:mb-8 md:mb-10">
+  <Products/>
+  </div>
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {data.map((item) => (
-          <div key={item.id} className="group hover:shadow-lg transition-shadow duration-300 rounded-xl overflow-hidden">
-            <div className="bg-[#F0EEED] rounded-lg  p-6 sm:p-8 md:p-10 lg:p-12 relative">
+          <div key={item.id} className="group hover:shadow-lg transition-shadow duration-300 rounded-xl overflow-hidden cursor-pointer">
+            <div className="bg-[#F0EEED] rounded-lg  p-8 relative">
               <div >
                 <img 
                   src={item.image} 
                   alt={item.title} 
                   className="w-full h-auto aspect-square object-cover" 
                 />
-                <button className="absolute top-2 right-2 text-gray-600 hover:text-red-500 p-2 transition-colors duration-200">
-                  <FaRegHeart size={20} />
+                <button className="absolute top-1 right-1 text-gray-600 hover:text-red-500 p-2 transition-colors duration-200">
+                  <FaRegHeart size={15} className="cursor-pointer"/>
                 </button>
               </div>
             </div>

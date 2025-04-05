@@ -16,14 +16,14 @@ const Suggested = () => {
   
   return (
     <div className="px-4 sm:px-6 py-8 md:py-12">
-      <h2 className="text-3xl sm:text-4xl md:text-[48px] font-medium leading-tight text-center mb-6 sm:mb-8 md:mb-10">
+      <h2 className="text-3xl md:text-4xl  font-medium leading-tight text-center mb-6 sm:mb-8 md:mb-10">
         You might also Like
       </h2>
       
       <div className="grid grid-cols-2 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
         {data.map((item) => (
-          <div key={item.id} className="group hover:shadow-lg transition-shadow duration-300 rounded-xl overflow-hidden">
-            <div className="bg-[#F0EEED] rounded-lg p-8 md:p-10 lg:p-12 relative">
+          <div key={item.id} className="group hover:shadow-lg transition-shadow duration-300 rounded-xl overflow-hidden cursor-pointer">
+            <div className="bg-[#F0EEED] rounded-lg p-8  relative">
               <div>
                 <img 
                   src={item.image} 
@@ -34,7 +34,7 @@ const Suggested = () => {
                   className="absolute top-2 right-2 text-gray-600 hover:text-red-500 p-2 transition-colors duration-200"
                   aria-label="Add to favorites"
                 >
-                  <FaRegHeart size={20} />
+                  <FaRegHeart size={15} className="cursor-pointer"/>
                 </button>
               </div>
             </div>

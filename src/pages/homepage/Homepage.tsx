@@ -1,5 +1,4 @@
 import image1 from "/images/Frame 1618876995 (1).png";
-import Products from "./components/products";
 import ImageGrid from "./components/ImageGrid";
 import TopSelling from "./components/TopSelling";
 import ImageSlider from "./components/ImageSlider";
@@ -16,7 +15,7 @@ const Homepage = () => {
           <p className='text-[#000000] font-medium text-base md:text-lg'>
             Access exclusive deals, track orders and enjoy a seamless shopping experience
           </p>
-          <button className="bg-black text-white border rounded-full px-6 py-3 w-full sm:w-[210px] hover:bg-gray-800 transition-colors">
+          <button className="bg-black text-white border rounded-full px-6 py-3 w-[210px] hover:bg-gray-800 transition-colors">
             Shop Now
           </button>
         </div>
@@ -32,7 +31,7 @@ const Homepage = () => {
 
       {/* Content Sections */}
       <div className="mt-12 space-y-16 md:space-y-20">
-        <Products/>
+        
         <ImageGrid />
         <TopSelling />
         <ImageSlider/>

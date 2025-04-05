@@ -5,6 +5,8 @@ import { useState } from "react"
 import { IoPersonCircleOutline } from "react-icons/io5"
 import FiltersComponent from "@/pages/categories/Filter"
 import { SortDropdown } from "./SortDropdown"
+import { Link } from "react-router-dom"
+
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,7 +26,7 @@ const Header = () => {
         {/* Desktop Navigation */}
         <div className="hidden md:block">
           <div className="flex justify-between items-center my-6">
-            <p className="text-[32px] font-medium leading-[100%] font-poppins">SHOP.CO</p> 
+          <Link to='/'> <p className="font-bold text-3xl">SHOP.CO</p>  </Link>  
             <div className="flex space-x-4">
               <BsCart size={30}/>
               <IoPersonCircleOutline size={35}/>
@@ -32,7 +34,7 @@ const Header = () => {
           </div>
           <div className="flex justify-between items-center">
             <ul className="flex space-x-6 text-[16px] font-medium leading-[100%] font-poppins">
-              <li>New Arrivals</li>
+            <Link to='/categories'> <li>New Arrivals</li></Link>  
               <li>Shoes</li>
               <li>Accesories</li>
               <li>Watches</li>
@@ -49,7 +51,7 @@ const Header = () => {
             <SortDropdown/>
             <button 
               onClick={toggleFilter}
-              className="p-3 bg-black text-white border rounded-2xl border-black w-[121px]"
+              className="p-3 bg-black text-white border rounded-2xl border-black w-[121px] cursor-pointer"
             >
               Filter
             </button>
@@ -62,7 +64,7 @@ const Header = () => {
             <button className=" " onClick={toggleMenu}>
               {!isOpen ? <AiOutlineMenu size={25} /> : <AiOutlineClose size={25}/> }
             </button>
-            <p className="text-[25px] font-medium leading-[100%]">SHOP.CO</p> 
+            <Link to='/'>   <p className="text-[25px] font-medium leading-[100%]">SHOP.CO</p> </Link>
           </div>
           <div className="flex space-x-3">  
             <div className="flex space-x-4">
@@ -77,7 +79,7 @@ const Header = () => {
           <div className="block md:hidden p-7">
             <div className="flex flex-col w-full space-y-4">
               <ul className="flex flex-col space-y-5 text-[16px] font-medium leading-[100%]">
-                <li>New Arrivals</li>
+              <Link to='/categories'>    <li>New Arrivals</li> </Link>
                 <li>Shoes</li>
                 <li>Accesories</li>
                 <li>Watches</li>

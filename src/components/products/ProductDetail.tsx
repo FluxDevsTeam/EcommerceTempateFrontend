@@ -1,19 +1,29 @@
+import { useState } from "react";
 import Suggested from "./Suggested";
 import DescriptionList from "./DescriptionList";
 
 const ProductDetail = () => {
+  const images = [
+    "https://picsum.photos/400/300",
+    "https://picsum.photos/200/540",
+    "https://picsum.photos/435/324"
+  ];
+  
+  // Set the first image as default
+  const [mainImage, setMainImage] = useState(images[0]);
+
   return (
     <div className="w-full min-h-screen px-4 sm:px-8 md:px-12 lg:px-24 my-6 md:my-10">
       {/* Product Main Section */}
       <div className="flex flex-col lg:flex-row justify-center items-start gap-8">
         {/* Thumbnail Images (Left Column) */}
         <div className="flex mx-auto md:flex-col gap-5 order-1">
-          {[
-            "https://picsum.photos/400/300",
-            "https://picsum.photos/200/540",
-            "https://picsum.photos/435/324"
-          ].map((img, index) => (
-            <div key={index} className="bg-gray-200 p-2 rounded-lg cursor-pointer hover:opacity-90">
+          {images.map((img, index) => (
+            <div 
+              key={index} 
+              className={`bg-gray-200 p-2 rounded-lg cursor-pointer hover:opacity-90 ${mainImage === img ? 'ring-2 ring-blue-500' : ''}`}
+              onClick={() => setMainImage(img)}
+            >
               <img 
                 src={img} 
                 alt={`Thumbnail ${index + 1}`} 
@@ -24,9 +34,9 @@ const ProductDetail = () => {
         </div>
 
         {/* Main Product Image (Middle Column) */}
-        <div className="bg-gray-200 rounded-lg p-4 sm:p-6 flex-1 max-w-[500px]  lg:order-2">
+        <div className="bg-gray-200 rounded-lg p-4 sm:p-6 flex-1 max-w-[500px] lg:order-2">
           <img
-            src="https://picsum.photos/435/324"
+            src={mainImage}
             alt="Main Product"
             className="w-full h-auto aspect-square object-cover"
           />
@@ -62,11 +72,11 @@ const ProductDetail = () => {
             
             {/* Quantity Selector */}
             <div className="flex items-center gap-4">
-              <button className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">
+              <button className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer">
                 -
               </button>
               <span className="text-lg">1</span>
-              <button className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">
+              <button className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer">
                 +
               </button>
             </div>
@@ -76,7 +86,7 @@ const ProductDetail = () => {
               {['Small', 'Medium', 'Large', 'X Large'].map((size) => (
                 <button
                   key={size}
-                  className={`p-2 text-sm sm:text-base border rounded-2xl transition-colors ${
+                  className={`p-2 text-sm sm:text-base border rounded-2xl transition-colors cursor-pointer ${
                     size === 'Large'
                       ? 'bg-black text-white border-black'
                       : 'bg-gray-200 hover:bg-gray-300 border-gray-300'
@@ -88,7 +98,7 @@ const ProductDetail = () => {
             </div>
             
             {/* Add to Cart */}
-            <button className="w-full py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition-colors">
+            <button className="w-full py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition-colors cursor-pointer">
               Add to Cart
             </button>
           </div>

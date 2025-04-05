@@ -9,18 +9,23 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { IoClose } from "react-icons/io5";
 
-const FiltersComponent = ({ isOpen, onClose }) => {
-  const [priceRange, setPriceRange] = useState([50, 200]);
-  const [selectedSize, setSelectedSize] = useState('Large');
+interface FiltersComponentProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const FiltersComponent: React.FC<FiltersComponentProps> = ({ isOpen, onClose }) => {
+  const [priceRange, setPriceRange] = useState<[number, number]>([50, 200]);
+  const [selectedSize, setSelectedSize] = useState<string>('Large');
   
-  const subcategories = ['T-shirts', 'Shorts', 'Shirts', 'Hoodie', 'Jeans'];
-  const sizes = ['XX-Small', 'X-Small', 'Small', 'Medium', 'Large', 'X-Large', 'XX-Large', '3X-Large', '4X-Large'];
+  const subcategories: string[] = ['T-shirts', 'Shorts', 'Shirts', 'Hoodie', 'Jeans'];
+  const sizes: string[] = ['XX-Small', 'X-Small', 'Small', 'Medium', 'Large', 'X-Large', 'XX-Large', '3X-Large', '4X-Large'];
   
-  const handlePriceChange = (value) => {
-    setPriceRange(value);
+  const handlePriceChange = (value: number[]) => {
+    setPriceRange(value as [number, number]);
   };
   
-  const handleSizeClick = (size) => {
+  const handleSizeClick = (size: string) => {
     setSelectedSize(size);
   };
 
@@ -92,7 +97,7 @@ const FiltersComponent = ({ isOpen, onClose }) => {
           </AccordionItem>
           
           <AccordionItem value="color" className="border-b border-gray-200">
-            <AccordionTrigger className="py-4 font-semibold  cursor-pointer">Color</AccordionTrigger>
+            <AccordionTrigger className="py-4 font-semibold cursor-pointer">Color</AccordionTrigger>
             <AccordionContent>
               <div className="flex flex-wrap gap-3 pt-2 pb-4">
                 <div className="w-6 h-6 rounded-full bg-black border border-gray-300 cursor-pointer"></div>

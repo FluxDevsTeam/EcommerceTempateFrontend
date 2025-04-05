@@ -20,7 +20,7 @@ const CategoryProducts = () => {
         {data.map((item) => (
           <div key={item.id} className="group hover:shadow-md transition-all duration-200 rounded-xl overflow-hidden">
             <div className="bg-[#F0EEED] rounded-lg p-8 relative">
-              <div >
+              <div className="" >
                 <img 
                   src={item.image} 
                   alt={item.title} 
@@ -30,7 +30,7 @@ const CategoryProducts = () => {
                   className="absolute top-2 right-2 text-gray-600 hover:text-red-500 p-2 transition-colors duration-200"
                   aria-label="Add to favorites"
                 >
-                  <FaRegHeart size={20} />
+                  <FaRegHeart size={15} />
                 </button>
               </div>
             </div>
