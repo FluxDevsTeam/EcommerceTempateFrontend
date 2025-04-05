@@ -1,16 +1,13 @@
-
-@import "tailwindcss";
-
-
-
+/* Remove the comment markers */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
-  font-family: 'Poppins',sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
-/* Add these styles to your index.css file */
-
-/* React Slick Carousel Container */
+/* Keep your custom styles below */
 .slick-carousel-container {
   width: 50%;
   margin: 2rem auto;
