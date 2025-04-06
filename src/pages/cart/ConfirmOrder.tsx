@@ -46,7 +46,7 @@ const ConfirmOrder = () => {
       <div className="flex flex-col-reverse lg:flex-row gap-8">
         {/* Customer Details */}
         <div className="w-full lg:w-2/3 space-y-6">
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block mb-2 text-sm">First Name</label>
               <input
@@ -137,25 +137,29 @@ const ConfirmOrder = () => {
           </button>
 
           {/* Payment Method */}
-          <div className=" grid grid-cols-2 items-center mt-6 border border-gray-200 rounded-lg p-6">
-            <div>
-            <h2 className="text-xl font-bold mb-4">Payment Method</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Credit Card, Transfer, USSD
-            </p>
-            <p className="text-xs text-gray-500">Secure and encrypted</p>
+          <div className=" grid md:grid-cols-2 items-center mt-6 border border-gray-200 rounded-lg p-6">
+            <div className="mb-8">
+              <h2 className="text-xl font-bold mb-4">Payment Method</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Credit Card, Transfer, USSD
+              </p>
+              <p className="text-xs text-gray-500">Secure and encrypted</p>
             </div>
             <div className="flex space-x-8">
-              <img src={`https://th.bing.com/th/id/OIP.vcIxy5gIS3D_hTxtBHDSLgHaCf?w=349&h=117&c=7&r=0&o=5&pid=1.7`} alt="Visa" className="h-6" />
+              <img
+                src={`https://th.bing.com/th/id/OIP.vcIxy5gIS3D_hTxtBHDSLgHaCf?w=349&h=117&c=7&r=0&o=5&pid=1.7`}
+                alt="Visa"
+                className="h-6 w-fit"
+              />
               <img
                 src={`https://th.bing.com/th/id/OIP.E1H7K1pGXLYUVUvedgFMHwHaBy?w=349&h=84&c=7&r=0&o=5&pid=1.7`}
                 alt="PayPal"
-                className="h-6"
+                className="h-6 w-fit"
               />
               <img
                 src={`https://th.bing.com/th/id/OIP.JwOmOEpCOes2zw-Evu14XQHaEK?w=321&h=180&c=7&r=0&o=5&pid=1.7`}
                 alt="Mastercard"
-                className="h-6"
+                className="h-6 w-fit"
               />
             </div>
           </div>
@@ -259,7 +263,6 @@ const ConfirmOrder = () => {
                   </svg>
                 </button>
               </Link>
-              
             </div>
           </div>
         </div>
