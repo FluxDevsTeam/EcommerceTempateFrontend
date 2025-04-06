@@ -3,6 +3,7 @@ import { faTrashAlt } from "@fortawesome/free-solid-svg-icons"
 import slippers from './img/slippers.png'
 import shirt from './img/shirt.png'
 import Wish from "./Wish"
+import { Link } from "react-router-dom"
 
 const Order = () => {
   return (
@@ -93,7 +94,7 @@ const Order = () => {
               <span className='text-[24px]'>$565</span>
             </p>
           </div>
-          <button className='text-white bg-black w-full p-3 rounded-full'>Proceed to checkout &rarr; </button>
+          <Link to='/orders/confirm' className='text-white bg-black w-full p-3 rounded-full block text-center'>Proceed to checkout &rarr; </Link>
         </div>
       </div>
       <h3 className='text-[48px] mb-12 text-center'>You might also like</h3>

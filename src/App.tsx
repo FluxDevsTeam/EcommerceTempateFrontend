@@ -11,7 +11,7 @@ import { Navigate } from 'react-router-dom';
 import Cart from './pages/cart/Cart';
 import Orders from './pages/orders/Order';
 import ProductDetail from './components/ProductDetail';
-
+import Confirm from './pages/orders/Confirm';
 const queryClient = new QueryClient();
 
 const App: React.FC = () => {
@@ -38,6 +38,7 @@ const AppContent: React.FC = () => {
                     <Route path="/products/:id" element={<ProductDetail />} />
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/orders" element={<Orders />} />
+                    <Route path='/orders/confirm' element={<Confirm />} />
                     
                     {/* Catch all route - 404 */}
                     <Route path="*" element={<Navigate to="/" />} />
