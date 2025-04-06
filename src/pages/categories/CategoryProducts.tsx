@@ -16,7 +16,7 @@ const CategoryProducts = () => {
   
   return (
     <div className="px-4 sm:px-6 py-6 md:py-8">
-      <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 ">
+      <div className="grid grid-cols-2  md:grid-cols-4  gap-4 ">
         {data.map((item) => (
           <div key={item.id} className="group hover:shadow-md transition-all duration-200 rounded-xl overflow-hidden">
             <div className="bg-[#F0EEED] rounded-lg p-8 relative">

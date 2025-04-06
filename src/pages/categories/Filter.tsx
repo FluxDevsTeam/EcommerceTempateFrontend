@@ -96,21 +96,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({ isOpen, onClose }) 
             </AccordionContent>
           </AccordionItem>
           
-          <AccordionItem value="color" className="border-b border-gray-200">
-            <AccordionTrigger className="py-4 font-semibold cursor-pointer">Color</AccordionTrigger>
-            <AccordionContent>
-              <div className="flex flex-wrap gap-3 pt-2 pb-4">
-                <div className="w-6 h-6 rounded-full bg-black border border-gray-300 cursor-pointer"></div>
-                <div className="w-6 h-6 rounded-full bg-blue-600 border border-gray-300 cursor-pointer"></div>
-                <div className="w-6 h-6 rounded-full bg-red-600 border border-gray-300 cursor-pointer"></div>
-                <div className="w-6 h-6 rounded-full bg-green-600 border border-gray-300 cursor-pointer"></div>
-                <div className="w-6 h-6 rounded-full bg-yellow-400 border border-gray-300 cursor-pointer"></div>
-                <div className="w-6 h-6 rounded-full bg-purple-600 border border-gray-300 cursor-pointer"></div>
-                <div className="w-6 h-6 rounded-full bg-gray-200 border border-gray-300 cursor-pointer"></div>
-                <div className="w-6 h-6 rounded-full bg-white border border-gray-300 cursor-pointer"></div>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
+         
         </Accordion>
       </div>
       
