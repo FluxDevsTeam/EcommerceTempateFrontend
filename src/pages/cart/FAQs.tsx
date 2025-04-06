@@ -64,9 +64,9 @@ const FAQs = () => {
 
       <h1 className="text-3xl font-bold mb-8">Frequently asked Questions</h1>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {faqs.map((faq, index) => (
-          <div key={index} className="border border-gray-200 rounded-lg">
+          <div key={index} className="border-b-2">
             <button
               onClick={() => toggleFAQ(index)}
               className="w-full text-left p-4 flex justify-between items-center"

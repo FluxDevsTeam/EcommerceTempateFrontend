@@ -65,7 +65,7 @@ const Settings = () => {
 
       <div className="space-y-6">
         {/* Personal Information Section */}
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block mb-2 text-sm">First Name</label>
             <input
@@ -115,7 +115,7 @@ const Settings = () => {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block mb-2 text-sm">Country</label>
             <input
@@ -148,7 +148,7 @@ const Settings = () => {
             value={personalInfo.postalCode}
             onChange={handlePersonalInfoChange}
             placeholder="e.g John Doe"
-            className="w-full p-3 border border-gray-300 rounded-lg"
+            className="w-fit p-3 border border-gray-300 rounded-lg"
           />
         </div>
 
