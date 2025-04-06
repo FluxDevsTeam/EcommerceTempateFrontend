@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // Signup Component
  const Signup = () => {
@@ -73,8 +74,6 @@ import { Eye, EyeOff } from 'lucide-react';
               </Button>
             </div>
           </div>
-
-          <p className="text-sm">Already have an account?</p>
           
           <Button className="w-full bg-black text-white hover:bg-gray-800">
             Create Account
@@ -95,6 +94,8 @@ import { Eye, EyeOff } from 'lucide-react';
           />
           Continue with Google
         </Button>
+
+        <p className="text-sm pt-4">Already have an account? <Link to='/login' className='underline'>Login </Link> here </p>
       </div>
     </div>
   );

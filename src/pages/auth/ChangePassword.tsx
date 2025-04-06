@@ -4,6 +4,7 @@ import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { EyeOff, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const ChangePassword = () => {
   const [newPassword, setNewPassword] = useState('');
@@ -11,7 +12,7 @@ const ChangePassword = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (newPassword === confirmPassword) {
       // Handle password update
@@ -78,12 +79,13 @@ const ChangePassword = () => {
                 </div>
               </div>
               
-              <Button 
+           <Link to='/login'>   <Button 
                 type="submit" 
-                className="w-full h-14 rounded-full bg-black text-white hover:bg-gray-800 mt-4"
+                className="w-full h-14 rounded-full bg-black text-white hover:bg-gray-800 mt-4 cursor-pointer"
               >
                 Continue
               </Button>
+              </Link>
             </div>
           </form>
         </CardContent>

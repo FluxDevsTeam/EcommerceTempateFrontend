@@ -1,9 +1,12 @@
+
+
 import { useState, useEffect, useRef, ChangeEvent, KeyboardEvent, ClipboardEvent } from 'react';
 import { Button } from '@/components/ui/button';
-import { CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Link } from 'react-router-dom';
 
-const VerifyEmail = (): JSX.Element => {
+const VerifyEmail = () =>  {
   const [code, setCode] = useState<string[]>(['', '', '', '']);
   const [timeLeft, setTimeLeft] = useState<number>(178); // 2:58 in seconds
   const inputRefs = [
@@ -120,11 +123,13 @@ const VerifyEmail = (): JSX.Element => {
             </span>
           </div>
         </CardContent>
-        <CardFooter>
-          <Button className="w-full rounded-full cursor-pointer" size="lg">
+        <div>
+      <Link to='/change-password'>   
+       <Button className=" w-full h-14 rounded-full bg-black text-white hover:bg-gray-800 mt-4 cursor-pointer">
             Continue
           </Button>
-        </CardFooter>
+          </Link>
+        </div>
       </div>
     </div>
   );

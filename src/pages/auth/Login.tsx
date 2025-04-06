@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff } from 'lucide-react';
-
+import { Link } from 'react-router-dom';
 
 
  const Login = () => {
@@ -45,7 +45,7 @@ import { Eye, EyeOff } from 'lucide-react';
           </div>
           
           <div className="text-sm">
-            <a href="#" className="hover:underline">Forgot Password?</a>
+          <Link to='/forgot-password'><p className="hover:underline">Forgot Password?</p>  </Link>  
           </div>
           
           <Button className="w-full bg-black text-white hover:bg-gray-800">
@@ -67,6 +67,8 @@ import { Eye, EyeOff } from 'lucide-react';
           />
           Continue with Google
         </Button>
+
+        <p className="text-sm pt-4">Is it your first time here? <Link to='/signup' className='underline'>SignUp </Link> here </p>
       </div>
     </div>
 

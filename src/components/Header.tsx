@@ -53,7 +53,7 @@ const Header = () => {
               onClick={toggleFilter}
               className="p-3 bg-black text-white border rounded-2xl border-black w-[121px] cursor-pointer"
             >
-              Filter
+            Apply Filter
             </button>
           </div>
         </div>
@@ -99,7 +99,7 @@ const Header = () => {
                   onClick={toggleFilter}
                   className="p-3 bg-black text-white border rounded-2xl border-black w-[121px] cursor-pointer"
                 >
-                  Filter
+                Apply Filter
                 </button>
               </div>
             </div>

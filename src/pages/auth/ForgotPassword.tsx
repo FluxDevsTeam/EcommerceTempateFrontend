@@ -3,11 +3,12 @@ import { Button } from '@/components/ui/button';
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Link } from 'react-router-dom';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Handle password reset request
     console.log('Password reset requested for:', email);
@@ -35,12 +36,13 @@ const ForgotPassword = () => {
                   className="h-14 px-4"
                 />
               </div>
-              <Button 
+          <Link to='/verify-email'>   <Button 
                 type="submit" 
-                className="w-full h-14 rounded-full bg-black text-white hover:bg-gray-800 mt-4"
+                className="w-full h-14 rounded-full bg-black text-white hover:bg-gray-800 mt-4 cursor-pointer"
               >
                 Continue
               </Button>
+              </Link> 
             </div>
           </form>
         </CardContent>
