@@ -7,39 +7,39 @@ const Confirm = () => {
   return (
     <div className='p-14'>
       <h2 className="font-normal text-[40px] leading-[100%] tracking-[0%] align-middle mb-8">Confrim your Order</h2>
-      <div className="flex">
+      <div className="flex gap-8 items-start mb-24">
         <form className="basis-[60%]">
-            <div className='flex'>
-                <div>
-                    <label>First Name</label>
-                    <input type='text' placeholder='John' />
+            <div className='flex justify-between items-center gap-8 mb-10'>
+                <div className="flex flex-col basis-[50%]">
+                    <label className="text-[24px] mb-2.5">First Name</label>
+                    <input type='text' placeholder='John' className="border border-[#CACACA80] rounded-[10px] py-2 px-5 text-[20px]" />
                 </div>
-                <div>
-                    <label>Last Name</label>
-                    <input type='text' placeholder='Doe' />
-                </div>
-            </div>
-            <div>
-                <label>Email Address</label>
-                <input type='email' placeholder='abc@exmple.com' />
-            </div>
-            <div className='flex'>
-                <div>
-                    <label>State</label>
-                    <input type='text' placeholder='Enter State' />
-                </div>
-                <div>
-                    <label>City</label>
-                    <input type='text' placeholder='City' />
+                <div className="flex flex-col basis-[50%]">
+                    <label className="text-[24px] mb-2.5">Last Name</label>
+                    <input type='text' placeholder='Doe' className="border border-[#CACACA80] rounded-[10px] py-2 px-5 text-[20px]" />
                 </div>
             </div>
-            <div>
-                <label>Delivery Address</label>
-                <input type='email' placeholder="223B Baker's street" />
+            <div className="flex flex-col mb-10">
+                <label className="text-[24px] mb-2.5">Email Address</label>
+                <input type='email' placeholder='abc@exmple.com' className="border border-[#CACACA80] rounded-[10px] py-2 px-5 text-[20px]" />
             </div>
-            <div>
-                <label>Phone Number</label>
-                <input type='number' placeholder='+234' />
+            <div className='flex justify-between items-center gap-8 mb-10'>
+                <div className="flex flex-col basis-[50%]">
+                    <label className="text-[24px] mb-2.5">State</label>
+                    <input type='text' placeholder='Enter State' className="border border-[#CACACA80] rounded-[10px] py-2 px-5 text-[20px]" />
+                </div>
+                <div className="flex flex-col basis-[50%]">
+                    <label className="text-[24px] mb-2.5">City</label>
+                    <input type='text' placeholder='City' className="border border-[#CACACA80] rounded-[10px] py-2 px-5 text-[20px]" />
+                </div>
+            </div>
+            <div className="flex flex-col mb-10">
+                <label className="text-[24px] mb-2.5">Delivery Address</label>
+                <input type='email' placeholder="223B Baker's street" className="border border-[#CACACA80] rounded-[10px] py-2 px-5 text-[20px]" />
+            </div>
+            <div className="flex flex-col mb-10">
+                <label className="text-[24px] mb-2.5">Phone Number</label>
+                <input type='number' placeholder='+234' className="border border-[#CACACA80] rounded-[10px] py-2 px-5 text-[20px]" />
             </div>
             <Link to='/orders/confirm' className='text-white bg-black w-full p-3 rounded-full block text-center'>Confirm Delivery</Link>
         </form>
@@ -58,7 +58,7 @@ const Confirm = () => {
               <span className='text-[#00000099]'>Delivery fee</span>
               <span className='text-[#000000]'>$15</span>
             </p>
-            <p className='flex justify-between items-center text-[20px] py-4 mb-4'>
+            <p className='flex justify-between items-center text-[20px] mb-4'>
               <span>Total</span>
               <span className='text-[24px]'>$465</span>
             </p>
@@ -71,16 +71,16 @@ const Confirm = () => {
         </div>
       </div>
       <div className="w-[50vw]">
-        <h4>Payment Method</h4>
-        <div className="border border-gray-700 rounded-3xl">
-            <p className="flex flex-col">
-                <span>Credit Card, Transfer, Ussd</span>
-                <span>Secure and encrypyed</span>
+        <h4 className="text-[24px] text-[#023047] mb-6 px-4">Payment Method</h4>
+        <div className="rounded-3xl bg-[#E6E6E657] p-8 flex justify-between items-center">
+            <p className="flex flex-col text-[#020247] gap-3">
+                <span className="text-[24px]">Credit Card, Transfer, Ussd</span>
+                <span className="text-[20px]">Secure and encrypyed</span>
             </p>
-            <p className="flex">
-                <img src={visa} alt="visa" />
-                <img src={paypal} alt="paypal" />
-                <img src={master} alt="master" />
+            <p className="flex items-center">
+                <img src={visa} alt="visa" className="w-[109px] h-[50px] mr-4" />
+                <img src={paypal} alt="paypal" className="w-[132px] h-[34px] mr-2.5" />
+                <img src={master} alt="master" className="w-[53px] h-[31px]" />
             </p>
         </div>
       </div>

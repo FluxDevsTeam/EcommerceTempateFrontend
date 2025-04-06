@@ -12,6 +12,8 @@ import Cart from './pages/cart/Cart';
 import Orders from './pages/orders/Order';
 import ProductDetail from './components/ProductDetail';
 import Confirm from './pages/orders/Confirm';
+import Wishlist from './pages/orders/Wishlist';
+
 const queryClient = new QueryClient();
 
 const App: React.FC = () => {
@@ -39,6 +41,7 @@ const AppContent: React.FC = () => {
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/orders" element={<Orders />} />
                     <Route path='/orders/confirm' element={<Confirm />} />
+                    <Route path='/wishlist' element={<Wishlist />} />
                     
                     {/* Catch all route - 404 */}
                     <Route path="*" element={<Navigate to="/" />} />
