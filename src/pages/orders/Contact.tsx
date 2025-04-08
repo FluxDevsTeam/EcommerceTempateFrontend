@@ -6,12 +6,12 @@ import { FaXTwitter } from "react-icons/fa6";
 
 const Contact = () => {
   return (
-    <div className="p-14">
-      <h2 className="font-normal text-[40px] leading-[100%] tracking-[0%] align-middle mb-12">Contact Us</h2>
-        <div className="flex gap-8 items-start mb-24">
-            <form className="basis-[60%] p-8 border border-[#0000000D] rounded-2xl">
-                <div className='flex justify-between items-center gap-4 mb-10'>
-                    <div className="flex flex-col">
+    <div className="p-4 sm:p-14">
+      <h2 className="font-normal text-[32px] sm:text-[40px] tracking mb-8">Contact Us</h2>
+        <div className="flex-col sm:flex gap-8 items-start mb-12">
+            <form className="p-0 border-0 sm:p-8 sm:border sm:border-[#0000000D] rounded-2xl mb-18 sm:mb-2">
+                <div className='flex flex-wrap justify-between items-center gap-4 mb-10'>
+                    <div className="flex flex-col w-full">
                         <label className="text-[#00000094] mb-2.5">First Name <span className="text-orange-700">*</span></label>
                         <input type='text' className="border border-[#CACACA80] rounded-[10px] py-2 px-5" />
                     </div>
@@ -27,7 +27,7 @@ const Contact = () => {
                 
                 <div className="flex flex-col mb-10">
                     <label htmlFor="message" className="text-[#00000094] mb-2.5">Message</label>
-                    <textarea className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-gray-700 text-sm resize-none h-[200px]"></textarea>
+                    <textarea className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-gray-700 text-sm resize-none h-[120px] sm:h-[200px]"></textarea>
                 </div>
                 
                 <Link to='/orders/confirm' className='text-white bg-black w-full p-3 rounded-full block text-center'>Send Message</Link>
