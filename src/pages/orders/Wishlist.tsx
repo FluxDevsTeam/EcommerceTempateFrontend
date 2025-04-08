@@ -32,19 +32,6 @@ const Wishlist = () => {
           </div>
         ))}
       </div>
-
-      <div>
-          <div className="relative w-fit">
-            <img src={shirt} className="rounded-3xl" />
-            <Wish />
-          </div>
-          <p className="text-[20px]">Polo with Contrast Trims</p>
-          <div className="flex gap-4">
-            <span className="text-[24px]">$212</span>
-            <span className="text-[24px] text-[#00000066] line-through">$242</span>
-            <span className="text-[#FF3333] bg-red-200 text-[12px] flex justify-between items-center rounded-3xl py-0.5 px-3">-20%</span>
-          </div>
-        </div>
     </div>
   );
 };
