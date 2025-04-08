@@ -13,6 +13,7 @@ import Orders from './pages/orders/Order';
 import ProductDetail from './components/ProductDetail';
 import Confirm from './pages/orders/Confirm';
 import Wishlist from './pages/orders/Wishlist';
+import Contact from './pages/orders/Contact';
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const AppContent: React.FC = () => {
                     <Route path="/orders" element={<Orders />} />
                     <Route path='/orders/confirm' element={<Confirm />} />
                     <Route path='/wishlist' element={<Wishlist />} />
+                    <Route path='/contact-us' element={<Contact />} />
                     
                     {/* Catch all route - 404 */}
                     <Route path="*" element={<Navigate to="/" />} />

@@ -1,155 +1,95 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faTrashAlt } from "@fortawesome/free-solid-svg-icons"
-import slippers from './img/slippers.png'
+import { faCalendar } from "@fortawesome/free-solid-svg-icons";
 import shirt from './img/shirt.png'
-import Wish from "./Wish"
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
 
 const Order = () => {
+  const items = [1, 2]
   return (
-    <div className='p-14'>
-      <h2 className="font-normal text-[40px] leading-[100%] tracking-[0%] align-middle mb-8">Your Cart</h2>
-      <div className='flex gap-8 items-start mb-24'>
-        <div className='border border-[#0000001A] rounded-3xl p-5 basis-[60%]'>
-          <div className='flex gap-4 border-b py-5 border-b-gray-300'>
-            <div className='bg-[#F0F0F0] flex justify-center items-center'>
-              <img src={slippers} alt="img" className='w-[100px]' />
-            </div>
-            <div className='basis-[100%]'>
-              <h4 className='flex justify-between items-center'>
-                <span className='text-[20px] font-bold'>Gradient Graphic T-Shirt</span>
-                <FontAwesomeIcon icon={faTrashAlt} className="text-red-500 w-6 h-6" />
-              </h4>
-              <p className='text-[14px] flex gap-1.5'>
-                <span className='font-bold'>Size:</span>
-                <span className='font-extralight'>Large</span></p>
-              <p className='text-[14px] flex gap-1.5'>
-                <span className='font-bold'>Color:</span>
-                <span className='font-extralight'>White</span></p>
-              <div className='flex justify-between items-center'>
-                <p>$145</p>
-                <div><span className='bg-[#F0F0F0] px-2'>-</span><span className='px-2'>1</span><span className='bg-[#F0F0F0] px-2'>+</span></div>
-              </div>
-            </div>
-          </div>
-
-          <div className='flex gap-4 py-5 border-b border-b-gray-300'>
-            <div className='bg-[#F0F0F0] flex justify-center items-center'>
-              <img src={slippers} alt="img" className='w-[100px]' />
-            </div>
-            <div className='basis-[100%]'>
-              <h4 className='flex justify-between items-center'>
-                <span className='text-[20px] font-bold'>Gradient Graphic T-Shirt</span>
-                <FontAwesomeIcon icon={faTrashAlt} className="text-red-500 w-6 h-6" />
-              </h4>
-              <p className='text-[14px] flex gap-1.5'>
-                <span className='font-bold'>Size:</span>
-                <span className='font-extralight'>Large</span></p>
-              <p className='text-[14px] flex gap-1.5'>
-                <span className='font-bold'>Color:</span>
-                <span className='font-extralight'>White</span></p>
-              <div className='flex justify-between items-center'>
-                <p>$145</p>
-                <div><span className='bg-[#F0F0F0] px-2'>-</span><span className='px-2'>1</span><span className='bg-[#F0F0F0] px-2'>+</span></div>
-              </div>
-            </div>
-          </div>
-
-          <div className='flex gap-4 py-5'>
-            <div className='bg-[#F0F0F0] flex justify-center items-center'>
-              <img src={slippers} alt="img" className='w-[100px]' />
-            </div>
-            <div className='basis-[100%]'>
-              <h4 className='flex justify-between items-center'>
-                <span className='text-[20px] font-bold'>Gradient Graphic T-Shirt</span>
-                <FontAwesomeIcon icon={faTrashAlt} className="text-red-500 w-6 h-6" />
-              </h4>
-              <p className='text-[14px] flex gap-1.5'>
-                <span className='font-bold'>Size:</span>
-                <span className='font-extralight'>Large</span></p>
-              <p className='text-[14px] flex gap-1.5'>
-                <span className='font-bold'>Color:</span>
-                <span className='font-extralight'>White</span></p>
-              <div className='flex justify-between items-center'>
-                <p>$145</p>
-                <div><span className='bg-[#F0F0F0] px-2'>-</span><span className='px-2'>1</span><span className='bg-[#F0F0F0] px-2'>+</span></div>
-              </div>
-            </div>
-          </div>
+    <div className='p-14 pb-28'>
+      <h2 className="font-normal text-[40px] leading-[100%] tracking-[0%] align-middle mb-8">My Orders</h2>
+      <div className="">
+        <h4 className="text-[#344054] font-bold text-[30px] mb-6">Order ID: 3354654654526</h4>
+        <div className="flex gap-6 items-center mb-6">
+          <p className="flex gap-2 items-center">
+            <span className="text-[#667085] text-sm leading-5">Order date:</span>
+            <span className="text-[#1D2939]">Feb 16, 2022</span>
+          </p>
+          <p className="flex gap-2 items-center">
+            <FontAwesomeIcon icon={faCalendar} className="text-black w-5" />
+            <span>Estimated delivery: May 16, 2022</span>
+          </p>
         </div>
-
-        <div className='border border-[#0000001A] rounded-3xl p-5 basis-[40%]'>
-          <h3 className='text-[24px] mb-8'>Order Summary</h3>
-          <div>
-            <p className='flex justify-between items-center text-[20px] mb-4'>
-              <span className='text-[#00000099]'>Subtotal</span>
-              <span className='text-[#000000]'>$565</span>
-            </p>
-            <p className='flex justify-between items-center text-[20px] border-b border-b-gray-300 pb-4'>
-              <span className='text-[#00000099]'>Discount (-20%)</span>
-              <span className='text-[#FF3333]'>-$565</span>
-            </p>
-            <p className='flex justify-between items-center text-[20px] py-4 mb-4'>
-              <span>Total</span>
-              <span className='text-[24px]'>$565</span>
-            </p>
-          </div>
-          <Link to='/orders/confirm' className='text-white bg-black w-full p-3 rounded-full block text-center'>Proceed to checkout &rarr; </Link>
-        </div>
+        <ul className="flex flex-col gap-6">
+          {items.map((item, index) => (
+            <li key={index} className="flex justify-between items-center">
+              <div className="bg-[#F0EEED] w-[124px] rounded-2xl overflow-hidden">
+                <img src={shirt} className="w-full" />
+              </div>
+              <div>
+                <p className="text-2xl leading-8 mb-3">MackBook Pro 14’’</p>
+                <p className="leading-6 text-[#667085]">Space Gray  |  32GB  |  1 TB</p>
+              </div>
+              <div>
+                <p className="font-semibold text-lg leading-[30px] text-right">$2599.00</p>
+                <p className="text-[#667085] text-right">Oty: 1</p>
+              </div>
+              <div>
+                <p className="text-[20px] leading-[30px] text-center mb-2">Status</p>
+                <p className="bg-[#72D3E940] rounded-2xl px-8 py-1">In warehouse</p>
+              </div>
+              <div>
+                <p className="text-[20px] leading-[30px] mb-1.5">Expected Delivery</p>
+                <p className="text-[#667085] font-medium text-[18px] leading-[28px]">12 April - 14 April 2025</p>
+              </div>
+              <Link to='/orders/confirm' className="text-white bg-black px-8 py-4 rounded-2xl">Track Order</Link>
+            </li>
+          ))}
+        </ul>
+        <hr className="mt-10 border-t border-t-gray-300" />
+        <hr className="mt-5 border-t border-t-gray-300" />
       </div>
-      <h3 className='text-[48px] mb-12 text-center'>You might also like</h3>
-      <div className="grid grid-cols-4 gap-4">
-        <div>
-          <div className="relative w-fit mb-4">
-            <img src={shirt} className="rounded-3xl" />
-            <Wish />
-          </div>
-          <p className="text-[20px] mb-2">Polo with Contrast Trims</p>
-          <div className="flex gap-4">
-            <span className="text-[24px]">$212</span>
-            <span className="text-[24px] text-[#00000066] line-through">$242</span>
-            <span className="text-[#FF3333] bg-red-200 text-[12px] flex justify-between items-center rounded-3xl py-0.5 px-3">-20%</span>
-          </div>
-        </div>
 
-        <div>
-          <div className="relative w-fit">
-            <img src={shirt} className="rounded-3xl" />
-            <Wish />
-          </div>
-          <p className="text-[20px]">Polo with Contrast Trims</p>
-          <div className="flex gap-4">
-            <span className="text-[24px]">$212</span>
-            <span className="text-[24px] text-[#00000066] line-through">$242</span>
-            <span className="text-[#FF3333] bg-red-200 text-[12px] flex justify-between items-center rounded-3xl py-0.5 px-3">-20%</span>
-          </div>
+      <div className="pt-15">
+        <h4 className="text-[#344054] font-bold text-[30px] mb-6">Order ID: 3354654654526</h4>
+        <div className="flex gap-6 items-center mb-6">
+          <p className="flex gap-2 items-center">
+            <span className="text-[#667085] text-sm leading-5">Order date:</span>
+            <span className="text-[#1D2939]">Feb 16, 2022</span>
+          </p>
+          <p className="flex gap-2 items-center">
+            <FontAwesomeIcon icon={faCalendar} className="text-black w-5" />
+            <span>Estimated delivery: May 16, 2022</span>
+          </p>
         </div>
-
-        <div>
-          <div className="relative w-fit">
-            <img src={shirt} className="rounded-3xl" />
-            <Wish />
-          </div>
-          <p className="text-[20px]">Polo with Contrast Trims</p>
-          <div className="flex gap-4">
-            <span className="text-[24px]">$212</span>
-            <span className="text-[24px] text-[#00000066] line-through">$242</span>
-            <span className="text-[#FF3333] bg-red-200 text-[12px] flex justify-between items-center rounded-3xl py-0.5 px-3">-20%</span>
-          </div>
-        </div>
-
-        <div>
-          <div className="relative w-fit">
-            <img src={shirt} className="rounded-3xl" />
-            <Wish />
-          </div>
-          <p className="text-[20px]">Polo with Contrast Trims</p>
-          <div className="flex gap-4">
-            <span className="text-[24px]">$212</span>
-            <span className="text-[24px] text-[#00000066] line-through">$242</span>
-            <span className="text-[#FF3333] bg-red-200 text-[12px] flex justify-between items-center rounded-3xl py-0.5 px-3">-20%</span>
-          </div>
-        </div>
+        <ul className="flex flex-col gap-6">
+          {items.map((item, index) => (
+            <li key={index} className="flex justify-between items-center">
+              <div className="bg-[#F0EEED] w-[124px] rounded-2xl overflow-hidden">
+                <img src={shirt} className="w-full" />
+              </div>
+              <div>
+                <p className="text-2xl leading-8 mb-3">MackBook Pro 14’’</p>
+                <p className="leading-6 text-[#667085]">Space Gray  |  32GB  |  1 TB</p>
+              </div>
+              <div>
+                <p className="font-semibold text-lg leading-[30px] text-right">$2599.00</p>
+                <p className="text-[#667085] text-right">Oty: 1</p>
+              </div>
+              <div>
+                <p className="text-[20px] leading-[30px] text-center mb-2">Status</p>
+                <p className="bg-[#72D3E940] rounded-2xl px-8 py-1">In warehouse</p>
+              </div>
+              <div>
+                <p className="text-[20px] leading-[30px] mb-1.5">Expected Delivery</p>
+                <p className="text-[#667085] font-medium text-[18px] leading-[28px]">12 April - 14 April 2025</p>
+              </div>
+              <Link to='/orders/confirm' className="text-white bg-black px-8 py-4 rounded-2xl">Track Order</Link>
+            </li>
+          ))}
+        </ul>
+        <hr className="mt-10 border-t border-t-gray-300" />
+        <hr className="mt-5 border-t border-t-gray-300" />
       </div>
     </div>
   )

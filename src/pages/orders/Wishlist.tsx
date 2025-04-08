@@ -2,7 +2,6 @@ import shirt from './img/shirt.png'
 import Wish from "./Wish"
 
 const Wishlist = () => {
-  // You can create an array of 12 items; using Array.from with length 12
   const wishlistItems = Array.from({ length: 8 }, (_, index) => ({
     id: index,
     name: "Polo with Contrast Trims",
