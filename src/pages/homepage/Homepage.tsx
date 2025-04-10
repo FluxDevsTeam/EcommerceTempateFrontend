@@ -5,11 +5,11 @@ import ImageSlider from "./components/ImageSlider";
 
 const Homepage = () => {
   return (
-    <div className="w-full min-h-screen px-4 sm:px-6 md:px-12 lg:px-24">
+    <div className="w-full min-h-full px-4 sm:px-6 md:px-12 py-4 lg:px-24">
       {/* Hero Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="flex flex-col space-y-4 pt-8 lg:pt-12 px-4 md:px-0">
-          <h1 className='text-4xl sm:text-5xl md:text-6xl lg:text-[64px] font-bold leading-tight lg:leading-[63px] text-black'>
+      <div className="grid grid-cols-1 lg:grid-cols-2 ">
+        <div className="flex flex-col md:space-y-2 space-y-4  md:pt-6 pt-10 px-4 md:px-0">
+          <h1 className='text-4xl sm:text-5xl md:text-6xl font-bold leading-tight lg:leading-[63px] text-black'>
             Shop Smarter, Live Better - Find What You Love
           </h1>
           <p className='text-[#000000] font-medium text-base md:text-lg'>
@@ -20,17 +20,17 @@ const Homepage = () => {
           </button>
         </div>
         
-        <div className="flex justify-center lg:justify-end">
+        <div className="flex justify-center lg:justify-end lg:mt-[-20px] ">
           <img 
             src={image1} 
             alt="Banner image" 
-            className="w-full max-w-lg object-contain"
+            className="w-full md:max-w-lg max-w-sm object-contain"
           />
         </div>
       </div>
 
       {/* Content Sections */}
-      <div className="mt-12 space-y-16 md:space-y-20">
+      <div className="md:mt-3 mt-12 space-y-10">
         
         <ImageGrid />
         <TopSelling />
