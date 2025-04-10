@@ -35,7 +35,7 @@ const App: React.FC = () => {
 const AppContent: React.FC = () => {
     return (
         <Routes>
-        {/* Public routes with MainLayout (Header + Footer) */}
+        {/* Public routes with MainLayout */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Homepage />} />
           <Route path="/products/:id" element={<ProductDetail />} />
@@ -54,7 +54,7 @@ const AppContent: React.FC = () => {
           </Route>
        
   
-        {/* Admin routes with AdminLayout (Admin Header + Sidebar) */}
+        {/* Admin routes with AdminLayout */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="products" element={<Products />} />

@@ -13,7 +13,7 @@ const ProductDetail = () => {
   const [mainImage, setMainImage] = useState(images[0]);
 
   return (
-    <div className="w-full min-h-screen px-4 sm:px-8 md:px-12 lg:px-24 my-6 md:my-10">
+    <div className="w-full min-h-screen px-4 sm:px-8 md:px-12 lg:px-24 my-6 md:my-10 pt-4">
       {/* Product Main Section */}
       <div className="flex flex-col lg:flex-row justify-center items-start gap-8">
         {/* Thumbnail Images (Left Column) */}
