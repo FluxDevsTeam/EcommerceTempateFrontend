@@ -1,9 +1,28 @@
+import OrderAnalytics from './components/OrderAnalytics';
+import StatsCard from './components/StatsCard';
+import OrdersList from './OrdersList';
 
 
-const Dashboard = () => {
+
+export default function Dashboard() {
+
+ 
+
   return (
-    <div>Dashboard</div>
-  )
+    <div className=" min-h-screen">
+      
+      
+      <p className="text-gray-500 mb-6">Here is the information about all your orders</p>
+      
+      {/* Stats Cards */}
+    <StatsCard/>
+      
+      {/* Orders Analytics */}
+     <OrderAnalytics/>
+      
+      {/* Order List */}
+    <OrdersList/>
+    </div>
+  );
 }
 
-export default Dashboard

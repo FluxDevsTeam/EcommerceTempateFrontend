@@ -24,7 +24,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen">
+    <div className="flex flex-col md:flex-row bg-gray-50 min-h-screen">
       {/* Sidebar */}
       <Sidebar 
         activePath={activePath}
@@ -34,7 +34,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       />
 
       {/* Main content area */}
-      <div className="flex-1">
+      <div className="flex-1 md:ml-64 overflow-x-hidden">
         {/* Admin Header */}
         <AdminHeader 
           isMobileMenuOpen={isMobileMenuOpen}
@@ -42,7 +42,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         />
         
         {/* Page Content */}
-        <div className="p-8">
+        <div className="p-4 md:p-6 lg:p-8">
           {children || <Outlet />}
         </div>
       </div>

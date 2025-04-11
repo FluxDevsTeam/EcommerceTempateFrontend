@@ -16,9 +16,10 @@ const Sidebar = ({
 }: SidebarProps) => {
   return (
     <div className={`
-      bg-[#222222] 
-      ${isMobileMenuOpen ? 'fixed inset-0 z-50 flex flex-col' : 'hidden'} 
-      md:flex md:static min-h-screen w-64 flex-col
+       bg-[#222222]
+  fixed top-0 left-0 h-screen w-64 z-50 flex-col 
+  ${isMobileMenuOpen ? 'flex' : 'hidden'}
+  md:flex md:z-0
     `}>
       {/* Top section with logo and close button for mobile */}
       <div className="flex justify-between items-center p-6">
