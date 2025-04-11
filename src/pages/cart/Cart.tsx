@@ -176,7 +176,7 @@ const Cart = () => {
         {/* Order Summary */}
         <div className="w-full lg:w-1/3">
           <div className="border border-gray-200 rounded-lg p-6">
-            <h2 className="text-xl font-bold mb-6">Order Summary</h2>
+            <h2 className="text-xl font-bold mb-6">Order</h2>
 
             <div className="space-y-4">
               <div className="flex justify-between">
@@ -225,7 +225,7 @@ const Cart = () => {
       <div className="mt-16">
         <h2 className="text-2xl font-bold mb-6">You might also like</h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {recommendedProducts.map((product) => (
             <div
               key={product.id}
