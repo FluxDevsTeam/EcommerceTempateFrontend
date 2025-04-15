@@ -11,6 +11,9 @@ import ForgotPassword from './pages/auth/ForgotPassword';
 import { Navigate } from 'react-router-dom';
 import Cart from './pages/cart/Cart';
 import Orders from './pages/orders/Order';
+import Confirm from './pages/orders/Confirm';
+import Contact from './pages/orders/Contact';
+import Wishlist from './pages/orders/Wishlist';
 import ProductDetail from './components/products/ProductDetail';
 import Categories from './pages/categories/Categories';
 import AuthLayout from './pages/auth/AuthLayout';
@@ -41,6 +44,9 @@ const AppContent: React.FC = () => {
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/orders/confirm" element={<Confirm />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/contact-us" element={<Contact />} />
           <Route path="/categories" element={<Categories />} />
           </Route>
   
