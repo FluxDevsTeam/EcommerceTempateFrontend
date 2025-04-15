@@ -16,6 +16,9 @@ import FAQs from "./pages/cart/FAQs";
 import GeneralSettings from "./pages/cart/Settings";
 import TermsOfService from "./pages/cart/TermsOfService";
 
+import AddNewProduct from "./admin/pages/products/product components/AddNewProduct";
+import EditProduct from "./admin/pages/products/product components/EditProduct";
+
 import Orders from "./pages/orders/Order";
 import ProductDetail from "./components/products/ProductDetail";
 import Categories from "./pages/categories/Categories";
@@ -68,7 +71,11 @@ const AppContent: React.FC = () => {
       {/* Admin routes with AdminLayout */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
+
         <Route path="products" element={<Products />} />
+        <Route path="add-new-product" element={<AddNewProduct />} />
+        <Route path="products/edit/:id" element={<EditProduct />} />
+
         <Route path="orders" element={<AdminOrders />} />
         <Route path="settings" element={<Settings />} />
       </Route>
