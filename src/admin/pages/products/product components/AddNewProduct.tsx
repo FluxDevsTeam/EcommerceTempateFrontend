@@ -62,7 +62,7 @@ const AddNewProduct: React.FC = () => {
   return (
     <div className="w-full">
       {/* Header Section */}
-      <div className="mb-6">
+      <div className={`mb-6  ${viewProductPreviewModal ? "hidden" : ""}`}>
         <h1 className="text-2xl font-bold text-gray-900">Your Products</h1>
         <p className="text-gray-500 text-sm">
           Here is the information about all your Product
@@ -70,7 +70,7 @@ const AddNewProduct: React.FC = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-gray-100 rounded-lg px-3 py-3 mb-6 flex justify-between items-center">
+      <div className={`bg-gray-100 rounded-lg px-3 py-3 mb-6 flex justify-between items-center  ${viewProductPreviewModal ? "hidden" : ""}`}>
         <p
           className="font-medium text-gray-800"
           style={{ fontSize: "clamp(11.5px, 3vw, 17px)" }}
@@ -87,7 +87,7 @@ const AddNewProduct: React.FC = () => {
 
       <form
         onSubmit={handleSaveChanges}
-        className="bg-white rounded-lg shadow-sm"
+        className={`bg-white rounded-lg shadow-sm ${viewProductPreviewModal ? "hidden" : ""}`}
       >
         {/* Preview & Action Buttons */}
         <div className="flex justify-between items-center p-4 border-b">
@@ -473,48 +473,48 @@ const AddNewProduct: React.FC = () => {
 
                   <p className="text-gray-600 mb-6">
                     <span className="font-bold block">Description</span>
-                    {description || "No description added"}
+                    {description || "None"}
                   </p>
 
                   <p className="text-gray-600 mb-6">
                     <span className="font-bold">Color:</span>{" "}
-                    {color || "No color added"}
+                    {color || "None"}
                   </p>
 
                   <p className="text-gray-600 mb-6">
                     <span className="font-bold">Category:</span>{" "}
-                    {category || "No category added"}
+                    {category || "None"}
                   </p>
 
                   <div className="grid grid-cols-3">
                     <div className="text-gray-600 mb-6">
                       <span className="font-bold">Size:</span>{" "}
                       <button className="bg-gray-700 text-white px-2 rounded-md">
-                        {size || "No size added"}
+                        {size || "None"}
                       </button>
                     </div>
                     <div className="text-gray-600 mb-6">
                       <span className="font-bold">Weight:</span>{" "}
                       <button className="bg-gray-700 text-white px-2 rounded-md">
-                        {weight || "No weight added"}
+                        {weight || "None"}
                       </button>
                     </div>
                     <div className="text-gray-600 mb-6">
                       <span className="font-bold">Length:</span>{" "}
                       <button className="bg-gray-700 text-white px-2 rounded-md">
-                        {length || "No length added"}
+                        {length || "None"}
                       </button>
                     </div>
                     <div className="text-gray-600 mb-6">
                       <span className="font-bold">Width:</span>{" "}
                       <button className="bg-gray-700 text-white px-2 rounded-md">
-                        {width || "No width added"}
+                        {width || "None"}
                       </button>
                     </div>
                     <div className="text-gray-600 mb-6">
                       <span className="font-bold">Height:</span>{" "}
                       <button className="bg-gray-700 text-white px-2 rounded-md">
-                        {height || "No height added"}
+                        {height || "None"}
                       </button>
                     </div>
                   </div>

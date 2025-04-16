@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-<<<<<<< HEAD
 const GeneralSettings = () => {
-=======
-const Settings = () => {
->>>>>>> 77deae6a75272dcedd736d8ff51733b4e73d9031
   const [personalInfo, setPersonalInfo] = useState({
     firstName: "",
     lastName: "",
@@ -260,8 +256,4 @@ const Settings = () => {
   );
 };
 
-<<<<<<< HEAD
 export default GeneralSettings;
-=======
-export default Settings;
->>>>>>> 77deae6a75272dcedd736d8ff51733b4e73d9031
