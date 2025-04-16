@@ -9,6 +9,8 @@ import VerifyEmail from "./pages/auth/VerifyEmail";
 import ChangePassword from "./pages/auth/ChangePassword";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import { Navigate } from "react-router-dom";
+import Header from './components/Header';
+import Footer from './components/Footer';
 
 import Cart from "./pages/cart/Cart";
 import ConfirmOrder from "./pages/cart/ConfirmOrder";
