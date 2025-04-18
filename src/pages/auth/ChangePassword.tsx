@@ -1,37 +1,57 @@
-import  { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { EyeOff, Eye } from 'lucide-react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
+// Define the schema for form validation
+const changePasswordSchema = z.object({
+  newPassword: z.string()
+    .min(8, { message: "Password must be at least 8 characters long" })
+    .max(30, { message: "Password must not exceed 30 characters" })
+    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
+    .regex(/[0-9]/, { message: "Password must contain at least one number" })
+    .regex(/[^A-Za-z0-9]/, { message: "Password must contain at least one special character" }),
+  confirmPassword: z.string()
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"]
+});
+
+// Infer the type from the schema
+type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
+
 const ChangePassword = () => {
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (newPassword === confirmPassword) {
-      // Handle password update
-      console.log('Password updated successfully');
-    } else {
-      // Handle password mismatch
-      console.log('Passwords do not match');
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ChangePasswordFormData>({
+    resolver: zodResolver(changePasswordSchema)
+  });
+
+  const onSubmit = (data: ChangePasswordFormData) => {
+    console.log('Password updated successfully', data);
+    // Handle password update logic here
   };
 
   return (
-    <div className="flex justify-center items-center ">
+    <div className="flex justify-center items-center">
       <div className="w-full">
         <CardHeader className="text-center">
           <div className="mb-6 text-2xl font-bold">SHOP.CO</div>
           <CardTitle className="text-xl font-medium">New Password</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="new-password">New Password</Label>
@@ -39,10 +59,8 @@ const ChangePassword = () => {
                   <Input
                     id="new-password"
                     type={showNewPassword ? "text" : "password"}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    required
                     className="h-14 pr-10"
+                    {...register("newPassword")}
                   />
                   <Button
                     type="button"
@@ -54,6 +72,11 @@ const ChangePassword = () => {
                     {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </Button>
                 </div>
+                <div className='h-5'>
+                {errors.newPassword && (
+                  <p className="text-sm text-red-500">{errors.newPassword.message}</p>
+                )}
+                </div>
               </div>
               
               <div className="space-y-2">
@@ -62,24 +85,27 @@ const ChangePassword = () => {
                   <Input
                     id="confirm-password"
                     type={showConfirmPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
                     className="h-14 pr-10"
+                    {...register("confirmPassword")}
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor pointer"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </Button>
                 </div>
+                <div className='h-5'>
+                {errors.confirmPassword && (
+                  <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
+                )}
+                </div>
               </div>
-              
-           <Link to='/login'>   <Button 
+              <Link to="/login">
+              <Button 
                 type="submit" 
                 className="w-full h-14 rounded-full bg-black text-white hover:bg-gray-800 mt-4 cursor-pointer"
               >
@@ -88,6 +114,7 @@ const ChangePassword = () => {
               </Link>
             </div>
           </form>
+         
         </CardContent>
       </div>
     </div>
