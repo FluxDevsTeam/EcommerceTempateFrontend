@@ -1,8 +1,8 @@
 import { useState } from "react";
-import Sidebar from "@/admin/components/Sidebar";
 import AdminHeader from "@/admin/components/AdminHeader";
 import { ReactNode } from "react";
 import { Outlet } from "react-router-dom";
+import Sidebar from "@/admin/components/Sidebar";
 
 interface AdminLayoutProps {
   children?: ReactNode; // Children is now optional

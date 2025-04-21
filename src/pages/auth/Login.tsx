@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
+import { toast } from 'sonner';
 
 // Define the schema for form validation
 const loginSchema = z.object({
@@ -21,6 +23,11 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Local error state
+  
+  const { login } = useAuth();
+  const navigate = useNavigate();
   
   const {
     register,
@@ -30,8 +37,24 @@ const Login = () => {
     resolver: zodResolver(loginSchema)
   });
 
-  const onSubmit = (data: LoginFormData) => {
-    console.log(data); // Handle login logic here
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      setIsSubmitting(true);
+      setErrorMessage(null); // Clear previous errors
+      
+      // Call login service
+      await login(data.email, data.password);
+      
+      // If successful, redirect to dashboard or home
+      toast.success('Login successful!');
+      navigate('/dashboard'); // or whatever your main app route is
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Login failed. Please check your credentials.';
+      setErrorMessage(message);
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -89,8 +112,18 @@ const Login = () => {
             <Link to='/forgot-password'><p className="hover:underline">Forgot Password?</p></Link>  
           </div>
           
-          <Button type="submit" className="w-full bg-black text-white hover:bg-gray-800">
-            Login
+          {errorMessage && (
+            <div className="p-3 bg-red-50 text-red-500 rounded-md text-sm">
+              {errorMessage}
+            </div>
+          )}
+          
+          <Button 
+            type="submit" 
+            className="w-full bg-black text-white hover:bg-gray-800"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Logging in...' : 'Login'}
           </Button>
         </form>
         

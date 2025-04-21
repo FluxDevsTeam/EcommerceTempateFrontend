@@ -2,8 +2,21 @@ import image1 from "/images/Frame 1618876995 (1).png";
 import ImageGrid from "./components/ImageGrid";
 import TopSelling from "./components/TopSelling";
 import ImageSlider from "./components/ImageSlider";
+import { useQuery } from "@tanstack/react-query";
+import { fetchProducts } from "./api/apiService";
+import { ProductAPIResponse } from "./types/data-types";
 
 const Homepage = () => {
+
+  const { data, isLoading, isError } = useQuery<ProductAPIResponse>({
+    queryKey: ['myData'],
+    queryFn: fetchProducts
+  });
+  
+
+if (isLoading) return <div>Loading...</div>;
+if (isError) return <div>Error loading data.</div>;
+
   return (
     <div className="w-full min-h-full px-4 sm:px-6 md:px-12 py-4 lg:px-20">
       {/* Hero Section */}
@@ -32,9 +45,10 @@ const Homepage = () => {
       {/* Content Sections */}
       <div className="md:mt-3 mt-12 space-y-10">
         
-        <ImageGrid />
-        <TopSelling />
-        <ImageSlider/>
+     <ImageGrid data={data?.latest_items?.results ?? []} />
+     <TopSelling data={data?.top_selling_items?.results ?? []} />
+     <ImageSlider data={data?.latest_items?.results ?? []}/>
+
       </div>
     </div>
   )

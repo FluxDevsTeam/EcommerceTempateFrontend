@@ -5,25 +5,45 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Link } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from './AuthContext';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Define the schema for form validation
 const verifyEmailSchema = z.object({
-  code: z.string().length(4, { message: "Verification code must be 4 digits" })
-    .regex(/^\d{4}$/, { message: "Code must contain only numbers" })
+  code: z.string().length(6, { message: "Verification code must be 6 digits" })
+    .regex(/^\d{6}$/, { message: "Code must contain only numbers" })
 });
 
-// Infer the type from the schema
 type VerifyEmailFormData = z.infer<typeof verifyEmailSchema>;
 
 const VerifyEmail = () => {
-  const [timeLeft, setTimeLeft] = useState<number>(178); // 2:58 in seconds
-  const inputRefs = [
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null)
-  ];
+  const [timeLeft, setTimeLeft] = useState<number>(178);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isResending, setIsResending] = useState<boolean>(false);
+  const [success, setSuccess] = useState<boolean>(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { 
+    verifySignupOTP,
+    resendSignupOTP,
+    error, 
+    clearError 
+  } = useAuth();
+  
+  // Enhanced email handling with fallbacks
+  const email = location.state?.email || localStorage.getItem('signupEmail') || '';
+  const [currentEmail, setCurrentEmail] = useState<string>(email);
+
+  // Store email in localStorage and state
+  useEffect(() => {
+    if (email && email !== currentEmail) {
+      localStorage.setItem('signupEmail', email);
+      setCurrentEmail(email);
+    }
+  }, [email, currentEmail]);
+
+  const inputRefs = Array(6).fill(null).map(() => useRef<HTMLInputElement>(null));
 
   const {
     register,
@@ -35,7 +55,8 @@ const VerifyEmail = () => {
     resolver: zodResolver(verifyEmailSchema)
   });
 
-  const code = watch("code", "").split('').concat(['', '', '', '']).slice(0, 4);
+  const codeRegister = register("code");
+  const code = watch("code", "").split('').concat(Array(6).fill('')).slice(0, 6);
 
   // Handle input change
   const handleChange = (index: number, value: string): void => {
@@ -45,8 +66,7 @@ const VerifyEmail = () => {
       const joinedCode = newCode.join('');
       setValue("code", joinedCode, { shouldValidate: true });
       
-      // Auto focus next input if value is entered
-      if (value && index < 3) {
+      if (value && index < 5) {
         inputRefs[index + 1].current?.focus();
       }
     }
@@ -65,18 +85,16 @@ const VerifyEmail = () => {
   // Handle paste event
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>): void => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text/plain').slice(0, 4);
+    const pastedData = e.clipboardData.getData('text/plain').slice(0, 6);
     
     if (/^\d+$/.test(pastedData)) {
       setValue("code", pastedData, { shouldValidate: true });
-      
-      // Focus the next empty input or the last one
-      const lastIndex = Math.min(pastedData.length, 3);
+      const lastIndex = Math.min(pastedData.length, 5);
       inputRefs[lastIndex].current?.focus();
     }
   };
 
-  // Timer countdown
+  // Timer countdown (still keep for informational purposes)
   useEffect(() => {
     if (timeLeft <= 0) return;
     
@@ -87,16 +105,72 @@ const VerifyEmail = () => {
     return () => clearInterval(timerId);
   }, [timeLeft]);
 
-  // Format time as MM:SS
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const onSubmit = (data: VerifyEmailFormData) => {
-    console.log('Verification code submitted:', data.code);
-    // Handle verification logic here
+  const onSubmit = async (data: VerifyEmailFormData) => {
+    if (!currentEmail) {
+      console.error('Email is missing. Current email state:', currentEmail);
+      console.error('Location state:', location.state);
+      console.error('LocalStorage:', localStorage.getItem('signupEmail'));
+      return;
+    }
+
+    setIsSubmitting(true);
+    clearError();
+
+    try {
+      console.log('Attempting verification with:', {
+        email: currentEmail,
+        code: data.code
+      });
+      
+      const result = await verifySignupOTP(currentEmail, data.code);
+      console.log('Verification successful:', result);
+      
+      setSuccess(true);
+      localStorage.removeItem('signupEmail');
+      
+      setTimeout(() => {
+        navigate('/login', { state: { verified: true } });
+      }, 1000);
+    } catch (err) {
+      console.error('Verification failed - Full error:', err);
+      console.error('Error response data:', err.response?.data);
+      console.error('Error status:', err.response?.status);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (!currentEmail) {
+      console.error('Cannot resend - email is missing:', currentEmail);
+      return;
+    }
+    
+    // Removed the timeLeft > 0 check to allow resending at any time
+
+    clearError();
+    setIsResending(true);
+    
+    try {
+      console.log('Attempting to resend OTP to:', currentEmail);
+      const result = await resendSignupOTP(currentEmail);
+      console.log('Resend successful:', result);
+      
+      // Reset timer after successful resend
+      setTimeLeft(178);
+    } catch (err) {
+      console.error('Resend failed - Full error:', err);
+      console.error('Error response data:', err.response?.data);
+      console.error('Error status:', err.response?.status);
+    } finally {
+      setIsResending(false);
+    }
   };
 
   return (
@@ -107,34 +181,54 @@ const VerifyEmail = () => {
           <CardTitle className="text-xl font-medium">Verify Your Email</CardTitle>
         </CardHeader>
         <CardContent>
+          {success && (
+            <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
+              <AlertDescription>
+                Email verified successfully! Redirecting to login...
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {error && (
+            <Alert className="mb-4 bg-red-50 text-red-800 border-red-200">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="text-center mb-6">Enter the Code sent to you</div>
+            <div className="text-center mb-6">
+              Enter the Code sent to{" "}
+              <span className="font-medium">{currentEmail}</span>
+            </div>
             <div className="flex justify-center gap-2">
               {code.map((digit, index) => (
                 <Input
                   key={index}
-                  ref={(el) => {
-                    inputRefs[index].current = el;
-                    register("code", { required: true });
+                  ref={inputRefs[index]}
+                  name={codeRegister.name}
+                  onChange={(e) => {
+                    codeRegister.onChange(e);
+                    handleChange(index, e.target.value);
                   }}
+                  onBlur={codeRegister.onBlur}
                   type="text"
                   inputMode="numeric"
                   pattern="[0-9]*"
                   maxLength={1}
-                  className="w-16 h-16 text-center text-2xl"
+                  className="w-12 h-12 text-center text-2xl"
                   value={digit}
-                  onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   onPaste={index === 0 ? handlePaste : undefined}
+                  disabled={isSubmitting || success}
                 />
               ))}
             </div>
             <div className='h-5'>
-            {errors.code && (
-              <p className="mt-2 text-center text-sm text-red-500">
-                {errors.code.message}
-              </p>
-            )}
+              {errors.code && (
+                <p className="mt-2 text-center text-sm text-red-500">
+                  {errors.code.message}
+                </p>
+              )}
             </div>
             <div className="mt-4 text-center">
               <span className="text-sm text-gray-600">
@@ -142,10 +236,11 @@ const VerifyEmail = () => {
                 <Button 
                   variant="link" 
                   className="p-0 h-auto text-sm font-normal text-blue-600"
-                  disabled={timeLeft > 0}
-                  onClick={() => setTimeLeft(178)}
+                  disabled={isResending || isSubmitting || success}
+                  onClick={handleResendCode}
+                  type="button"
                 >
-                  Resend
+                  {isResending ? "Sending..." : "Resend"}
                 </Button>
                 {timeLeft > 0 && (
                   <span className="text-sm text-gray-600">
@@ -154,11 +249,13 @@ const VerifyEmail = () => {
                 )}
               </span>
             </div>
-            <Link to='/change-password'>   
-       <Button className=" w-full h-14 rounded-full bg-black text-white hover:bg-gray-800 mt-4 cursor-pointer">
-            Continue
-          </Button>
-          </Link>
+            <Button 
+              type="submit"
+              className="w-full h-14 rounded-full bg-black text-white hover:bg-gray-800 mt-4 cursor-pointer"
+              disabled={isSubmitting || success || code.join('').length !== 6}
+            >
+              {isSubmitting ? "Verifying..." : "Continue"}
+            </Button>
           </form>
         </CardContent>
       </div>

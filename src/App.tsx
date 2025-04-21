@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider } from "./pages/auth/AuthContext";
 import MainLayout from "./pages/auth/Mainlayout";
 import Homepage from "./pages/homepage/Homepage";
 import Login from "./pages/auth/Login";
@@ -9,15 +10,11 @@ import VerifyEmail from "./pages/auth/VerifyEmail";
 import ChangePassword from "./pages/auth/ChangePassword";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import { Navigate } from "react-router-dom";
-import Header from './components/Header';
-import Footer from './components/Footer';
-
 import Cart from "./pages/cart/Cart";
 import ConfirmOrder from "./pages/cart/ConfirmOrder";
 import FAQs from "./pages/cart/FAQs";
 import GeneralSettings from "./pages/cart/Settings";
 import TermsOfService from "./pages/cart/TermsOfService";
-
 import AddNewProduct from "./admin/pages/products/product components/AddNewProduct";
 import EditProduct from "./admin/pages/products/product components/EditProduct";
 
@@ -30,16 +27,19 @@ import Dashboard from "./admin/pages/dashboard/Dashboard";
 import Products from "./admin/pages/products/Products";
 import Settings from "./admin/pages/settings/Settings";
 import AdminOrders from "./admin/pages/orders/AdminOrders";
+import SearchResults from "./components/products/SearchResults";
 
 const queryClient = new QueryClient();
 
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
+    <AuthProvider> {/* Move AuthProvider here */}
       <Router>
         <AppContent />
       </Router>
-    </QueryClientProvider>
+    </AuthProvider>
+  </QueryClientProvider>
   );
 };
 
@@ -49,7 +49,8 @@ const AppContent: React.FC = () => {
       {/* Public routes with MainLayout */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<Homepage />} />
-        <Route path="/products/:id" element={<ProductDetail />} />
+        <Route path="/product/item/:id" element={<ProductDetail />} />
+        <Route path="/search" element={<SearchResults />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/categories" element={<Categories />} />
@@ -62,6 +63,7 @@ const AppContent: React.FC = () => {
       </Route>
 
       {/* AuthLayout Routes */}
+     
       <Route element={<AuthLayout />}>
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<SignUp />} />
@@ -69,7 +71,7 @@ const AppContent: React.FC = () => {
         <Route path="verify-email" element={<VerifyEmail />} />
         <Route path="change-password" element={<ChangePassword />} />
       </Route>
-
+      
       {/* Admin routes with AdminLayout */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />

@@ -6,8 +6,10 @@ import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { EyeOff, Eye } from 'lucide-react';
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from './AuthContext';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Define the schema for form validation
 const changePasswordSchema = z.object({
@@ -29,6 +31,26 @@ type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 const ChangePassword = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Local error state
+  
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { setNewPassword } = useAuth();
+  
+  // Get email from location state or localStorage
+  const email = location.state?.email || localStorage.getItem('resetEmail') || '';
+  const verified = location.state?.verified || false;
+  
+  // Redirect if not verified and no email
+  useEffect(() => {
+    if (!email) {
+      navigate('/forgot-password');
+    } else if (!verified && !location.state?.verified) {
+      navigate('/verify-email', { state: { email } });
+    }
+  }, [email, verified, navigate, location.state]);
 
   const {
     register,
@@ -38,9 +60,35 @@ const ChangePassword = () => {
     resolver: zodResolver(changePasswordSchema)
   });
 
-  const onSubmit = (data: ChangePasswordFormData) => {
-    console.log('Password updated successfully', data);
-    // Handle password update logic here
+  const onSubmit = async (data: ChangePasswordFormData) => {
+    if (!email) {
+      console.error('Email is missing');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage(null); // Clear previous errors
+
+    try {
+      await setNewPassword(email, data.newPassword, data.confirmPassword);
+      setSuccess(true);
+      
+      // Clear stored email after successful password change
+      localStorage.removeItem('resetEmail');
+      
+      // Redirect to login page after a brief delay
+      setTimeout(() => {
+        navigate('/login', { 
+          state: { message: 'Password changed successfully. Please log in with your new password.' } 
+        });
+      }, 2000);
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Failed to reset password. Please try again.';
+      setErrorMessage(message);
+      console.error('Password change failed:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -51,6 +99,20 @@ const ChangePassword = () => {
           <CardTitle className="text-xl font-medium">New Password</CardTitle>
         </CardHeader>
         <CardContent>
+          {success && (
+            <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
+              <AlertDescription>
+                Password changed successfully! Redirecting to login...
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {errorMessage && (
+            <Alert className="mb-4 bg-red-50 text-red-800 border-red-200">
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
+
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-4">
               <div className="space-y-2">
@@ -61,6 +123,7 @@ const ChangePassword = () => {
                     type={showNewPassword ? "text" : "password"}
                     className="h-14 pr-10"
                     {...register("newPassword")}
+                    disabled={isSubmitting || success}
                   />
                   <Button
                     type="button"
@@ -68,6 +131,7 @@ const ChangePassword = () => {
                     size="sm"
                     className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
                     onClick={() => setShowNewPassword(!showNewPassword)}
+                    disabled={isSubmitting || success}
                   >
                     {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </Button>
@@ -87,6 +151,7 @@ const ChangePassword = () => {
                     type={showConfirmPassword ? "text" : "password"}
                     className="h-14 pr-10"
                     {...register("confirmPassword")}
+                    disabled={isSubmitting || success}
                   />
                   <Button
                     type="button"
@@ -94,6 +159,7 @@ const ChangePassword = () => {
                     size="sm"
                     className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    disabled={isSubmitting || success}
                   >
                     {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </Button>
@@ -104,14 +170,13 @@ const ChangePassword = () => {
                 )}
                 </div>
               </div>
-              <Link to="/login">
               <Button 
                 type="submit" 
                 className="w-full h-14 rounded-full bg-black text-white hover:bg-gray-800 mt-4 cursor-pointer"
+                disabled={isSubmitting || success}
               >
-                Continue
+                {isSubmitting ? "Processing..." : "Reset Password"}
               </Button>
-              </Link>
             </div>
           </form>
          
