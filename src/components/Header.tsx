@@ -78,10 +78,9 @@ const Header = () => {
           <div className="flex justify-between items-center mt-4">
             <ul className="flex space-x-6 text-[16px] font-medium font-poppins">
               <Link to='/categories'><li>New Arrivals</li></Link>  
-              <li>Shoes</li>
-              <li>Accesories</li>
-              <li>Watches</li>
-              <li>More</li>
+              <Link to='/shoe-category'>  <li>Shoes</li></Link>
+              <Link to='/accessory-category'> <li>Accesories</li></Link>
+              <Link to='/clothes-category'>  <li>Clothes</li></Link>
             </ul>
             <SearchInput onItemSelect={handleSearchItemSelect}/>
             <SortDropdown/>
@@ -115,12 +114,11 @@ const Header = () => {
           <div className="block md:hidden p-7">
             <div className="flex flex-col w-full space-y-4">
               <ul className="flex flex-col space-y-5 text-[16px] font-medium leading-[100%]">
-                <Link to='/categories'><li>New Arrivals</li></Link>
-                <li>Shoes</li>
-                <li>Accesories</li>
-                <li>Watches</li>
-                <li>More</li>
-              </ul>
+              <Link to='/categories'><li>New Arrivals</li></Link>  
+              <Link to='/shoe-category'>  <li>Shoes</li></Link>
+              <Link to='/accessories-category'> <li>Accesories</li></Link>
+              <Link to='/clothes-category'>  <li>Clothes</li></Link>
+            </ul>
               <SearchInput onItemSelect={handleSearchItemSelect}/>
               <div className="flex space-x-3">
                 <SortDropdown/>

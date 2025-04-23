@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from 'sonner';
 
 // Define the schema for form validation
 const changePasswordSchema = z.object({
@@ -33,25 +34,34 @@ const ChangePassword = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Local error state
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
   
   const navigate = useNavigate();
   const location = useLocation();
   const { setNewPassword } = useAuth();
   
-  // Get email from location state or localStorage
-  const email = location.state?.email || localStorage.getItem('resetEmail') || '';
-  const verified = location.state?.verified || false;
-  
-  // Redirect if not verified and no email
+  // Extract email from URL parameters
   useEffect(() => {
-    if (!email) {
-      navigate('/forgot-password');
-    } else if (!verified && !location.state?.verified) {
-      navigate('/verify-email', { state: { email } });
+    const params = new URLSearchParams(location.search);
+    const emailParam = params.get('email');
+    
+    if (emailParam) {
+      setEmail(emailParam);
+      // Store email in localStorage in case the page is refreshed
+      localStorage.setItem('resetEmail', emailParam);
+    } else {
+      // If no email in URL, check if it's stored in localStorage
+      const storedEmail = localStorage.getItem('resetEmail');
+      if (storedEmail) {
+        setEmail(storedEmail);
+      } else {
+        // No email found, show error
+        setErrorMessage("Invalid password reset link. Please request a new one.");
+      }
     }
-  }, [email, verified, navigate, location.state]);
-
+  }, [location]);
+  
   const {
     register,
     handleSubmit,
@@ -59,19 +69,25 @@ const ChangePassword = () => {
   } = useForm<ChangePasswordFormData>({
     resolver: zodResolver(changePasswordSchema)
   });
-
   const onSubmit = async (data: ChangePasswordFormData) => {
     if (!email) {
-      console.error('Email is missing');
+      setErrorMessage('Email is missing. Please request a new password reset link.');
       return;
     }
-
+  
     setIsSubmitting(true);
     setErrorMessage(null); // Clear previous errors
-
+  
     try {
-      await setNewPassword(email, data.newPassword, data.confirmPassword);
+      // Use the updated function signature
+      await setNewPassword({
+        email: email,
+        new_password: data.newPassword,
+        confirm_password: data.confirmPassword
+      });
+      
       setSuccess(true);
+      toast.success('Password changed successfully!');
       
       // Clear stored email after successful password change
       localStorage.removeItem('resetEmail');
@@ -83,20 +99,26 @@ const ChangePassword = () => {
         });
       }, 2000);
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Failed to reset password. Please try again.';
+      const message = err.response?.data?.message || err.message || 'Failed to reset password. Please try again.';
       setErrorMessage(message);
-      console.error('Password change failed:', err);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
   };
+ 
 
   return (
     <div className="flex justify-center items-center">
-      <div className="w-full">
+      <div className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mb-6 text-2xl font-bold">SHOP.CO</div>
           <CardTitle className="text-xl font-medium">New Password</CardTitle>
+          {email && (
+            <p className="text-sm text-gray-500 mt-2">
+              Reset password for: {email}
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           {success && (
@@ -113,72 +135,84 @@ const ChangePassword = () => {
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="new-password">New Password</Label>
-                <div className="relative">
-                  <Input
-                    id="new-password"
-                    type={showNewPassword ? "text" : "password"}
-                    className="h-14 pr-10"
-                    {...register("newPassword")}
-                    disabled={isSubmitting || success}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    disabled={isSubmitting || success}
-                  >
-                    {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </Button>
+          {email && !success ? (
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">New Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="new-password"
+                      type={showNewPassword ? "text" : "password"}
+                      className="h-14 pr-10"
+                      {...register("newPassword")}
+                      disabled={isSubmitting || success}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      disabled={isSubmitting || success}
+                    >
+                      {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </Button>
+                  </div>
+                  <div className='h-5'>
+                  {errors.newPassword && (
+                    <p className="text-sm text-red-500">{errors.newPassword.message}</p>
+                  )}
+                  </div>
                 </div>
-                <div className='h-5'>
-                {errors.newPassword && (
-                  <p className="text-sm text-red-500">{errors.newPassword.message}</p>
-                )}
+                
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirm-password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      className="h-14 pr-10"
+                      {...register("confirmPassword")}
+                      disabled={isSubmitting || success}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      disabled={isSubmitting || success}
+                    >
+                      {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </Button>
+                  </div>
+                  <div className='h-5'>
+                  {errors.confirmPassword && (
+                    <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
+                  )}
+                  </div>
                 </div>
+                <Button 
+                  type="submit" 
+                  className="w-full h-14 rounded-full bg-black text-white hover:bg-gray-800 mt-4 cursor-pointer"
+                  disabled={isSubmitting || success}
+                >
+                  {isSubmitting ? "Processing..." : "Reset Password"}
+                </Button>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm Password</Label>
-                <div className="relative">
-                  <Input
-                    id="confirm-password"
-                    type={showConfirmPassword ? "text" : "password"}
-                    className="h-14 pr-10"
-                    {...register("confirmPassword")}
-                    disabled={isSubmitting || success}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    disabled={isSubmitting || success}
-                  >
-                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </Button>
-                </div>
-                <div className='h-5'>
-                {errors.confirmPassword && (
-                  <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
-                )}
-                </div>
-              </div>
+            </form>
+          ) : !success && errorMessage ? (
+            <div className="text-center p-4">
               <Button 
-                type="submit" 
-                className="w-full h-14 rounded-full bg-black text-white hover:bg-gray-800 mt-4 cursor-pointer"
-                disabled={isSubmitting || success}
+                className="mt-4 text-blue-600 hover:underline"
+                variant="link"
+                onClick={() => navigate('/forgot-password')}
               >
-                {isSubmitting ? "Processing..." : "Reset Password"}
+                Request a new password reset link
               </Button>
             </div>
-          </form>
+          ) : null}
          
         </CardContent>
       </div>

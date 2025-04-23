@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { toast } from 'sonner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Define the schema for form validation
 const loginSchema = z.object({
@@ -24,10 +25,13 @@ type LoginFormData = z.infer<typeof loginSchema>;
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Local error state
   
-  const { login } = useAuth();
+  const { login, error, clearError } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Check if user was redirected after verification
+  const justVerified = location.state?.verified === true;
   
   const {
     register,
@@ -40,7 +44,9 @@ const Login = () => {
   const onSubmit = async (data: LoginFormData) => {
     try {
       setIsSubmitting(true);
-      setErrorMessage(null); // Clear previous errors
+      clearError(); // Clear previous errors
+      
+      console.log(`Attempting login with email: ${data.email}`);
       
       // Call login service
       await login(data.email, data.password);
@@ -49,9 +55,8 @@ const Login = () => {
       toast.success('Login successful!');
       navigate('/dashboard'); // or whatever your main app route is
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Login failed. Please check your credentials.';
-      setErrorMessage(message);
-      toast.error(message);
+      console.error('Login error:', err);
+      toast.error(error || 'Login failed. Please check your credentials.');
     } finally {
       setIsSubmitting(false);
     }
@@ -63,6 +68,14 @@ const Login = () => {
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold">SHOP.CO</h1>
         </div>
+        
+        {justVerified && (
+          <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
+            <AlertDescription>
+              Your email has been verified! You can now log in.
+            </AlertDescription>
+          </Alert>
+        )}
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
@@ -112,9 +125,9 @@ const Login = () => {
             <Link to='/forgot-password'><p className="hover:underline">Forgot Password?</p></Link>  
           </div>
           
-          {errorMessage && (
+          {error && (
             <div className="p-3 bg-red-50 text-red-500 rounded-md text-sm">
-              {errorMessage}
+              {error}
             </div>
           )}
           

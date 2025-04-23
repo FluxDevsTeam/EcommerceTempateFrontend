@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { toast } from 'sonner';
 
@@ -20,30 +20,34 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 const ForgotPassword = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Local error state
+  const [emailSent, setEmailSent] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const { requestForgotPassword } = useAuth();
-  const navigate = useNavigate();
-
+  
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch
   } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema)
   });
+  
+  const watchedEmail = watch("email", "");
 
   const onSubmit = async (data: ForgotPasswordFormData): Promise<void> => {
     try {
       setIsSubmitting(true);
       setErrorMessage(null); // Clear previous errors
       
+      // Call the provided requestForgotPassword function
       await requestForgotPassword(data.email);
       
+      setEmailSent(true);
       toast.success('Password reset email sent. Please check your inbox.');
-      navigate('/change-password', { state: { email: data.email, isPasswordReset: true } });
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Failed to request password reset. Please try again.';
+      const message = err.response?.data?.message || 'Failed to send password reset email. Please try again.';
       setErrorMessage(message);
       toast.error(message);
     } finally {
@@ -59,45 +63,77 @@ const ForgotPassword = () => {
           <CardTitle className="text-xl font-medium">Forgot Password</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)}>
+          {emailSent ? (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter Email"
-                  className="h-14 px-4"
-                  {...register("email")}
-                />
-                <div className='h-5'>
-                  {errors.email && (
-                    <p className="text-sm text-red-500">{errors.email.message}</p>
-                  )}
+              <div className="p-4 bg-green-50 text-green-800 rounded-md text-center">
+                <h3 className="font-medium">Reset Email Sent!</h3>
+                <p className="mt-2">
+                  We've sent a password reset link to: <br />
+                  <span className="font-medium">{watchedEmail}</span>
+                </p>
+                <p className="mt-2 text-sm">
+                  Please check your inbox and click on the link to reset your password.
+                </p>
+              </div>
+              <div className="text-center mt-4">
+                <p className="text-sm">
+                  Didn't receive the email? Check your spam folder or{" "}
+                  <button 
+                    className="text-blue-600 hover:underline"
+                    onClick={() => onSubmit({ email: watchedEmail })}
+                    disabled={isSubmitting}
+                  >
+                    try again
+                  </button>
+                </p>
+              </div>
+              <div className="mt-4 text-center">
+                <Link to="/login" className="text-blue-600 hover:underline">
+                  Return to login
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter Email"
+                    className="h-14 px-4"
+                    {...register("email")}
+                  />
+                  <div className='h-5'>
+                    {errors.email && (
+                      <p className="text-sm text-red-500">{errors.email.message}</p>
+                    )}
+                  </div>
                 </div>
+                
+                {errorMessage && (
+                  <div className="p-3 bg-red-50 text-red-500 rounded-md text-sm">
+                    {errorMessage}
+                  </div>
+                )}
+                
+                <Button
+                  type="submit"
+                  className="w-full h-14 rounded-full bg-black text-white hover:bg-gray-800 mt-4 cursor-pointer"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Sending...' : 'Send Reset Link'}
+                </Button>
               </div>
               
-              {errorMessage && (
-                <div className="p-3 bg-red-50 text-red-500 rounded-md text-sm">
-                  {errorMessage}
-                </div>
-              )}
-              
-              <Button
-                type="submit"
-                className="w-full h-14 rounded-full bg-black text-white hover:bg-gray-800 mt-4 cursor-pointer"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Processing...' : 'Continue'}
-              </Button>
-            </div>
-          </form>
-          
-          <div className="mt-4 text-center">
-            <p className="text-sm">
-              Remember your password? <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
-            </p>
-          </div>
+              <div className="mt-4 text-center">
+                <p className="text-sm">
+                  Remember your password? <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
+                </p>
+              </div>
+            </form>
+          )}
         </CardContent>
       </div>
     </div>

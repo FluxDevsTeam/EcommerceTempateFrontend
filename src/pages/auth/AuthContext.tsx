@@ -22,6 +22,8 @@ interface AuthContextType {
   currentUser: User | null;
   loading: boolean;
   isAuthenticated: boolean;
+  error: string | null; // Added error state
+  clearError: () => void; // Added clearError function
   signup: (userData: SignupData) => Promise<any>;
   login: (email: string, password: string) => Promise<any>;
   logout: () => Promise<void>;
@@ -30,7 +32,7 @@ interface AuthContextType {
   requestForgotPassword: (email: string) => Promise<any>;
   resendForgotPasswordOTP: (email: string) => Promise<any>;
   verifyForgotPasswordOTP: (email: string, otp: string) => Promise<any>;
-  setNewPassword: (email: string, new_password: string, confirm_password: string) => Promise<any>;
+  setNewPassword: (data: { email: string; new_password: string; confirm_password: string }) => Promise<any>;
   requestPasswordChange: (old_password: string, new_password: string, confirm_password: string) => Promise<any>;
   resendPasswordChangeOTP: () => Promise<any>;
   verifyPasswordChange: (otp: string) => Promise<any>;
@@ -46,6 +48,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [tempEmail, setTempEmail] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null); // Added error state
+
+  // Added clearError function
+  const clearError = () => {
+    setError(null);
+  };
 
   useEffect(() => {
     // Check for existing user session on initial load
@@ -57,6 +65,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } catch (err) {
         console.error("Authentication check failed", err);
+        setError("Failed to check authentication status");
       } finally {
         setLoading(false);
       }
@@ -67,13 +76,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signup = async (userData: SignupData): Promise<any> => {
     setLoading(true);
+    clearError();
     
     try {
       const response = await authService.signup(userData);
+      // Store email in localStorage for verification
+      localStorage.setItem('signupEmail', userData.email);
       setTempEmail(userData.email);
       setLoading(false);
       return response;
     } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Signup failed. Please try again.';
+      setError(errorMessage);
       setLoading(false);
       throw err;
     }
@@ -81,6 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<any> => {
     setLoading(true);
+    clearError();
     
     try {
       const response = await authService.login({ email, password });
@@ -92,6 +107,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(false);
       return response;
     } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Login failed. Please check your credentials.';
+      setError(errorMessage);
       setLoading(false);
       throw err;
     }
@@ -99,12 +116,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async (): Promise<void> => {
     setLoading(true);
+    clearError();
     
     try {
       await authService.logout();
       setCurrentUser(null);
     } catch (err: any) {
       console.error("Logout error", err);
+      setError("Failed to logout. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -112,12 +131,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const verifySignupOTP = async (email: string, otp: string): Promise<any> => {
     setLoading(true);
+    clearError();
     
     try {
+      console.log(`Attempting to verify OTP with email: ${email}, otp: ${otp}`);
       const response = await authService.verifySignupOTP(email, otp);
+      console.log('Verification response:', response);
       setLoading(false);
       return response;
     } catch (err: any) {
+      console.error('Verification error:', err);
+      const errorMessage = err.response?.data?.message || 'Verification failed. Please check the code and try again.';
+      setError(errorMessage);
       setLoading(false);
       throw err;
     }
@@ -125,12 +150,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const resendSignupOTP = async (email: string): Promise<any> => {
     setLoading(true);
+    clearError();
     
     try {
+      console.log(`Resending OTP to email: ${email}`);
       const response = await authService.resendSignupOTP(email);
+      console.log('Resend response:', response);
       setLoading(false);
       return response;
     } catch (err: any) {
+      console.error('Resend error:', err);
+      const errorMessage = err.response?.data?.message || 'Failed to resend verification code. Please try again.';
+      setError(errorMessage);
       setLoading(false);
       throw err;
     }
@@ -138,6 +169,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const requestForgotPassword = async (email: string): Promise<any> => {
     setLoading(true);
+    clearError();
     
     try {
       const response = await authService.requestForgotPassword(email);
@@ -145,6 +177,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(false);
       return response;
     } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to process password reset request. Please try again.';
+      setError(errorMessage);
       setLoading(false);
       throw err;
     }
@@ -152,12 +186,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const resendForgotPasswordOTP = async (email: string): Promise<any> => {
     setLoading(true);
+    clearError();
     
     try {
       const response = await authService.resendForgotPasswordOTP(email);
       setLoading(false);
       return response;
     } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to resend verification code. Please try again.';
+      setError(errorMessage);
       setLoading(false);
       throw err;
     }
@@ -165,25 +202,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const verifyForgotPasswordOTP = async (email: string, otp: string): Promise<any> => {
     setLoading(true);
+    clearError();
     
     try {
       const response = await authService.verifyForgotPasswordOTP(email, otp);
       setLoading(false);
       return response;
     } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to verify code. Please check and try again.';
+      setError(errorMessage);
       setLoading(false);
       throw err;
     }
   };
 
-  const setNewPassword = async (email: string, new_password: string, confirm_password: string): Promise<any> => {
+  const setNewPassword = async (data: { email: string; new_password: string; confirm_password: string }): Promise<any> => {
     setLoading(true);
+    clearError();
     
     try {
-      const response = await authService.setNewPassword({ email, new_password, confirm_password });
+      const response = await authService.setNewPassword(data);
       setLoading(false);
       return response;
     } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to set new password. Please try again.';
+      setError(errorMessage);
       setLoading(false);
       throw err;
     }
@@ -191,6 +234,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const requestPasswordChange = async (old_password: string, new_password: string, confirm_password: string): Promise<any> => {
     setLoading(true);
+    clearError();
     
     try {
       const response = await authService.requestPasswordChange({ 
@@ -201,6 +245,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(false);
       return response;
     } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to request password change. Please try again.';
+      setError(errorMessage);
       setLoading(false);
       throw err;
     }
@@ -208,12 +254,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const resendPasswordChangeOTP = async (): Promise<any> => {
     setLoading(true);
+    clearError();
     
     try {
       const response = await authService.resendPasswordChangeOTP();
       setLoading(false);
       return response;
     } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to resend verification code. Please try again.';
+      setError(errorMessage);
       setLoading(false);
       throw err;
     }
@@ -221,12 +270,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const verifyPasswordChange = async (otp: string): Promise<any> => {
     setLoading(true);
+    clearError();
     
     try {
       const response = await authService.verifyPasswordChange(otp);
       setLoading(false);
       return response;
     } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to verify code. Please check and try again.';
+      setError(errorMessage);
       setLoading(false);
       throw err;
     }
@@ -236,6 +288,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     currentUser,
     loading,
     isAuthenticated: !!currentUser,
+    error, // Added error state to context value
+    clearError, // Added clearError function to context value
     signup,
     login,
     logout,

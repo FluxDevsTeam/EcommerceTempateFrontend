@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,13 +7,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-// Define the schema for form validation
-const verifyEmailSchema = z.object({
-  code: z.string().length(6, { message: "Verification code must be 6 digits" })
-    .regex(/^\d{6}$/, { message: "Code must contain only numbers" })
-});
-
-type VerifyEmailFormData = z.infer<typeof verifyEmailSchema>;
+type VerifyEmailFormData = {
+  code: string;
+};
 
 const VerifyEmail = () => {
   const [timeLeft, setTimeLeft] = useState<number>(178);
@@ -31,11 +25,9 @@ const VerifyEmail = () => {
     clearError 
   } = useAuth();
   
-  // Enhanced email handling with fallbacks
   const email = location.state?.email || localStorage.getItem('signupEmail') || '';
   const [currentEmail, setCurrentEmail] = useState<string>(email);
 
-  // Store email in localStorage and state
   useEffect(() => {
     if (email && email !== currentEmail) {
       localStorage.setItem('signupEmail', email);
@@ -50,21 +42,17 @@ const VerifyEmail = () => {
     handleSubmit,
     setValue,
     watch,
-    formState: { errors }
-  } = useForm<VerifyEmailFormData>({
-    resolver: zodResolver(verifyEmailSchema)
-  });
+  } = useForm<VerifyEmailFormData>();
 
   const codeRegister = register("code");
   const code = watch("code", "").split('').concat(Array(6).fill('')).slice(0, 6);
 
-  // Handle input change
   const handleChange = (index: number, value: string): void => {
-    if (value.length <= 1 && /^\d*$/.test(value)) {
+    if (value.length <= 1) {
       const newCode = [...code];
       newCode[index] = value;
       const joinedCode = newCode.join('');
-      setValue("code", joinedCode, { shouldValidate: true });
+      setValue("code", joinedCode);
       
       if (value && index < 5) {
         inputRefs[index + 1].current?.focus();
@@ -72,29 +60,23 @@ const VerifyEmail = () => {
     }
   };
 
-  // Handle key press for backspace
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === 'Backspace' && !code[index] && index > 0) {
       const newCode = [...code];
       newCode[index - 1] = '';
-      setValue("code", newCode.join(''), { shouldValidate: true });
+      setValue("code", newCode.join(''));
       inputRefs[index - 1].current?.focus();
     }
   };
 
-  // Handle paste event
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>): void => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData('text/plain').slice(0, 6);
-    
-    if (/^\d+$/.test(pastedData)) {
-      setValue("code", pastedData, { shouldValidate: true });
-      const lastIndex = Math.min(pastedData.length, 5);
-      inputRefs[lastIndex].current?.focus();
-    }
+    setValue("code", pastedData);
+    const lastIndex = Math.min(pastedData.length, 5);
+    inputRefs[lastIndex].current?.focus();
   };
 
-  // Timer countdown (still keep for informational purposes)
   useEffect(() => {
     if (timeLeft <= 0) return;
     
@@ -152,8 +134,6 @@ const VerifyEmail = () => {
       return;
     }
     
-    // Removed the timeLeft > 0 check to allow resending at any time
-
     clearError();
     setIsResending(true);
     
@@ -162,7 +142,6 @@ const VerifyEmail = () => {
       const result = await resendSignupOTP(currentEmail);
       console.log('Resend successful:', result);
       
-      // Reset timer after successful resend
       setTimeLeft(178);
     } catch (err) {
       console.error('Resend failed - Full error:', err);
@@ -213,8 +192,6 @@ const VerifyEmail = () => {
                   onBlur={codeRegister.onBlur}
                   type="text"
                   inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={1}
                   className="w-12 h-12 text-center text-2xl"
                   value={digit}
                   onKeyDown={(e) => handleKeyDown(index, e)}
@@ -223,13 +200,7 @@ const VerifyEmail = () => {
                 />
               ))}
             </div>
-            <div className='h-5'>
-              {errors.code && (
-                <p className="mt-2 text-center text-sm text-red-500">
-                  {errors.code.message}
-                </p>
-              )}
-            </div>
+            <div className='h-5'></div>
             <div className="mt-4 text-center">
               <span className="text-sm text-gray-600">
                 Didn't Receive the Code?{' '}
@@ -252,7 +223,7 @@ const VerifyEmail = () => {
             <Button 
               type="submit"
               className="w-full h-14 rounded-full bg-black text-white hover:bg-gray-800 mt-4 cursor-pointer"
-              disabled={isSubmitting || success || code.join('').length !== 6}
+              disabled={isSubmitting || success}
             >
               {isSubmitting ? "Verifying..." : "Continue"}
             </Button>

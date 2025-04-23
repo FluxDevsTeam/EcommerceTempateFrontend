@@ -27,7 +27,6 @@ interface UserSignup {
   verify_password: string;
 }
 
-
 interface SetNewPassword {
   email: string;
   new_password: string;
@@ -40,18 +39,14 @@ interface PasswordChange {
   confirm_password: string;
 }
 
-
 interface RefreshToken {
   refresh_token: string;
 }
-
 
 interface Login {
   email: string;
   password: string;
 }
-
-
 
 // Create typed axios instance
 const api: AxiosInstance = axios.create({
@@ -123,47 +118,74 @@ const authService = {
       throw error;
     }
   },
+  
   // Resend OTP for signup
   resendSignupOTP: async (email: string): Promise<any> => {
-    const response = await api.post('/auth/signup/resend-otp/', { email });
-    return response.data;
+    try {
+      console.log(`API call - Resend OTP for: ${email}`);
+      const response = await api.post('/auth/signup/resend-otp/', { email });
+      console.log('Resend OTP response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Resend OTP error:", error.response?.data);
+      throw error;
+    }
   },
   
   // Verify OTP for signup
   verifySignupOTP: async (email: string, otp: string): Promise<any> => {
-    const response = await api.post('/auth/signup/verify-otp/', { email, otp });
-    return response.data;
+    try {
+      console.log(`API call - Verify OTP for: ${email} with code: ${otp}`);
+      const response = await api.post('/auth/signup/verify-otp/', { email, otp });
+      console.log('Verify OTP response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Verify OTP error:", error.response?.data);
+      throw error;
+    }
   },
   
   // Login
   login: async (credentials: Login): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/login/', credentials);
-    
-    // Store tokens in localStorage or secure storage
-    if (response.data.access) {
-      localStorage.setItem('accessToken', response.data.access);
+    try {
+      console.log(`API call - Login with email: ${credentials.email}`);
+      const response = await api.post<AuthResponse>('/auth/login/', credentials);
+      
+      // Store tokens in localStorage or secure storage
+      if (response.data.access) {
+        localStorage.setItem('accessToken', response.data.access);
+      }
+      if (response.data.refresh) {
+        localStorage.setItem('refreshToken', response.data.refresh);
+      }
+      
+      // If user data is included, store it
+      if (response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+      
+      console.log('Login response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Login error:", error.response?.data);
+      throw error;
     }
-    if (response.data.refresh) {
-      localStorage.setItem('refreshToken', response.data.refresh);
-    }
-    
-    // If user data is included, store it
-    if (response.data.user) {
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-    }
-    
-    return response.data;
   },
   
   // Refresh token
   refreshToken: async (data: RefreshToken): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/refresh/', { refresh_token: data.refresh_token });
-    
-    if (response.data.access) {
-      localStorage.setItem('accessToken', response.data.access);
+    try {
+      const response = await api.post<AuthResponse>('/auth/refresh/', { refresh_token: data.refresh_token });
+      
+      if (response.data.access) {
+        localStorage.setItem('accessToken', response.data.access);
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error("Token refresh error:", error.response?.data);
+      throw error;
     }
-    
-    return response.data;
   },
   
   // Logout
@@ -185,51 +207,101 @@ const authService = {
   
   // Forgot password request
   requestForgotPassword: async (email: string): Promise<any> => {
-    const response = await api.post('/auth/forgot-password/request-forgot-password/', { email });
-    return response.data;
+    try {
+      const frontendUrl = 'http://localhost:5173/change-password';
+      
+      // Pass the frontend URL to the backend so it knows where to send users
+      const response = await api.post('/auth/forgot-password/request-forgot-password/', { 
+        email,
+        reset_url: `${frontendUrl}?email=${encodeURIComponent(email)}`
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error("Forgot password request error:", error.response?.data);
+      throw error;
+    }
   },
   
   // Resend OTP for forgot password
   resendForgotPasswordOTP: async (email: string): Promise<any> => {
-    const response = await api.post('/auth/forgot-password/resend-otp/', { email });
-    return response.data;
+    try {
+      const response = await api.post('/auth/forgot-password/resend-otp/', { email });
+      return response.data;
+    } catch (error) {
+      console.error("Resend forgot password OTP error:", error.response?.data);
+      throw error;
+    }
   },
   
   // Verify OTP for forgot password
   verifyForgotPasswordOTP: async (email: string, otp: string): Promise<any> => {
-    const response = await api.post('/auth/forgot-password/verify-otp/', { email, otp });
-    return response.data;
+    try {
+      const response = await api.post('/auth/forgot-password/verify-otp/', { email, otp });
+      return response.data;
+    } catch (error) {
+      console.error("Verify forgot password OTP error:", error.response?.data);
+      throw error;
+    }
   },
   
   // Set new password after forgot password flow
-  setNewPassword: async (data: SetNewPassword): Promise<any> => {
-    const response = await api.post('/auth/forgot-password/set-new-password/', data);
-    return response.data;
+  setNewPassword: async (data: { email: string; new_password: string; confirm_password: string }) => {
+    console.log("Sending request with payload:", data); // Log the payload
+    
+    try {
+      const response = await api.post('/auth/forgot-password/set-new-password/', data);
+      return response.data;
+    } catch (error) {
+      console.error("Set new password error:", error.response?.data);
+      throw error;
+    }
   },
   
   // Request password change (when logged in)
   requestPasswordChange: async (data: PasswordChange): Promise<any> => {
-    const response = await api.post('/auth/password-change/request-password-change/', data);
-    return response.data;
+    try {
+      const response = await api.post('/auth/password-change/request-password-change/', data);
+      return response.data;
+    } catch (error) {
+      console.error("Request password change error:", error.response?.data);
+      throw error;
+    }
   },
   
   // Resend OTP for password change
   resendPasswordChangeOTP: async (): Promise<any> => {
-    const response = await api.post('/auth/password-change/resend-otp/');
-    return response.data;
+    try {
+      const response = await api.post('/auth/password-change/resend-otp/');
+      return response.data;
+    } catch (error) {
+      console.error("Resend password change OTP error:", error.response?.data);
+      throw error;
+    }
   },
   
   // Verify password change with OTP
   verifyPasswordChange: async (otp: string): Promise<any> => {
-    const response = await api.post('/auth/password-change/verify-password-change/', { otp });
-    return response.data;
+    try {
+      const response = await api.post('/auth/password-change/verify-password-change/', { otp });
+      return response.data;
+    } catch (error) {
+      console.error("Verify password change error:", error.response?.data);
+      throw error;
+    }
   },
-  
+ 
   // Get current user info
   getCurrentUser: (): User | null => {
     const userStr = localStorage.getItem('user');
     if (userStr) {
-      return JSON.parse(userStr) as User;
+      try {
+        return JSON.parse(userStr) as User;
+      } catch (e) {
+        console.error('Error parsing user from localStorage:', e);
+        localStorage.removeItem('user');
+        return null;
+      }
     }
     return null;
   },

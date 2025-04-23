@@ -7,8 +7,12 @@ import search from '/images/Empty-rafiki 1 (1).png';
 const API_URL = "https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/search/";
 
 const fetchProducts = async (searchQuery?: string): Promise<Product[]> => {
-  const url = searchQuery ? `${API_URL}?q=${encodeURIComponent(searchQuery)}` : API_URL;
-  const response = await fetch(url);
+  const url = new URL(API_URL);
+  if (searchQuery) {
+    url.searchParams.set('search', searchQuery);  // Changed from 'q' to 'search'
+  }
+  
+  const response = await fetch(url.toString());
   if (!response.ok) throw new Error("Failed to fetch products");
   const data = await response.json();
   return data.results; 
@@ -135,9 +139,9 @@ const SearchResults = () => {
                     Object.keys(filteredResults.categoryResults).length > 0;
 
   return (
-    <div className="container mx-auto p-4 mb-8">
+    <div className="container mx-auto p-4 my-8">
       {hasResults && (
-        <h1 className="uppercase text-[30px] font-bold mb-3">
+        <h1 className="uppercase text-4xl font-bold mb-3 flex justify-center items-center">
           Search Results for "{query}"
         </h1>
       )}
@@ -151,7 +155,7 @@ const SearchResults = () => {
 
       {filteredResults.productResults.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Products</h2>
+          <h2 className="text-3xl font-medium mb-4 px-8">Products</h2>
           <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredResults.productResults.map((item) => (
               <ProductCard key={item.id} item={item} />
@@ -160,18 +164,7 @@ const SearchResults = () => {
         </div>
       )}
 
-      {Object.entries(filteredResults.categoryResults).map(([category, products]) => (
-        <div key={category} className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">
-            {category}
-          </h2>
-          <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((item) => (
-              <ProductCard key={item.id} item={item} />
-            ))}
-          </div>
-        </div>
-      ))}
+     
     </div>
   );
 };

@@ -17,7 +17,6 @@ import GeneralSettings from "./pages/cart/Settings";
 import TermsOfService from "./pages/cart/TermsOfService";
 import AddNewProduct from "./admin/pages/products/product components/AddNewProduct";
 import EditProduct from "./admin/pages/products/product components/EditProduct";
-
 import Orders from "./pages/orders/Order";
 import ProductDetail from "./components/products/ProductDetail";
 import Categories from "./pages/categories/Categories";
@@ -28,6 +27,9 @@ import Products from "./admin/pages/products/Products";
 import Settings from "./admin/pages/settings/Settings";
 import AdminOrders from "./admin/pages/orders/AdminOrders";
 import SearchResults from "./components/products/SearchResults";
+import ShoeCategory from "./pages/categories/ShoeCategory";
+import ClothesCategory from "./pages/categories/ClothesCategory";
+import AccessoriesCategory from "./pages/categories/AccessoriesCategory";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +56,9 @@ const AppContent: React.FC = () => {
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/categories" element={<Categories />} />
+        <Route path="/shoe-category" element={<ShoeCategory />} />
+        <Route path="/clothes-category" element={<ClothesCategory />} />
+        <Route path="/accessories-category" element={<AccessoriesCategory />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/confirm-order" element={<ConfirmOrder />} />
         <Route path="/faqs" element={<FAQs />} />
