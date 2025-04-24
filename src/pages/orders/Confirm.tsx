@@ -1,63 +1,88 @@
-import circle from './img/info-circle.png'
-import arrow from './img/arrow-up.png'
-import visa from './img/visa-logo.png'
-import shirt from './img/shirt.png'
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { fetchData } from "./api"; // assumes it fetches all orders
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar } from "@fortawesome/free-solid-svg-icons";
-
+import type { OrderData } from './types';
+import circle from './img/info-circle.png';
+import arrow from './img/arrow-up.png';
+import visa from './img/visa-logo.png';
+import shirt from './img/shirt.png';
+import formatEstimatedDelivery from "./Date";
 
 const Confirm = () => {
+  const { id } = useParams<{ id: string }>();
+  const [order, setOrder] = useState<OrderData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getOrder = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchData(); // returns array of orders
+        const foundOrder = data.find((order: OrderData) => order.id === id);
+        if (foundOrder) {
+          setOrder(foundOrder);
+        } else {
+          setError("Order not found.");
+        }
+      } catch (err) {
+        console.log(err)
+        setError("Failed to load order.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getOrder();
+  }, [id]);
+
+  if (loading) return <div className="p-10 text-center">Loading...</div>;
+  if (error) return <div className="p-10 text-red-500 text-center">{error}</div>;
+  if (!order) return null;
+
   return (
     <div className="p-4 sm:p-14 pb-10 sm:pb-28">
       <h2 className="font-normal text-[32px] sm:text-[40px] tracking mb-8">Track Orders</h2>
-      <h4 className="text-[#344054] font-bold text-[18px] sm:text-[30px] mb-6">Order ID: 3354654654526</h4>
+      <h4 className="text-[#344054] font-bold text-[18px] sm:text-[30px] mb-6">Order ID: {order.id}</h4>
       <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center mb-6">
-          <p className="flex gap-2 items-center">
-            <span className="text-[#667085] text-sm leading-5">Order date:</span>
-            <span className="text-[#1D2939]">Feb 16, 2022</span>
-          </p>
-          <p className="flex gap-2 items-center">
-            <FontAwesomeIcon icon={faCalendar} className="text-black w-5" />
-            <span>Estimated delivery: May 16, 2022</span>
-          </p>
-        </div>
+        <p className="flex gap-2 items-center">
+          <span className="text-[#667085] text-sm leading-5">Order date:</span>
+          <span className="text-[#1D2939]">{order.order_date}</span>
+        </p>
+        <p className="flex gap-2 items-center">
+          <FontAwesomeIcon icon={faCalendar} className="text-black w-5" />
+          <span>Estimated delivery: {formatEstimatedDelivery(order.estimated_delivery)}</span>
+        </p>
+      </div>
+      <div className="mb-4 flex flex-col">
+        <span className="text-[20px] inline-block leading-[30px] mb-2">Status</span>
+        <span className="bg-[#72D3E940] inline-block rounded-2xl pl-2 py-1 w-[150px]">{order.status}</span>
+      </div>
+
       <ul className="w-full sm:w-[80%] flex flex-col gap-6 sm:gap-3">
-        <li className="flex flex-wrap justify-between items-center">
-          <div className="basis-[50%] sm:basis-[20%] bg-[#F0EEED] min-w-[123px] max-w-[124px] rounded-2xl overflow-hidden">
-            <img src={shirt} className="w-full" />
-          </div>
-          <div className='basis-[50%] sm:basis-[30%] mb-4'>
-            <p className="text-2xl leading-8 mb-3">MackBook Pro 14’’</p>
-            <p className="leading-6 text-[#667085]">Space Gray  |  32GB  |  1 TB</p>
-          </div>
-          <div>
-            <p className="font-semibold text-lg leading-[30px] text-right">$2599.00</p>
-            <p className="text-[#667085] text-right">Oty: 1</p>
-          </div>
-          <div className='mb-4'>
-            <p className="text-[20px] leading-[30px] text-center mb-2">Status</p>
-            <p className="bg-[#72D3E940] rounded-2xl px-8 py-1">In warehouse</p>
-          </div>
-          <div>
-            <p className="text-[20px] leading-[30px] mb-1.5">Expected Delivery</p>
-            <p className="text-[#667085] font-medium text-[18px] leading-[28px]">12 April - 14 April 2025</p>
-          </div>
-        </li>
-
-        <li className="flex justify-between items-center">
-          <div className="basis-[50%] sm:basis-[20%] bg-[#F0EEED] max-w-[124px] rounded-2xl overflow-hidden mr-16">
-            <img src={shirt} className="w-full" />
-          </div>
-          <div className='basis-[50%] sm:basis-[30%]'>
-            <p className="text-2xl leading-8 mb-3">MackBook Pro 14’’</p>
-            <p className="leading-6 text-[#667085]">Space Gray  |  32GB  |  1 TB</p>
-          </div>
-
-          <div className="ml-auto">
-            <p className="font-semibold text-lg leading-[30px] text-right">$2599.00</p>
-            <p className="text-[#667085] text-right">Oty: 1</p>
-          </div>
-        </li>
+        {order.order_items.map((item) => (
+          <li key={item.id} className="flex flex-wrap justify-between items-center">
+            <div className="basis-[50%] sm:basis-[20%] bg-[#F0EEED] min-w-[123px] max-w-[124px] rounded-2xl overflow-hidden">
+              <img src={item.image1 || shirt} className="w-full" alt={item.name} />
+            </div>
+            <div className="basis-[50%] sm:basis-[30%] mb-4">
+              <p className="text-2xl leading-8 mb-3">{item.name}</p>
+              <p className="leading-6 text-[#667085] capitalize">{item.colour} | {item.size}</p>
+            </div>
+            <div>
+              <p className="font-semibold text-lg leading-[30px] text-right">₦{item.price}</p>
+              <p className="text-[#667085] text-right">Qty: {item.quantity}</p>
+            </div>
+            <div>
+              <p className="text-[20px] leading-[30px] mb-1.5">Expected Delivery</p>
+              <p className="text-[#667085] font-medium text-[18px] leading-[28px]">
+                {formatEstimatedDelivery(order.estimated_delivery)}
+              </p>
+            </div>
+          </li>
+        ))}
         <hr className="mt-5 border-t border-t-gray-300" />
       </ul>
 
@@ -119,7 +144,7 @@ const Confirm = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Confirm
+export default Confirm;
