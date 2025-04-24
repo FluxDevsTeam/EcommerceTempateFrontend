@@ -170,7 +170,7 @@ const ProductDetail = () => {
         </div>
 
         {/* Main Product Image (Middle Column) */}
-        <div className="bg-gray-200 rounded-lg p-4 sm:p-6 flex-1 max-w-md lg:order-2">
+        <div className="bg-[#F0EEED] rounded-lg p-16  max-w-md lg:order-2">
           {mainImage && (
             <img
               src={mainImage}
@@ -186,18 +186,18 @@ const ProductDetail = () => {
 
         {/* Product Info (Right Column) */}
         <div className="flex-1 max-w-lg order-2 lg:order-3">
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-2 sm:space-y-6">
             <h1 className="text-2xl sm:text-3xl md:text-4xl uppercase font-medium leading-tight">
               {product.name}
             </h1>
             
-            <span className="inline-block bg-blue-100 text-sm md:text-base rounded-2xl py-1 px-3">
-              {availableQuantity} left in stock for {selectedSize.toUpperCase()}
+            <span className="inline-block bg-blue-100 text-sm md:text-base rounded-2xl p-2">
+              {availableQuantity} left in stock 
             </span>
             
             <div className="flex items-center gap-3">
-              <span className="text-xl md:text-2xl font-bold">${product.discounted_price}</span>
-              <span className="text-gray-500 line-through text-lg">${product.price}</span>
+              <span className="text-xl md:text-3xl font-normal">${product.discounted_price}</span>
+              <span className="text-gray-500 line-through text-3xl">${product.price}</span>
               {discountPercentage > 0 && (
                 <span className="bg-pink-100 text-pink-700 px-2 py-1 rounded-full text-sm">
                   {discountPercentage}% off
@@ -205,7 +205,7 @@ const ProductDetail = () => {
               )}
             </div>
             
-            <p className="text-gray-700 text-sm sm:text-base leading-relaxed">
+            <p className="text-gray-700 text-base leading-relaxed">
               {product.description}
             </p>
             

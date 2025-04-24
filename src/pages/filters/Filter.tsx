@@ -8,6 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { IoClose } from "react-icons/io5";
+import { useNavigate } from 'react-router-dom';
 
 // Define TypeScript interfaces for our data
 interface Category {
@@ -66,7 +67,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({ isOpen, onClose, on
   const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  
+  const navigate = useNavigate()
   // Fetch data on component mount
   useEffect(() => {
     const fetchData = async () => {
@@ -137,13 +138,40 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({ isOpen, onClose, on
 
   // Apply filters
   const handleApplyFilter = () => {
-    onApplyFilters({
+    const filters = {
       selectedSubCategories,
       priceRange,
       selectedSizes
-    });
+    };
+    
+    // Call the onApplyFilters function if provided
+    if (onApplyFilters) {
+      onApplyFilters(filters);
+    }
+    
+    // Build query parameters for URL
+    const searchParams = new URLSearchParams();
+    
+    // Add subcategories to query
+    if (selectedSubCategories.length > 0) {
+      searchParams.append('subcategories', selectedSubCategories.join(','));
+    }
+    
+    // Add price range to query
+    searchParams.append('minPrice', priceRange[0].toString());
+    searchParams.append('maxPrice', priceRange[1].toString());
+    
+    // Add sizes to query
+    if (selectedSizes.length > 0) {
+      searchParams.append('sizes', selectedSizes.join(','));
+    }
+    
+    // Navigate to products page with filter parameters
+    navigate('/filtered-products');
+    
     onClose();
   };
+  
 
   // Reset filters
   const handleResetFilters = () => {

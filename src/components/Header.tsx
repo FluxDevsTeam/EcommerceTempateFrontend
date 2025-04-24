@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { BsCart } from "react-icons/bs";
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 import { IoPersonCircleOutline } from "react-icons/io5";
-import FiltersComponent from "@/pages/categories/Filter";
+import FiltersComponent from "@/pages/filters/Filter";
 import  SortDropdown  from "./SortDropdown";
 import { Link } from "react-router-dom";
 import { RiEqualizerLine } from "react-icons/ri";
