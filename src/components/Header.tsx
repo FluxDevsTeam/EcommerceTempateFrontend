@@ -3,7 +3,7 @@ import { BsCart } from "react-icons/bs";
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 import { IoPersonCircleOutline } from "react-icons/io5";
 import FiltersComponent from "@/pages/categories/Filter";
-import { SortDropdown } from "./SortDropdown";
+import  SortDropdown  from "./SortDropdown";
 import { Link } from "react-router-dom";
 import { RiEqualizerLine } from "react-icons/ri";
 import SearchInput from "./SearchInput";
@@ -61,7 +61,7 @@ const Header = () => {
     <>
       <div 
         ref={navbarRef}
-        className={`fixed top-0 left-0 w-full bg-white z-50 md:px-24 py-4
+        className={`fixed top-0 left-0 w-full  bg-white z-50 md:px-24 py-4
           ${scrolled ? 'shadow-md' : ''}
           transition-all duration-300 ease-in-out
           ${showNavbar ? 'translate-y-0' : '-translate-y-full'}`}
