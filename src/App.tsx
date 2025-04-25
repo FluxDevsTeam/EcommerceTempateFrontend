@@ -15,7 +15,7 @@ import Footer from './components/Footer';
 import Cart from "./pages/cart/Cart";
 import ConfirmOrder from "./pages/cart/ConfirmOrder";
 import FAQs from "./pages/cart/FAQs";
-import GeneralSettings from "./pages/cart/Settings";
+import GeneralSettings from "./pages/cart/Settings/Settings";
 import TermsOfService from "./pages/cart/TermsOfService";
 
 import AddNewProduct from "./admin/pages/products/product components/AddNewProduct";
