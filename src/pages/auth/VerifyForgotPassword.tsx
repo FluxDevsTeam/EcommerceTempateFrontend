@@ -8,34 +8,30 @@ import { useAuth } from './AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 
-type VerifyEmailFormData = {
-  code: string;
+type VerifyOtpFormData = {
+  otp: string;
 };
 
-const VerifyEmail = () => {
-  const [timeLeft, setTimeLeft] = useState<number>(178);
+const VerifyForgotPassword = () => {
+  const [timeLeft, setTimeLeft] = useState<number>(178); // Start with initial countdown
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isResending, setIsResending] = useState<boolean>(false);
   const [success, setSuccess] = useState<boolean>(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { 
-    verifySignupOTP,
-    resendSignupOTP,
+    verifyForgotPasswordOTP,
+    resendForgotPasswordOTP,
     error, 
     clearError 
   } = useAuth();
   
-  const email = location.state?.email || localStorage.getItem('signupEmail') || '';
-  const [currentEmail, setCurrentEmail] = useState<string>(email);
-
-  useEffect(() => {
-    if (email && email !== currentEmail) {
-      localStorage.setItem('signupEmail', email);
-      setCurrentEmail(email);
-    }
-  }, [email, currentEmail]);
-
+  // Get email from location state or localStorage
+  const stateEmail = location.state?.email;
+  const storedEmail = localStorage.getItem('resetEmail');
+  const [email, setEmail] = useState<string>(stateEmail || storedEmail || '');
+  const [otpSendFailed] = useState<boolean>(location.state?.otpSendFailed || false);
+  
   const inputRefs = Array(6).fill(null).map(() => useRef<HTMLInputElement>(null));
 
   const {
@@ -43,41 +39,35 @@ const VerifyEmail = () => {
     handleSubmit,
     setValue,
     watch,
-  } = useForm<VerifyEmailFormData>();
+    formState: { errors }
+  } = useForm<VerifyOtpFormData>();
 
-  const codeRegister = register("code");
-  const code = watch("code", "").split('').concat(Array(6).fill('')).slice(0, 6);
+  const otpRegister = register("otp", { 
+    required: "Verification code is required",
+    minLength: { value: 6, message: "Please enter the complete code" }
+  });
+  const otp = watch("otp", "").split('').concat(Array(6).fill('')).slice(0, 6);
 
-  const handleChange = (index: number, value: string): void => {
-    if (value.length <= 1) {
-      const newCode = [...code];
-      newCode[index] = value;
-      const joinedCode = newCode.join('');
-      setValue("code", joinedCode);
-      
-      if (value && index < 5) {
-        inputRefs[index + 1].current?.focus();
-      }
+  // Store email in localStorage when it changes
+  useEffect(() => {
+    if (email) {
+      localStorage.setItem('resetEmail', email);
     }
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>): void => {
-    if (e.key === 'Backspace' && !code[index] && index > 0) {
-      const newCode = [...code];
-      newCode[index - 1] = '';
-      setValue("code", newCode.join(''));
-      inputRefs[index - 1].current?.focus();
+    
+    // If OTP send failed on arrival, show message but don't auto-resend
+    if (otpSendFailed) {
+      toast.error('Failed to send verification code. Please request a new one.');
     }
-  };
+  }, [email, otpSendFailed]);
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>): void => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData('text/plain').slice(0, 6);
-    setValue("code", pastedData);
-    const lastIndex = Math.min(pastedData.length, 5);
-    inputRefs[lastIndex].current?.focus();
-  };
+  // Redirect if no email is provided
+  useEffect(() => {
+    if (!email) {
+      navigate('/forgot-password');
+    }
+  }, [email, navigate]);
 
+  // Countdown timer effect
   useEffect(() => {
     if (timeLeft <= 0) return;
     
@@ -94,11 +84,39 @@ const VerifyEmail = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const onSubmit = async (data: VerifyEmailFormData) => {
-    if (!currentEmail) {
-      console.error('Email is missing. Current email state:', currentEmail);
-      console.error('Location state:', location.state);
-      console.error('LocalStorage:', localStorage.getItem('signupEmail'));
+  const handleChange = (index: number, value: string): void => {
+    if (value.length <= 1) {
+      const newCode = [...otp];
+      newCode[index] = value;
+      const joinedCode = newCode.join('');
+      setValue("otp", joinedCode);
+      
+      if (value && index < 5) {
+        inputRefs[index + 1].current?.focus();
+      }
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      const newCode = [...otp];
+      newCode[index - 1] = '';
+      setValue("otp", newCode.join(''));
+      inputRefs[index - 1].current?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>): void => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text/plain').slice(0, 6);
+    setValue("otp", pastedData);
+    const lastIndex = Math.min(pastedData.length, 5);
+    inputRefs[lastIndex].current?.focus();
+  };
+
+  const onSubmit = async (data: VerifyOtpFormData) => {
+    if (!email) {
+      toast.error('Email is missing. Please try again.');
       return;
     }
 
@@ -106,47 +124,49 @@ const VerifyEmail = () => {
     clearError();
 
     try {
-      console.log('Attempting verification with:', {
-        email: currentEmail,
-        code: data.code
-      });
-      
-      const result = await verifySignupOTP(currentEmail, data.code);
-      console.log('Verification successful:', result);
+      await verifyForgotPasswordOTP(email, data.otp);
       
       setSuccess(true);
-      localStorage.removeItem('signupEmail');
+      toast.success('Email verification successful!');
       
+      // Remove email from localStorage
+      localStorage.removeItem('resetEmail');
+      
+      // Redirect to login page after a brief delay
       setTimeout(() => {
-        navigate('/login', { state: { verified: true } });
-      }, 1000);
+        navigate('/login', { 
+          state: { 
+            verified: true,
+            message: 'Password changed and verified successfully. Please log in with your new password.'
+          } 
+        });
+      }, 2000);
     } catch (err: any) {
-          const message = err.response?.data?.message || err.message;
-          toast.error(message);
-        } finally {
+      const message = err.response?.data?.message || err.message || 'Invalid verification code. Please try again.';
+      toast.error(message);
+    } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleResendCode = async () => {
-    if (!currentEmail) {
-      console.error('Cannot resend - email is missing:', currentEmail);
+    if (!email) {
+      console.error('Cannot resend - email is missing:', email);
       return;
-    }
-    
+    } 
     clearError();
-    setIsResending(true);
-    
+    setIsResending(true); 
+
     try {
-      console.log('Attempting to resend OTP to:', currentEmail);
-      const result = await resendSignupOTP(currentEmail);
-      console.log('Resend successful:', result);
-      
-      setTimeLeft(178);
-    }  catch (err: any) {
-          const message = err.response?.data?.message || err.message || 'Failed to send verification code.';
-          toast.error(message);
-        } finally {
+      console.log('Attempting to resend OTP to:', email);
+      await resendForgotPasswordOTP(email);
+      toast.success('Verification code sent successfully!');
+      setTimeLeft(178); // Reset countdown timer after successful resend
+    }
+    catch (err: any) {
+      const message = err.response?.data?.message || err.message || 'Failed to send verification code.';
+      toast.error(message);
+    } finally {
       setIsResending(false);
     }
   };
@@ -157,6 +177,11 @@ const VerifyEmail = () => {
         <CardHeader className="text-center">
           <div className="mb-6 text-2xl font-bold">SHOP.CO</div>
           <CardTitle className="text-xl font-medium">Verify Your Email</CardTitle>
+          {email && (
+            <p className="text-sm text-gray-500 mt-2">
+              Complete password reset for: {email}
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           {success && (
@@ -175,20 +200,19 @@ const VerifyEmail = () => {
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="text-center mb-6">
-              Enter the Code sent to{" "}
-              <span className="font-medium">{currentEmail}</span>
+              <span>Click "Resend" to receive a verification code at <span className="font-medium">{email}</span></span>
             </div>
             <div className="flex justify-center gap-2">
-              {code.map((digit, index) => (
+              {otp.map((digit, index) => (
                 <Input
                   key={index}
                   ref={inputRefs[index]}
-                  name={codeRegister.name}
+                  name={`${otpRegister.name}.${index}`}
                   onChange={(e) => {
-                    codeRegister.onChange(e);
+                    otpRegister.onChange(e);
                     handleChange(index, e.target.value);
                   }}
-                  onBlur={codeRegister.onBlur}
+                  onBlur={otpRegister.onBlur}
                   type="text"
                   inputMode="numeric"
                   className="w-12 h-12 text-center text-2xl"
@@ -199,10 +223,14 @@ const VerifyEmail = () => {
                 />
               ))}
             </div>
-            <div className='h-5'></div>
+            <div className='h-5 text-center'>
+              {errors.otp && (
+                <p className="text-sm text-red-500">{errors.otp.message}</p>
+              )}
+            </div>
             <div className="mt-4 text-center">
               <span className="text-sm text-gray-600">
-                Didn't Receive the Code?{' '}
+                Get Verification Code:{' '}
                 <Button 
                   variant="link" 
                   className="p-0 h-auto text-sm font-normal text-blue-600"
@@ -224,7 +252,7 @@ const VerifyEmail = () => {
               className="w-full h-14 rounded-full bg-black text-white hover:bg-gray-800 mt-4 cursor-pointer"
               disabled={isSubmitting || success}
             >
-              {isSubmitting ? "Verifying..." : "Continue"}
+              {isSubmitting ? "Verifying..." : "Verify & Login"}
             </Button>
           </form>
         </CardContent>
@@ -233,4 +261,4 @@ const VerifyEmail = () => {
   );
 };
 
-export default VerifyEmail;
+export default VerifyForgotPassword;

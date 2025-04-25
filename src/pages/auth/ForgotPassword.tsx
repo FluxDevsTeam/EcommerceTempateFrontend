@@ -60,9 +60,8 @@ const ForgotPassword = () => {
   
   // OTP form setup
   const {
-    register: registerOtp,
+   
     handleSubmit: handleSubmitOtp,
-    formState: { errors: otpErrors },
   } = useForm<OtpFormData>({
     resolver: zodResolver(otpSchema),
   });
@@ -136,22 +135,7 @@ const ForgotPassword = () => {
     }
   };
   
-  // Resend OTP handler
-  const handleResendOtp = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      await authService.resendForgotPasswordOTP(email);
-      toast.success('New OTP sent to your email');
-    } catch (err: any) {
-      console.error('Resend OTP error:', err);
-      setError(err.response?.data?.message || 'Failed to resend OTP. Please try again.');
-      toast.error('Failed to resend OTP');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  
   
   return (
     <div className="flex items-center justify-center">
@@ -191,7 +175,7 @@ const ForgotPassword = () => {
               className="w-full bg-black text-white hover:bg-gray-800"
               disabled={isLoading}
             >
-              {isLoading ? 'Sending...' : 'Send OTP'}
+              {isLoading ? 'Sending...' : 'Reset Link'}
             </Button>
             
             <div className="text-center mt-4">
@@ -207,49 +191,20 @@ const ForgotPassword = () => {
           <form onSubmit={handleSubmitOtp(onSubmitOtp)} className="space-y-4">
             <Alert className="bg-blue-50 text-blue-700 border-blue-200 mb-4">
               <AlertDescription>
-                We've sent a verification code to {email}. Please check your inbox and enter the code below.
+                We've sent a Password reset link to {email}. Please check your inbox .
               </AlertDescription>
             </Alert>
             
-            <div className="space-y-2">
-              <Label htmlFor="otp">Verification Code</Label>
-              <Input 
-                id="otp" 
-                type="text" 
-                placeholder="Enter verification code" 
-                className="p-5 text-center tracking-widest text-lg"
-                {...registerOtp("otp")} 
-              />
-              <div className="h-5">
-                {otpErrors.otp && (
-                  <p className="text-sm text-red-500">{otpErrors.otp.message}</p>
-                )}
-              </div>
-            </div>
-            
+        
             {error && (
               <Alert className="bg-red-50 text-red-500 border-red-200">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
             
-            <Button 
-              type="submit" 
-              className="w-full bg-black text-white hover:bg-gray-800"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Verifying...' : 'Verify Code'}
-            </Button>
-            
+        
             <div className="text-center mt-4">
-              <button 
-                type="button" 
-                onClick={handleResendOtp}
-                className="text-sm text-blue-600 hover:underline mr-4"
-                disabled={isLoading}
-              >
-                Resend Code
-              </button>
+           
               <button 
                 type="button" 
                 onClick={() => setCurrentStep(ForgotPasswordStep.EMAIL)}

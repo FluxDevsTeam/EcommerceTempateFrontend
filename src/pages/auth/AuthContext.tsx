@@ -168,21 +168,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const requestForgotPassword = async (email: string): Promise<any> => {
-    setLoading(true);
-    clearError();
-    
-    try {
-      const response = await authService.requestForgotPassword(email);
-      setTempEmail(email);
-      setLoading(false);
-      return response;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Failed to process password reset request. Please try again.';
-      setError(errorMessage);
-      setLoading(false);
-      throw err;
-    }
-  };
+  setLoading(true);
+  clearError();
+  
+  try {
+    const response = await authService.requestForgotPassword(email);
+    // Store email for verification component
+    localStorage.setItem('resetEmail', email);
+    setLoading(false);
+    return response;
+  } catch (err: any) {
+    const errorMessage = err.response?.data?.message || 'Failed to process password reset request. Please try again.';
+    setError(errorMessage);
+    setLoading(false);
+    throw err;
+  }
+};
 
   const resendForgotPasswordOTP = async (email: string): Promise<any> => {
     setLoading(true);

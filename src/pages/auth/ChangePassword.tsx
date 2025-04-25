@@ -33,13 +33,12 @@ const ChangePassword = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   
   const navigate = useNavigate();
   const location = useLocation();
-  const { setNewPassword } = useAuth();
+  const { setNewPassword} = useAuth();
   
   // Extract email from URL parameters
   useEffect(() => {
@@ -69,6 +68,7 @@ const ChangePassword = () => {
   } = useForm<ChangePasswordFormData>({
     resolver: zodResolver(changePasswordSchema)
   });
+  
   const onSubmit = async (data: ChangePasswordFormData) => {
     if (!email) {
       setErrorMessage('Email is missing. Please request a new password reset link.');
@@ -79,35 +79,32 @@ const ChangePassword = () => {
     setErrorMessage(null); // Clear previous errors
   
     try {
-      // Use the updated function signature
+      // Set the new password
       await setNewPassword({
         email: email,
         new_password: data.newPassword,
         confirm_password: data.confirmPassword
       });
       
-      setSuccess(true);
       toast.success('Password changed successfully!');
-      
-      // Clear stored email after successful password change
-      localStorage.removeItem('resetEmail');
-      
-      // Redirect to login page after a brief delay
-      setTimeout(() => {
-        navigate('/login', { 
-          state: { message: 'Password changed successfully. Please log in with your new password.' } 
-        });
-      }, 2000);
+      navigate('/verify-reset-otp');
     } catch (err: any) {
       const message = err.response?.data?.message || err.message || 'Failed to reset password. Please try again.';
       setErrorMessage(message);
       toast.error(message);
+      
+      // Even if reset fails, redirect to verification page where they can request a new code
+      navigate('/verify-reset-otp', { 
+        state: { 
+          email: email,
+          fromPasswordReset: true,
+          otpSendFailed: true
+        }
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
- 
-
   return (
     <div className="flex justify-center items-center">
       <div className="w-full max-w-md">
@@ -121,21 +118,13 @@ const ChangePassword = () => {
           )}
         </CardHeader>
         <CardContent>
-          {success && (
-            <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
-              <AlertDescription>
-                Password changed successfully! Redirecting to login...
-              </AlertDescription>
-            </Alert>
-          )}
-
           {errorMessage && (
             <Alert className="mb-4 bg-red-50 text-red-800 border-red-200">
               <AlertDescription>{errorMessage}</AlertDescription>
             </Alert>
           )}
 
-          {email && !success ? (
+          {email ? (
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="space-y-4">
                 <div className="space-y-2">
@@ -146,7 +135,7 @@ const ChangePassword = () => {
                       type={showNewPassword ? "text" : "password"}
                       className="h-14 pr-10"
                       {...register("newPassword")}
-                      disabled={isSubmitting || success}
+                      disabled={isSubmitting}
                     />
                     <Button
                       type="button"
@@ -154,7 +143,7 @@ const ChangePassword = () => {
                       size="sm"
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      disabled={isSubmitting || success}
+                      disabled={isSubmitting}
                     >
                       {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </Button>
@@ -174,7 +163,7 @@ const ChangePassword = () => {
                       type={showConfirmPassword ? "text" : "password"}
                       className="h-14 pr-10"
                       {...register("confirmPassword")}
-                      disabled={isSubmitting || success}
+                      disabled={isSubmitting}
                     />
                     <Button
                       type="button"
@@ -182,7 +171,7 @@ const ChangePassword = () => {
                       size="sm"
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      disabled={isSubmitting || success}
+                      disabled={isSubmitting}
                     >
                       {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </Button>
@@ -196,13 +185,13 @@ const ChangePassword = () => {
                 <Button 
                   type="submit" 
                   className="w-full h-14 rounded-full bg-black text-white hover:bg-gray-800 mt-4 cursor-pointer"
-                  disabled={isSubmitting || success}
+                  disabled={isSubmitting}
                 >
                   {isSubmitting ? "Processing..." : "Reset Password"}
                 </Button>
               </div>
             </form>
-          ) : !success && errorMessage ? (
+          ) : errorMessage ? (
             <div className="text-center p-4">
               <Button 
                 className="mt-4 text-blue-600 hover:underline"
@@ -213,7 +202,6 @@ const ChangePassword = () => {
               </Button>
             </div>
           ) : null}
-         
         </CardContent>
       </div>
     </div>

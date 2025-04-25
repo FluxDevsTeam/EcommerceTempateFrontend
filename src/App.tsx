@@ -7,6 +7,7 @@ import Homepage from "./pages/homepage/Homepage";
 import Login from "./pages/auth/Login";
 import SignUp from "./pages/auth/Signup";
 import VerifyEmail from "./pages/auth/VerifyEmail";
+import VerifyForgotPassword from "./pages/auth/VerifyForgotPassword";
 import ChangePassword from "./pages/auth/ChangePassword";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import { Navigate } from "react-router-dom";
@@ -56,6 +57,7 @@ const AppContent: React.FC = () => {
         <Route path="/search" element={<SearchResults />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<Orders />} />
+        <Route path="//verify-reset-otp" element={<VerifyForgotPassword/>} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/shoe-category" element={<ShoeCategory />} />
         <Route path="/clothes-category" element={<ClothesCategory />} />
