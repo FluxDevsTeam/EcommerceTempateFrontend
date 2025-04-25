@@ -235,8 +235,8 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({ isOpen, onClose, on
                     className="mt-6 bg-black cursor-pointer"
                   />
                   <div className="flex justify-between mt-2">
-                    <span className="text-gray-600">${priceRange[0]}</span>
-                    <span className="text-gray-600">${priceRange[1]}</span>
+                    <span className="text-gray-600">NGN{priceRange[0]}</span>
+                    <span className="text-gray-600">NGN{priceRange[1]}</span>
                   </div>
                 </div>
               </AccordionContent>

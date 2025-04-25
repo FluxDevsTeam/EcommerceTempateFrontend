@@ -196,8 +196,8 @@ const ProductDetail = () => {
             </span>
             
             <div className="flex items-center gap-3">
-              <span className="text-xl md:text-3xl font-normal">${product.discounted_price}</span>
-              <span className="text-gray-500 line-through text-3xl">${product.price}</span>
+              <span className="text-xl md:text-3xl font-normal">NGN {product.discounted_price}</span>
+              <span className="text-gray-500 line-through text-3xl">NGN {product.price}</span>
               {discountPercentage > 0 && (
                 <span className="bg-pink-100 text-pink-700 px-2 py-1 rounded-full text-sm">
                   {discountPercentage}% off

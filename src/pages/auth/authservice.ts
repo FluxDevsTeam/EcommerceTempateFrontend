@@ -1,5 +1,5 @@
 // src/services/authService.ts
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 
 const API_URL = 'https://ecommercetemplate.pythonanywhere.com'; // Replace with your actual API base URL
 
@@ -27,12 +27,6 @@ interface UserSignup {
   verify_password: string;
 }
 
-interface SetNewPassword {
-  email: string;
-  new_password: string;
-  confirm_password: string;
-}
-
 interface PasswordChange {
   old_password: string;
   new_password: string;
@@ -40,7 +34,7 @@ interface PasswordChange {
 }
 
 interface RefreshToken {
-  refresh_token: string;
+  refresh: string; // Changed from refresh_token to match API usage
 }
 
 interface Login {
@@ -59,8 +53,8 @@ const api: AxiosInstance = axios.create({
 // Add interceptor for handling token refresh
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
-  async (error) => {
-    const originalRequest = error.config;
+  async (error: AxiosError) => {
+    const originalRequest = error.config as any;
     
     // If the error is 401 and we haven't tried refreshing the token yet
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -73,7 +67,7 @@ api.interceptors.response.use(
           throw new Error('No refresh token available');
         }
         
-        const response = await authService.refreshToken({ refresh_token: refreshToken });
+        const response = await authService.refreshToken({ refresh: refreshToken });
         
         // If refresh successful, update tokens
         if (response.access) {
@@ -114,7 +108,8 @@ const authService = {
       const response = await api.post('/auth/signup/', userData);
       return response.data;
     } catch (error) {
-      console.error("Signup error details:", error.response?.data);
+      const axiosError = error as AxiosError;
+      console.error("Signup error details:", axiosError.response?.data);
       throw error;
     }
   },
@@ -127,7 +122,8 @@ const authService = {
       console.log('Resend OTP response:', response.data);
       return response.data;
     } catch (error) {
-      console.error("Resend OTP error:", error.response?.data);
+      const axiosError = error as AxiosError;
+      console.error("Resend OTP error:", axiosError.response?.data);
       throw error;
     }
   },
@@ -140,7 +136,8 @@ const authService = {
       console.log('Verify OTP response:', response.data);
       return response.data;
     } catch (error) {
-      console.error("Verify OTP error:", error.response?.data);
+      const axiosError = error as AxiosError;
+      console.error("Verify OTP error:", axiosError.response?.data);
       throw error;
     }
   },
@@ -167,7 +164,8 @@ const authService = {
       console.log('Login response:', response.data);
       return response.data;
     } catch (error) {
-      console.error("Login error:", error.response?.data);
+      const axiosError = error as AxiosError;
+      console.error("Login error:", axiosError.response?.data);
       throw error;
     }
   },
@@ -175,7 +173,7 @@ const authService = {
   // Refresh token
   refreshToken: async (data: RefreshToken): Promise<AuthResponse> => {
     try {
-      const response = await api.post<AuthResponse>('/auth/refresh/', { refresh_token: data.refresh_token });
+      const response = await api.post<AuthResponse>('/auth/refresh/', { refresh_token: data.refresh });
       
       if (response.data.access) {
         localStorage.setItem('accessToken', response.data.access);
@@ -183,7 +181,8 @@ const authService = {
       
       return response.data;
     } catch (error) {
-      console.error("Token refresh error:", error.response?.data);
+      const axiosError = error as AxiosError;
+      console.error("Token refresh error:", axiosError.response?.data);
       throw error;
     }
   },
@@ -218,7 +217,8 @@ const authService = {
       
       return response.data;
     } catch (error) {
-      console.error("Forgot password request error:", error.response?.data);
+      const axiosError = error as AxiosError;
+      console.error("Forgot password request error:", axiosError.response?.data);
       throw error;
     }
   },
@@ -229,7 +229,8 @@ const authService = {
       const response = await api.post('/auth/forgot-password/resend-otp/', { email });
       return response.data;
     } catch (error) {
-      console.error("Resend forgot password OTP error:", error.response?.data);
+      const axiosError = error as AxiosError;
+      console.error("Resend forgot password OTP error:", axiosError.response?.data);
       throw error;
     }
   },
@@ -240,20 +241,22 @@ const authService = {
       const response = await api.post('/auth/forgot-password/verify-otp/', { email, otp });
       return response.data;
     } catch (error) {
-      console.error("Verify forgot password OTP error:", error.response?.data);
+      const axiosError = error as AxiosError;
+      console.error("Verify forgot password OTP error:", axiosError.response?.data);
       throw error;
     }
   },
   
   // Set new password after forgot password flow
-  setNewPassword: async (data: { email: string; new_password: string; confirm_password: string }) => {
+  setNewPassword: async (data: { email: string; new_password: string; confirm_password: string }): Promise<any> => {
     console.log("Sending request with payload:", data); // Log the payload
     
     try {
       const response = await api.post('/auth/forgot-password/set-new-password/', data);
       return response.data;
     } catch (error) {
-      console.error("Set new password error:", error.response?.data);
+      const axiosError = error as AxiosError;
+      console.error("Set new password error:", axiosError.response?.data);
       throw error;
     }
   },
@@ -264,7 +267,8 @@ const authService = {
       const response = await api.post('/auth/password-change/request-password-change/', data);
       return response.data;
     } catch (error) {
-      console.error("Request password change error:", error.response?.data);
+      const axiosError = error as AxiosError;
+      console.error("Request password change error:", axiosError.response?.data);
       throw error;
     }
   },
@@ -275,7 +279,8 @@ const authService = {
       const response = await api.post('/auth/password-change/resend-otp/');
       return response.data;
     } catch (error) {
-      console.error("Resend password change OTP error:", error.response?.data);
+      const axiosError = error as AxiosError;
+      console.error("Resend password change OTP error:", axiosError.response?.data);
       throw error;
     }
   },
@@ -286,7 +291,8 @@ const authService = {
       const response = await api.post('/auth/password-change/verify-password-change/', { otp });
       return response.data;
     } catch (error) {
-      console.error("Verify password change error:", error.response?.data);
+      const axiosError = error as AxiosError;
+      console.error("Verify password change error:", axiosError.response?.data);
       throw error;
     }
   },

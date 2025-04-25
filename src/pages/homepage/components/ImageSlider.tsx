@@ -9,7 +9,7 @@ interface ImageSliderProps {
 
 const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
   const settings = {
-    dots: true,
+    dots: false,
     fade: true,
     infinite: true,
     speed: 1000,
@@ -18,7 +18,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
     autoplay: true,
     autoplaySpeed: 3000,
     waitForAnimate: true,
-    cssEase: "linear",
+    cssEase: "linear"
   };
 
   // Flatten all image1, image2, image3 into a single list
