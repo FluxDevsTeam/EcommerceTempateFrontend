@@ -33,7 +33,7 @@ interface ApiResponse {
 }
 
 const fetchProducts = async (): Promise<ApiResponse> => {
-  const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/2/', {
+  const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?category=2', {
   });
   if (!response.ok) {
     throw new Error('Network response was not ok');
@@ -64,12 +64,12 @@ const ShoeCategoryList = () => {
             className="group hover:shadow-lg transition-shadow duration-300 rounded-xl overflow-hidden cursor-pointer"
             onClick={() => navigate(`/product/item/${item.id}`)}
           >
-            <div className="bg-[#F0EEED] rounded-lg p-8 relative">
+            <div className="bg-[#F0EEED] rounded-lg p-14 relative">
               <div>
                 <img
                   src={item.image1}
                   alt={item.name}
-                  className="w-full h-auto aspect-square object-cover"
+                  className="w-full h-[150px] aspect-square object-cover"
                 />
                 <button
                   className="absolute top-2 right-2 text-gray-600 hover:text-red-500 p-2 transition-colors duration-200"

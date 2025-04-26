@@ -48,6 +48,23 @@ const VerifyEmail = () => {
   const codeRegister = register("code");
   const code = watch("code", "").split('').concat(Array(6).fill('')).slice(0, 6);
 
+  // Timer effect
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    
+    const timerId = setInterval(() => {
+      setTimeLeft(prevTime => prevTime - 1);
+    }, 1000);
+    
+    return () => clearInterval(timerId);
+  }, [timeLeft]);
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const handleChange = (index: number, value: string): void => {
     if (value.length <= 1) {
       const newCode = [...code];
@@ -78,27 +95,9 @@ const VerifyEmail = () => {
     inputRefs[lastIndex].current?.focus();
   };
 
-  useEffect(() => {
-    if (timeLeft <= 0) return;
-    
-    const timerId = setInterval(() => {
-      setTimeLeft(prevTime => prevTime - 1);
-    }, 1000);
-    
-    return () => clearInterval(timerId);
-  }, [timeLeft]);
-
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
   const onSubmit = async (data: VerifyEmailFormData) => {
     if (!currentEmail) {
       console.error('Email is missing. Current email state:', currentEmail);
-      console.error('Location state:', location.state);
-      console.error('LocalStorage:', localStorage.getItem('signupEmail'));
       return;
     }
 
@@ -106,14 +105,7 @@ const VerifyEmail = () => {
     clearError();
 
     try {
-      console.log('Attempting verification with:', {
-        email: currentEmail,
-        code: data.code
-      });
-      
-      const result = await verifySignupOTP(currentEmail, data.code);
-      console.log('Verification successful:', result);
-      
+      await verifySignupOTP(currentEmail, data.code);
       setSuccess(true);
       localStorage.removeItem('signupEmail');
       
@@ -121,32 +113,27 @@ const VerifyEmail = () => {
         navigate('/login', { state: { verified: true } });
       }, 1000);
     } catch (err: any) {
-          const message = err.response?.data?.message || err.message;
-          toast.error(message);
-        } finally {
+      const message = err.response?.data?.message || err.message;
+      toast.error(message);
+    } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleResendCode = async () => {
-    if (!currentEmail) {
-      console.error('Cannot resend - email is missing:', currentEmail);
-      return;
-    }
+    if (!currentEmail || timeLeft > 0) return; // Prevent resend if timer is active
     
     clearError();
     setIsResending(true);
     
     try {
-      console.log('Attempting to resend OTP to:', currentEmail);
-      const result = await resendSignupOTP(currentEmail);
-      console.log('Resend successful:', result);
-      
-      setTimeLeft(178);
-    }  catch (err: any) {
-          const message = err.response?.data?.message || err.message || 'Failed to send verification code.';
-          toast.error(message);
-        } finally {
+      await resendSignupOTP(currentEmail);
+      toast.success('Verification code sent successfully!');
+      setTimeLeft(178); // Reset timer
+    } catch (err: any) {
+      const message = err.response?.data?.message || err.message || 'Failed to send verification code.';
+      toast.error(message);
+    } finally {
       setIsResending(false);
     }
   };
@@ -206,7 +193,7 @@ const VerifyEmail = () => {
                 <Button 
                   variant="link" 
                   className="p-0 h-auto text-sm font-normal text-blue-600"
-                  disabled={isResending || isSubmitting || success}
+                  disabled={timeLeft > 0 || isResending || isSubmitting || success}
                   onClick={handleResendCode}
                   type="button"
                 >

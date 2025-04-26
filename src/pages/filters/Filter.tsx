@@ -48,6 +48,7 @@ interface FiltersComponentProps {
   isOpen: boolean;
   onClose: () => void;
   onApplyFilters: (filters: FilterState) => void;
+  initialFilters?: FilterState;
 }
 
 interface FilterState {
@@ -56,18 +57,31 @@ interface FilterState {
   selectedSizes: string[];
 }
 
-const FiltersComponent: React.FC<FiltersComponentProps> = ({ isOpen, onClose, onApplyFilters }) => {
+const FiltersComponent: React.FC<FiltersComponentProps> = ({ 
+  isOpen, 
+  onClose, 
+  onApplyFilters,
+  initialFilters 
+}) => {
   // State for our fetched data
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [sizeOptions, setSizeOptions] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
-  // State for filter selections
-  const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const navigate = useNavigate()
+  // State for filter selections - initialized with initialFilters or defaults
+  const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>(
+    initialFilters?.selectedSubCategories || []
+  );
+  const [priceRange, setPriceRange] = useState<[number, number]>(
+    initialFilters?.priceRange || [0, 5000]
+  );
+  const [selectedSizes, setSelectedSizes] = useState<string[]>(
+    initialFilters?.selectedSizes || []
+  );
+  
+  const navigate = useNavigate();
+  
   // Fetch data on component mount
   useEffect(() => {
     const fetchData = async () => {
@@ -138,45 +152,50 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({ isOpen, onClose, on
 
   // Apply filters
   const handleApplyFilter = () => {
+    if (typeof onApplyFilters !== 'function') {
+      console.error('onApplyFilters is not a function');
+      return;
+    }
+
     const filters = {
       selectedSubCategories,
       priceRange,
       selectedSizes
     };
     
-    // Call the onApplyFilters function if provided
-    if (onApplyFilters) {
+    try {
       onApplyFilters(filters);
+      
+      // Build query parameters for URL
+      const searchParams = new URLSearchParams();
+      
+      // Add subcategories to query
+      if (selectedSubCategories.length > 0) {
+        searchParams.append('subcategories', selectedSubCategories.join(','));
+      }
+      
+      // Add price range to query
+      searchParams.append('minPrice', priceRange[0].toString());
+      searchParams.append('maxPrice', priceRange[1].toString());
+      
+      // Add sizes to query
+      if (selectedSizes.length > 0) {
+        searchParams.append('sizes', selectedSizes.join(','));
+      }
+      
+      // Navigate to products page with filter parameters
+      navigate(`/filtered-products?${searchParams.toString()}`);
+      
+      onClose();
+    } catch (err) {
+      console.error('Error applying filters:', err);
     }
-    
-    // Build query parameters for URL
-    const searchParams = new URLSearchParams();
-    
-    // Add subcategories to query
-    if (selectedSubCategories.length > 0) {
-      searchParams.append('subcategories', selectedSubCategories.join(','));
-    }
-    
-    // Add price range to query
-    searchParams.append('minPrice', priceRange[0].toString());
-    searchParams.append('maxPrice', priceRange[1].toString());
-    
-    // Add sizes to query
-    if (selectedSizes.length > 0) {
-      searchParams.append('sizes', selectedSizes.join(','));
-    }
-    
-    // Navigate to products page with filter parameters
-    navigate('/filtered-products');
-    
-    onClose();
   };
   
-
   // Reset filters
   const handleResetFilters = () => {
     setSelectedSubCategories([]);
-    setPriceRange([0, 5000]);
+    setPriceRange([0, 300000]);
     setSelectedSizes([]);
   };
   
@@ -229,7 +248,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({ isOpen, onClose, on
                 <div className="pt-2 pb-6">
                   <Slider
                     value={priceRange}
-                    max={5000}
+                    max={300000}
                     step={100}
                     onValueChange={handlePriceChange}
                     className="mt-6 bg-black cursor-pointer"

@@ -148,22 +148,16 @@ const VerifyForgotPassword = () => {
       setIsSubmitting(false);
     }
   };
-
   const handleResendCode = async () => {
-    if (!email) {
-      console.error('Cannot resend - email is missing:', email);
-      return;
-    } 
+    if (!email || timeLeft > 0) return; // Prevent resend if timer is active
     clearError();
-    setIsResending(true); 
+    setIsResending(true);
 
     try {
-      console.log('Attempting to resend OTP to:', email);
       await resendForgotPasswordOTP(email);
       toast.success('Verification code sent successfully!');
-      setTimeLeft(178); // Reset countdown timer after successful resend
-    }
-    catch (err: any) {
+      setTimeLeft(178); // Reset timer after successful resend
+    } catch (err: any) {
       const message = err.response?.data?.message || err.message || 'Failed to send verification code.';
       toast.error(message);
     } finally {
@@ -234,7 +228,7 @@ const VerifyForgotPassword = () => {
                 <Button 
                   variant="link" 
                   className="p-0 h-auto text-sm font-normal text-blue-600"
-                  disabled={isResending || isSubmitting || success}
+                  disabled={timeLeft > 0 || isResending || isSubmitting || success}
                   onClick={handleResendCode}
                   type="button"
                 >

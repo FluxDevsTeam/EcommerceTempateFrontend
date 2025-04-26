@@ -32,7 +32,7 @@ const TopSelling: React.FC<TopSellingProps> = ({ data }) => {
                         <img
                           src={item.image1}
                           alt={item.name}
-                          className="w-full h-auto shadow-lg   object-cover"
+                          className="w-full h-[150px]  shadow-lg   object-cover"
                         />
                         <button
                           className="absolute top-2 right-2 text-gray-600 hover:text-red-500 p-2 transition-colors duration-200"

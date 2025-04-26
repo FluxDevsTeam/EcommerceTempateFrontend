@@ -9,7 +9,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { toast } from 'sonner';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+
 
 // Define the schema for form validation
 const loginSchema = z.object({
@@ -28,10 +28,8 @@ const Login = () => {
   
   const { login, error, clearError } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   
-  // Check if user was redirected after verification
-  const justVerified = location.state?.verified === true;
+
   
   const {
     register,
@@ -68,14 +66,7 @@ const Login = () => {
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold">SHOP.CO</h1>
         </div>
-        
-        {justVerified && (
-          <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
-            <AlertDescription>
-              Your email has been verified! You can now log in.
-            </AlertDescription>
-          </Alert>
-        )}
+     
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">

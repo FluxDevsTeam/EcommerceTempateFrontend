@@ -33,7 +33,7 @@ interface ApiResponse {
 }
 
 const fetchProducts = async (): Promise<ApiResponse> => {
-  const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/3/', {
+  const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?category=4' , {
   });
   if (!response.ok) {
     throw new Error('Network response was not ok');

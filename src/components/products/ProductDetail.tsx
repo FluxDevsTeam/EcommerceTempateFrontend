@@ -170,7 +170,7 @@ const ProductDetail = () => {
         </div>
 
         {/* Main Product Image (Middle Column) */}
-        <div className="bg-[#F0EEED] rounded-lg p-16  max-w-md lg:order-2">
+        <div className=" rounded-lg  max-w-md lg:order-2">
           {mainImage && (
             <img
               src={mainImage}

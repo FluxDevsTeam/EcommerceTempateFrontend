@@ -31,7 +31,8 @@ import SearchResults from "./components/products/SearchResults";
 import ShoeCategory from "./pages/categories/ShoeCategory";
 import ClothesCategory from "./pages/categories/ClothesCategory";
 import AccessoriesCategory from "./pages/categories/AccessoriesCategory";
-import FilteredProductList from "./pages/filters/FilteredPages";
+import ProductsPage from "./pages/filters/FilteredPages";
+
 
 const queryClient = new QueryClient();
 
@@ -62,7 +63,7 @@ const AppContent: React.FC = () => {
         <Route path="/shoe-category" element={<ShoeCategory />} />
         <Route path="/clothes-category" element={<ClothesCategory />} />
         <Route path="/accessories-category" element={<AccessoriesCategory />} />
-        <Route path="/filtered-products" element={<FilteredProductList />} />
+        <Route path="/filtered-products" element={<ProductsPage />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/confirm-order" element={<ConfirmOrder />} />
         <Route path="/faqs" element={<FAQs />} />
