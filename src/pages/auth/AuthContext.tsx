@@ -55,18 +55,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    // Check for existing user session on initial load
     const checkAuth = async () => {
       try {
         console.log("Checking authentication status...");
-        const user = authService.getCurrentUser();
-        console.log("getCurrentUser returned:", user);
+        const accessToken = localStorage.getItem('accessToken');
+        const refreshToken = localStorage.getItem('refreshToken');
         
-        if (user) {
-          console.log("Setting currentUser state with:", user);
-          setCurrentUser(user);
+        if (accessToken && refreshToken) {
+          // Tokens exist, try to get the user profile
+          try {
+            const userProfile = await authService.getUserProfile();
+            console.log("Successfully fetched user profile:", userProfile);
+            setCurrentUser(userProfile);
+          } catch (profileError) {
+            console.error("Failed to fetch profile, logging out:", profileError);
+            await authService.logout(); // Clear invalid tokens
+          }
         } else {
-          console.log("No user found in localStorage");
+          // No tokens found
+          console.log("No authentication tokens found");
+          setCurrentUser(null);
         }
       } catch (err) {
         console.error("Authentication check failed", err);

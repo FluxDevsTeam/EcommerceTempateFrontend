@@ -329,8 +329,21 @@ const authService = {
   },
   
   // Get current user from localStorage
-  getCurrentUser: (): User | null => {
+  getCurrentUser: async (): Promise<User | null> => {
     const userJson = localStorage.getItem('user');
+    const accessToken = localStorage.getItem('accessToken');
+    
+    // If we have a token but no user data, try to fetch the profile
+    if (accessToken && !userJson) {
+      try {
+        return await authService.getUserProfile();
+      } catch (e) {
+        console.error("Error fetching user profile:", e);
+        return null;
+      }
+    }
+    
+    // Return cached user data if available
     if (userJson) {
       try {
         return JSON.parse(userJson);
@@ -339,6 +352,7 @@ const authService = {
         return null;
       }
     }
+    
     return null;
   },
   

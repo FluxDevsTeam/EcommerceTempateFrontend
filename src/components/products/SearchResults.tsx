@@ -4,6 +4,7 @@ import ProductCard from './ProductsCard';
 import { Product } from '@/types/api-types';
 import search from '/images/Empty-rafiki 1 (1).png';
 
+
 // Full search API endpoint
 const SEARCH_API_URL = "https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/search/";
 
@@ -215,28 +216,12 @@ const SearchResults = () => {
     <div className="container mx-auto p-4 my-8">
       {hasResults && (
         <div className="mb-6">
-          <h1 className="uppercase text-4xl font-medium flex justify-center items-center">
+          <h1 className=" text-3xl font-medium flex justify-center items-center">
             Search Results for "{query}"
           </h1>
         
-          {/* Sort/Ordering Options */}
-          <div className="flex justify-end mt-4 mb-6">
-            <label className="flex items-center">
-              <span className="mr-2 text-gray-700">Sort by:</span>
-              <select 
-                className="border rounded-md p-2"
-                value={ordering}
-                onChange={(e) => handleOrderingChange(e.target.value)}
-              >
-                <option value="">Default</option>
-                <option value="name">Name A-Z</option>
-                <option value="-name">Name Z-A</option>
-                <option value="price">Price: Low to High</option>
-                <option value="-price">Price: High to Low</option>
-                <option value="-created_at">Newest</option>
-              </select>
-            </label>
-          </div>
+        
+   
         </div>
       )}
 

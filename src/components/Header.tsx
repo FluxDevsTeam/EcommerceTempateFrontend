@@ -4,7 +4,7 @@ import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 import { IoPersonCircleOutline } from "react-icons/io5";
 import FiltersComponent from "@/pages/filters/Filter";
 import SortDropdown from "./SortDropdown";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { RiEqualizerLine } from "react-icons/ri";
 import SearchInput from "./SearchInput";
 import { useAuth } from "@/pages/auth/AuthContext";
@@ -24,17 +24,25 @@ const Header = () => {
   
   const { currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  console.log("Header render:", { 
-    isAuthenticated, 
-    currentUser,
-    hasFirstName: currentUser?.first_name ? true : false,
-    localStorage: {
-      accessToken: !!localStorage.getItem('accessToken'),
-      refreshToken: !!localStorage.getItem('refreshToken'),
-      user: localStorage.getItem('user')
-    }
-  });
+  // Force component update when location changes (e.g., after login redirect)
+  useEffect(() => {
+    console.log("Location changed, auth state:", { isAuthenticated, currentUser });
+  }, [location, isAuthenticated, currentUser]);
+
+  // Add debug logging
+  useEffect(() => {
+    console.log("Auth state updated in Header:", { 
+      isAuthenticated, 
+      currentUser,
+      hasFirstName: currentUser?.first_name ? true : false,
+      tokens: {
+        accessToken: !!localStorage.getItem('accessToken'),
+        refreshToken: !!localStorage.getItem('refreshToken'),
+      }
+    });
+  }, [isAuthenticated, currentUser]);
   
   const lastScrollY = useRef<number>(0);
   const navbarRef = useRef<HTMLDivElement>(null);
@@ -121,8 +129,33 @@ const Header = () => {
     setShowFilter(false);
   };
 
-  // Get user display name once to use consistently
-  const displayName = getDisplayName();
+  // Force check authentication by checking localStorage directly
+  const checkIsAuthenticated = () => {
+    return !!localStorage.getItem('accessToken') && !!localStorage.getItem('user');
+  };
+
+  // Get user display name forcefully from localStorage if needed
+  const getUserFromStorage = () => {
+    if (currentUser?.first_name) {
+      return currentUser.first_name;
+    }
+    
+    try {
+      const userJson = localStorage.getItem('user');
+      if (userJson) {
+        const user = JSON.parse(userJson);
+        return user.first_name || null;
+      }
+    } catch (error) {
+      console.error("Error parsing user from localStorage:", error);
+    }
+    
+    return null;
+  };
+
+  // Use forced checks for more reliable display
+  const isUserAuthenticated = isAuthenticated || checkIsAuthenticated();
+  const displayName = getDisplayName() || getUserFromStorage();
 
   return (
     <>
@@ -140,15 +173,20 @@ const Header = () => {
             <div className="flex space-x-4 items-center">
               <BsCart size={30} className="cursor-pointer hover:text-gray-600"/>
               <Link 
-                to={isAuthenticated ? '/account' : '/login'} 
+                to={isUserAuthenticated ? '/account' : '/login'} 
                 className="flex items-center gap-2 hover:text-gray-600 transition-colors"
               >
-                {displayName ? (
-                  <span className="text-sm font-medium bg-blue-100 px-2 py-1 rounded">
-                    {displayName}
-                  </span>
+                {isUserAuthenticated && displayName ? (
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium bg-blue-100 px-3 py-1 rounded-l-md">
+                      Welcome back,
+                    </span>
+                    <span className="text-sm font-medium bg-blue-200 px-3 py-1 rounded-r-md">
+                      {displayName}
+                    </span>
+                  </div>
                 ) : (
-                  <span className="text-sm">Sign In</span>
+                  <span className="text-sm font-medium">Sign In</span>
                 )}
                 <IoPersonCircleOutline size={35}/>
               </Link>
@@ -186,12 +224,14 @@ const Header = () => {
             <div className="flex space-x-4 items-center">
               <BsCart size={30} className="cursor-pointer hover:text-gray-600"/>
               <Link 
-                to={isAuthenticated ? '/account' : '/login'} 
+                to={isUserAuthenticated ? '/account' : '/login'} 
                 className="flex items-center gap-2 hover:text-gray-600 transition-colors"
               >
-                {displayName && (
-                  <span className="text-sm font-medium bg-blue-100 px-2 py-1 rounded">{displayName}</span>
-                )}
+                {isUserAuthenticated && displayName ? (
+                  <span className="text-xs font-medium bg-blue-100 px-2 py-1 rounded truncate max-w-20">
+                    Hi, {displayName}
+                  </span>
+                ) : null}
                 <IoPersonCircleOutline size={35}/>
               </Link>
             </div>
@@ -202,6 +242,11 @@ const Header = () => {
         {isOpen && (
           <div className="block md:hidden p-7">
             <div className="flex flex-col w-full space-y-4">
+              {isUserAuthenticated && displayName && (
+                <div className="bg-blue-50 rounded-md p-3 mb-2">
+                  <p className="text-sm text-blue-700">Welcome back, {displayName}!</p>
+                </div>
+              )}
               <ul className="flex flex-col space-y-5 text-[16px] font-medium leading-[100%]">
                 <Link to='/categories' className="hover:text-gray-600 transition-colors"><li>New Arrivals</li></Link>  
                 <Link to='/shoe-category' className="hover:text-gray-600 transition-colors"><li>Shoes</li></Link>

@@ -18,7 +18,7 @@ export default function SortDropdown() {
   return (
     <div className="relative inline-flex">
      
-      <button className="p-3 w-[121px] bg-white text-black border rounded-2xl border-black flex items-center justify-between cursor-pointer" onClick={toggleDropdown}>
+      <button className="p-3 w-[121px] bg-white text-black border-none rounded-2xl border-black flex items-center justify-between cursor-pointer" onClick={toggleDropdown}>
             <span>Sort by</span>
             <ChevronDown className="h-4 w-4 {`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}" />
           </button>
