@@ -1,13 +1,16 @@
-// src/services/authService.ts
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 
-const API_URL = 'https://ecommercetemplate.pythonanywhere.com'; // Replace with your actual API base URL
+const API_URL = 'https://ecommercetemplate.pythonanywhere.com';
 
 // Type definitions for API responses
 interface AuthResponse {
-  access: string;
-  refresh: string;
+  access_token: string;
+  refresh_token: string;
+  message?: string;
   user?: User;
+  // For backward compatibility during transition
+  access?: string;
+  refresh?: string;
 }
 
 interface User {
@@ -34,7 +37,7 @@ interface PasswordChange {
 }
 
 interface RefreshToken {
-  refresh: string; // Changed from refresh_token to match API usage
+  refresh: string;
 }
 
 interface Login {
@@ -70,11 +73,11 @@ api.interceptors.response.use(
         const response = await authService.refreshToken({ refresh: refreshToken });
         
         // If refresh successful, update tokens
-        if (response.access) {
-          localStorage.setItem('accessToken', response.access);
+        if (response.access_token) {
+          localStorage.setItem('accessToken', response.access_token);
           
           // Update the original request with the new token
-          originalRequest.headers['Authorization'] = `Bearer ${response.access}`;
+          originalRequest.headers['Authorization'] = `Bearer ${response.access_token}`;
           return api(originalRequest);
         }
       } catch (refreshError) {
@@ -92,14 +95,14 @@ api.interceptors.response.use(
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken');
-    if (token && config.headers) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
-  
+
 const authService = {
   // Signup
   signup: async (userData: UserSignup): Promise<any> => {
@@ -148,20 +151,28 @@ const authService = {
       console.log(`API call - Login with email: ${credentials.email}`);
       const response = await api.post<AuthResponse>('/auth/login/', credentials);
       
-      // Store tokens in localStorage or secure storage
-      if (response.data.access) {
-        localStorage.setItem('accessToken', response.data.access);
+      // Store tokens in localStorage
+      if (response.data.access_token) {
+        localStorage.setItem('accessToken', response.data.access_token);
       }
-      if (response.data.refresh) {
-        localStorage.setItem('refreshToken', response.data.refresh);
-      }
-      
-      // If user data is included, store it
-      if (response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+      if (response.data.refresh_token) {
+        localStorage.setItem('refreshToken', response.data.refresh_token);
       }
       
-      console.log('Login response:', response.data);
+      // Since user data isn't included in login response, fetch it separately
+      try {
+        // Fetch user profile after storing the token
+        const userResponse = await authService.getUserProfile();
+        
+        // Return combined data
+        return {
+          ...response.data,
+          user: userResponse
+        };
+      } catch (profileError) {
+        console.error("Failed to fetch user profile:", profileError);
+      }
+      
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
@@ -175,8 +186,8 @@ const authService = {
     try {
       const response = await api.post<AuthResponse>('/auth/refresh/', { refresh_token: data.refresh });
       
-      if (response.data.access) {
-        localStorage.setItem('accessToken', response.data.access);
+      if (response.data.access_token) {
+        localStorage.setItem('accessToken', response.data.access_token);
       }
       
       return response.data;
@@ -249,7 +260,7 @@ const authService = {
   
   // Set new password after forgot password flow
   setNewPassword: async (data: { email: string; new_password: string; confirm_password: string }): Promise<any> => {
-    console.log("Sending request with payload:", data); // Log the payload
+    console.log("Sending request with payload:", data);
     
     try {
       const response = await api.post('/auth/forgot-password/set-new-password/', data);
@@ -297,15 +308,34 @@ const authService = {
     }
   },
  
-  // Get current user info
+  // Get user profile
+  getUserProfile: async (): Promise<User> => {
+    try {
+      // The interceptor will automatically add the Authorization header
+      const response = await api.get<User>('/auth/profile/');
+      
+      // Update stored user data
+      const userData = response.data;
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      return userData;
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      console.error("Get profile error:", axiosError.response?.data);
+      
+      // If it's a 401 error, the interceptor should have already tried refreshing the token
+      throw new Error('Failed to fetch user profile');
+    }
+  },
+  
+  // Get current user from localStorage
   getCurrentUser: (): User | null => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
+    const userJson = localStorage.getItem('user');
+    if (userJson) {
       try {
-        return JSON.parse(userStr) as User;
+        return JSON.parse(userJson);
       } catch (e) {
-        console.error('Error parsing user from localStorage:', e);
-        localStorage.removeItem('user');
+        console.error("Error parsing user data:", e);
         return null;
       }
     }

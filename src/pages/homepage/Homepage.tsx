@@ -5,6 +5,7 @@ import ImageSlider from "./components/ImageSlider";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProducts } from "./api/apiService";
 import { ProductAPIResponse } from "./types/data-types";
+import { Link } from "react-router-dom";
 
 const Homepage = () => {
 
@@ -14,7 +15,10 @@ const Homepage = () => {
   });
   
 
-if (isLoading) return <div>Loading...</div>;
+if (isLoading) return <div className="flex justify-center items-center py-10 text-lg">
+<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mr-3"></div>
+
+</div>;
 if (isError) return <div>Error loading data.</div>;
 
   return (
@@ -28,9 +32,10 @@ if (isError) return <div>Error loading data.</div>;
           <p className='text-[#000000] font-medium text-base md:text-lg'>
             Access exclusive deals, track orders and enjoy a seamless shopping experience
           </p>
-          <button className="bg-black text-white border rounded-full px-6 py-3 w-[210px] hover:bg-gray-800 transition-colors">
+        <Link to='/shoe-category'>  <button className="bg-black text-white border rounded-full px-6 py-3 w-[210px] hover:bg-gray-800 transition-colors">
             Shop Now
           </button>
+          </Link>
         </div>
         
         <div className="flex justify-center lg:justify-end lg:mt-[-20px] ">

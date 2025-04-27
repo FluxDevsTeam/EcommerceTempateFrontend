@@ -1,27 +1,34 @@
-import { useState } from 'react';
+// SortDropdown.tsx
 import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+interface SortDropdownProps {
+  selectedOption: string;
+  onSelectOption: (option: string) => void;
+}
 
-
-export default function SortDropdown() {
+export default function SortDropdown({ selectedOption, onSelectOption }: SortDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState('Latest');
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
 
-  const selectOption = (option : string) => {
-    setSelectedOption(option);
+  const selectOption = (option: string) => {
+    onSelectOption(option);
     setIsOpen(false);
   };
 
   return (
     <div className="relative inline-flex">
-     
-      <button className="p-3 w-[121px] bg-white text-black border rounded-2xl border-black flex items-center justify-between cursor-pointer" onClick={toggleDropdown}>
-            <span>Sort by</span>
-            <ChevronDown className="h-4 w-4 {`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}" />
-          </button>
+      <button 
+        className="p-4 w-auto space-x-2 bg-white text-black border-none rounded-2xl border-black flex items-center justify-between cursor-pointer" 
+        onClick={toggleDropdown}
+      >
+        <span>{selectedOption || 'Sort by'}</span>
+        <ChevronDown 
+          className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+        />
+      </button>
       {isOpen && (
         <div
           role="menu"
@@ -29,11 +36,11 @@ export default function SortDropdown() {
         >
           <div>
             <button
-              onClick={() => selectOption('Latest')}
+              onClick={() => selectOption('Latest items')}
               className="block w-full px-4 py-2 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900 cursor-pointer"
               role="menuitem"
             >
-              Latest
+              Latest items
             </button>
             
             <button

@@ -1,6 +1,9 @@
 import { FaRegHeart } from "react-icons/fa";
 import { ProductItem } from "../types/data-types"; 
-import { useNavigate } from "react-router-dom";
+import {Link, useNavigate } from "react-router-dom"
+
+
+
 interface TopSellingProps {
   data: ProductItem[];
 }
@@ -65,9 +68,12 @@ const TopSelling: React.FC<TopSellingProps> = ({ data }) => {
       </div>
 
       <div className="flex justify-center items-center mt-8 sm:mt-10">
-        <button className="text-lg font-semibold hover:text-primary cursor-pointer transition-colors duration-200 border-b-2 border-transparent hover:border-primary">
+     <Link to ='/shoe-category'> <button className="text-lg font-medium hover:text-primary cursor-pointer transition-colors duration-200 border-b-2 border-transparent hover:border-primary">
           View All
         </button>
+       </Link>  
+
+
       </div>
     </div>
   );

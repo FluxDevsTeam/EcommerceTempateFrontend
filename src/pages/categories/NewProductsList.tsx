@@ -1,8 +1,8 @@
+// NewProductsList.tsx
 import { useQuery } from '@tanstack/react-query';
 import { FaRegHeart } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
-// Define TypeScript interfaces for the API response
 interface Category {
   id: number;
   name: string;
@@ -32,28 +32,50 @@ interface ApiResponse {
   results: Product[];
 }
 
+interface NewProductsListProps {
+  sortOption: string;
+}
+
 const fetchProducts = async (): Promise<ApiResponse> => {
-  const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/', {
-  });
+  const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/');
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
   return response.json();
 };
 
-const NewProductsList = () => {
+const NewProductsList = ({ sortOption }: NewProductsListProps) => {
   const navigate = useNavigate();
   const { data, isLoading, error } = useQuery<ApiResponse>({
     queryKey: ['products'],
     queryFn: fetchProducts
   });
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <div className="flex justify-center items-center py-10 text-lg">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mr-3"></div>
+    Loading results...
+  </div>;
+
   if (error) return <div>Error: {error.message}</div>;
+
+  // Copy and sort the products
+  const sortedProducts = [...(data?.results || [])].sort((a, b) => {
+    const priceA = parseFloat(a.discounted_price);
+    const priceB = parseFloat(b.discounted_price);
+
+    if (sortOption === 'Highest price') {
+      return priceB - priceA;
+    } else if (sortOption === 'Lowest price') {
+      return priceA - priceB;
+    } else {
+      // Latest items (assuming latest means higher ID)
+      return b.id - a.id;
+    }
+  });
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 my-8 sm:mb-16">
-      {data?.results.map((item) => {
+      {sortedProducts.map((item) => {
         const price = parseFloat(item.price);
         const discountedPrice = parseFloat(item.discounted_price);
         const amountSaved = price - discountedPrice;
@@ -79,23 +101,23 @@ const NewProductsList = () => {
                 </button>
               </div>
             </div>
-  
+
             <div className="p-3 sm:p-4">
-                <h3 className="text-xl uppercase leading-[100%] sm:text-lg font-normal text-gray-800 truncate">
-                  {item.name}
-                </h3>
-                <div className="mt-2 flex flex-wrap items-center gap-1 sm:gap-2">
-                  <span className="text-2xl sm:text-xl font-normal leading-[100%] text-primary">
-                    NGN{discountedPrice.toFixed(0)}
-                  </span>
-                  <span className="text-gray-500 line-through text-2xl sm:text-xl ">
-                    NGN{price.toFixed(0)}
-                  </span>
-                  <span className="bg-pink-100 text-pink-700 px-2 py-1 rounded-full text-xs sm:text-sm">
-                     NGN{amountSaved.toFixed(0)}
-                  </span>
-                </div>
+              <h3 className="text-xl uppercase leading-[100%] sm:text-lg font-normal text-gray-800 truncate">
+                {item.name}
+              </h3>
+              <div className="mt-2 flex flex-wrap items-center gap-1 sm:gap-2">
+                <span className="text-2xl sm:text-xl font-normal leading-[100%] text-primary">
+                  NGN{discountedPrice.toFixed(0)}
+                </span>
+                <span className="text-gray-500 line-through text-2xl sm:text-xl">
+                  NGN{price.toFixed(0)}
+                </span>
+                <span className="bg-pink-100 text-pink-700 px-2 py-1 rounded-full text-xs sm:text-sm">
+                  NGN{amountSaved.toFixed(0)}
+                </span>
               </div>
+            </div>
           </div>
         );
       })}

@@ -24,6 +24,17 @@ const Header = () => {
   
   const { currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  console.log("Header render:", { 
+    isAuthenticated, 
+    currentUser,
+    hasFirstName: currentUser?.first_name ? true : false,
+    localStorage: {
+      accessToken: !!localStorage.getItem('accessToken'),
+      refreshToken: !!localStorage.getItem('refreshToken'),
+      user: localStorage.getItem('user')
+    }
+  });
   
   const lastScrollY = useRef<number>(0);
   const navbarRef = useRef<HTMLDivElement>(null);
@@ -50,6 +61,14 @@ const Header = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Create display name function to ensure consistency
+  const getDisplayName = () => {
+    if (isAuthenticated && currentUser?.first_name) {
+      return currentUser.first_name;
+    }
+    return null;
+  };
 
   const handleSearchItemSelect = (): void => {
     setIsOpen(false);
@@ -102,6 +121,9 @@ const Header = () => {
     setShowFilter(false);
   };
 
+  // Get user display name once to use consistently
+  const displayName = getDisplayName();
+
   return (
     <>
       <div 
@@ -121,8 +143,12 @@ const Header = () => {
                 to={isAuthenticated ? '/account' : '/login'} 
                 className="flex items-center gap-2 hover:text-gray-600 transition-colors"
               >
-                {isAuthenticated && currentUser?.first_name && (
-                  <span className="text-sm font-medium">{currentUser.first_name}</span>
+                {displayName ? (
+                  <span className="text-sm font-medium bg-blue-100 px-2 py-1 rounded">
+                    {displayName}
+                  </span>
+                ) : (
+                  <span className="text-sm">Sign In</span>
                 )}
                 <IoPersonCircleOutline size={35}/>
               </Link>
@@ -132,11 +158,10 @@ const Header = () => {
             <ul className="flex space-x-6 text-[16px] font-medium font-poppins">
               <Link to='/categories' className="hover:text-gray-600 transition-colors"><li>New Arrivals</li></Link>  
               <Link to='/shoe-category' className="hover:text-gray-600 transition-colors"><li>Shoes</li></Link>
-              <Link to='/accessory-category' className="hover:text-gray-600 transition-colors"><li>Accessories</li></Link>
+              <Link to='/accessories-category' className="hover:text-gray-600 transition-colors"><li>Accessories</li></Link>
               <Link to='/clothes-category' className="hover:text-gray-600 transition-colors"><li>Clothes</li></Link>
             </ul>
             <SearchInput onItemSelect={handleSearchItemSelect}/>
-            <SortDropdown/>
             <button 
               onClick={toggleFilter}
               className="cursor-pointer hover:text-gray-600 transition-colors"
@@ -164,8 +189,8 @@ const Header = () => {
                 to={isAuthenticated ? '/account' : '/login'} 
                 className="flex items-center gap-2 hover:text-gray-600 transition-colors"
               >
-                {isAuthenticated && currentUser?.first_name && (
-                  <span className="text-sm font-medium">{currentUser.first_name}</span>
+                {displayName && (
+                  <span className="text-sm font-medium bg-blue-100 px-2 py-1 rounded">{displayName}</span>
                 )}
                 <IoPersonCircleOutline size={35}/>
               </Link>
@@ -185,7 +210,6 @@ const Header = () => {
               </ul>
               <SearchInput onItemSelect={handleSearchItemSelect}/>
               <div className="flex space-x-3">
-                <SortDropdown/>
                 <button 
                   onClick={toggleFilter}
                   className="cursor-pointer hover:text-gray-600 transition-colors"

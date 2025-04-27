@@ -7,16 +7,7 @@ import search from '/images/Empty-rafiki 1 (1).png';
 // Full search API endpoint
 const SEARCH_API_URL = "https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/search/";
 
-interface Category {
-  id: number;
-  name: string;
-}
 
-interface SubCategory {
-  id: number;
-  name: string;
-  category: Category;
-}
 
 const fetchSearchResults = async (searchQuery?: string, page: number = 1, pageSize: number = 24, ordering?: string): Promise<{
   products: Product[],
@@ -120,7 +111,6 @@ const SearchResults = () => {
     const url = new URL(window.location.href);
     url.searchParams.set('page', page.toString());
     window.history.pushState({}, '', url.toString());
-    // We're not using React Router's useNavigate here because we don't want to lose the search context
     window.location.href = url.toString();
   };
 

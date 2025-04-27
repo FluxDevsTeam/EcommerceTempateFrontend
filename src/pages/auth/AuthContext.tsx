@@ -22,8 +22,8 @@ interface AuthContextType {
   currentUser: User | null;
   loading: boolean;
   isAuthenticated: boolean;
-  error: string | null; // Added error state
-  clearError: () => void; // Added clearError function
+  error: string | null;
+  clearError: () => void;
   signup: (userData: SignupData) => Promise<any>;
   login: (email: string, password: string) => Promise<any>;
   logout: () => Promise<void>;
@@ -48,9 +48,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [tempEmail, setTempEmail] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null); // Added error state
+  const [error, setError] = useState<string | null>(null);
 
-  // Added clearError function
   const clearError = () => {
     setError(null);
   };
@@ -59,9 +58,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Check for existing user session on initial load
     const checkAuth = async () => {
       try {
+        console.log("Checking authentication status...");
         const user = authService.getCurrentUser();
+        console.log("getCurrentUser returned:", user);
+        
         if (user) {
+          console.log("Setting currentUser state with:", user);
           setCurrentUser(user);
+        } else {
+          console.log("No user found in localStorage");
         }
       } catch (err) {
         console.error("Authentication check failed", err);
@@ -70,7 +75,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setLoading(false);
       }
     };
-    
+  
     checkAuth();
   }, []);
 
@@ -168,22 +173,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const requestForgotPassword = async (email: string): Promise<any> => {
-  setLoading(true);
-  clearError();
-  
-  try {
-    const response = await authService.requestForgotPassword(email);
-    // Store email for verification component
-    localStorage.setItem('resetEmail', email);
-    setLoading(false);
-    return response;
-  } catch (err: any) {
-    const errorMessage = err.response?.data?.message || 'Failed to process password reset request. Please try again.';
-    setError(errorMessage);
-    setLoading(false);
-    throw err;
-  }
-};
+    setLoading(true);
+    clearError();
+    
+    try {
+      const response = await authService.requestForgotPassword(email);
+      // Store email for verification component
+      localStorage.setItem('resetEmail', email);
+      setLoading(false);
+      return response;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to process password reset request. Please try again.';
+      setError(errorMessage);
+      setLoading(false);
+      throw err;
+    }
+  };
 
   const resendForgotPasswordOTP = async (email: string): Promise<any> => {
     setLoading(true);
@@ -289,8 +294,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     currentUser,
     loading,
     isAuthenticated: !!currentUser,
-    error, // Added error state to context value
-    clearError, // Added clearError function to context value
+    error,
+    clearError,
     signup,
     login,
     logout,

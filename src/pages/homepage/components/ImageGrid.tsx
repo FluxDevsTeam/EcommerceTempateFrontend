@@ -1,7 +1,7 @@
 import { FaRegHeart } from "react-icons/fa";
-import Products from "./products";
 import { ProductItem } from "../types/data-types";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
 
 interface LatestItemsProps {
   data: ProductItem[];
@@ -10,10 +10,10 @@ interface LatestItemsProps {
 const ImageGrid: React.FC<LatestItemsProps> = ({ data }) => {
   const navigate = useNavigate(); 
   return (
-    <div>
-      <div className="mb-6 sm:mb-8 md:mb-10">
-        <Products />
-      </div>
+    <div className="my-5 space-y-6">
+     
+      <p className="text-5xl font-medium  flex justify-center ">Latest Items</p>
+    
 
       <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
         {data.map((item) => {
@@ -67,9 +67,11 @@ const ImageGrid: React.FC<LatestItemsProps> = ({ data }) => {
       </div>
 
       <div className="flex justify-center items-center mt-6 sm:mt-8">
-        <button className="text-lg font-semibold hover:text-primary cursor-pointer transition-colors duration-200 border-b-2 border-transparent hover:border-primary">
+     <Link to='/categories'> 
+      <button className="text-lg font-semibold hover:text-primary cursor-pointer transition-colors duration-200 border-b-2 border-transparent hover:border-primary">
           View All
         </button>
+       </Link> 
       </div>
     </div>
   );

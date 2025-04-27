@@ -1,8 +1,9 @@
+// ShoeCategoryList.tsx
 import { useQuery } from '@tanstack/react-query';
 import { FaRegHeart } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
-// Define TypeScript interfaces for the API response
+// Types
 interface Category {
   id: number;
   name: string;
@@ -32,28 +33,48 @@ interface ApiResponse {
   results: Product[];
 }
 
+// Props
+interface ShoeCategoryListProps {
+  selectedOption: string;
+}
+
 const fetchProducts = async (): Promise<ApiResponse> => {
-  const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?category=2', {
-  });
+  const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?category=2');
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
   return response.json();
 };
 
-const ShoeCategoryList = () => {
+const ShoeCategoryList = ({ selectedOption }: ShoeCategoryListProps) => {
   const navigate = useNavigate();
   const { data, isLoading, error } = useQuery<ApiResponse>({
     queryKey: ['products'],
-    queryFn: fetchProducts
+    queryFn: fetchProducts,
   });
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return (
+    <div className="flex justify-center items-center py-10 text-lg">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mr-3"></div>
+      Loading results...
+    </div>
+  );
   if (error) return <div>Error: {error.message}</div>;
+
+  // Sort products based on selected option
+  let sortedProducts = data?.results || [];
+  
+  if (selectedOption === 'Highest price') {
+    sortedProducts = [...sortedProducts].sort((a, b) => parseFloat(b.discounted_price) - parseFloat(a.discounted_price));
+  } else if (selectedOption === 'Lowest price') {
+    sortedProducts = [...sortedProducts].sort((a, b) => parseFloat(a.discounted_price) - parseFloat(b.discounted_price));
+  } else if (selectedOption === 'Latest items') {
+    sortedProducts = [...sortedProducts].sort((a, b) => b.id - a.id); // Assuming newer items have higher ID
+  }
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 my-8 sm:mb-16">
-      {data?.results.map((item) => {
+      {sortedProducts.map((item) => {
         const price = parseFloat(item.price);
         const discountedPrice = parseFloat(item.discounted_price);
         const amountSaved = price - discountedPrice;
