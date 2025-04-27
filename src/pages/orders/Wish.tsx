@@ -1,24 +1,23 @@
-import React, { useState } from "react";
-import { FiHeart } from "react-icons/fi"; // Unfilled heart
-import { FaHeart } from "react-icons/fa"; // Filled heart
+import React from "react";
+import { FiHeart } from "react-icons/fi";
+import { FaHeart } from "react-icons/fa";
 
 interface WishProps {
   color?: string;
-  defaultLiked?: boolean;
+  liked: boolean;
+  onToggle: () => void;
 }
 
-const Wish: React.FC<WishProps> = ({ color = "red", defaultLiked = false }) => {
-  const [isClick, setIsClick] = useState(defaultLiked);
-
+const Wish: React.FC<WishProps> = ({ color = "red", liked, onToggle }) => {
   return (
     <div
       className="absolute top-2 right-2 text-[23px] sm:text-[30px] cursor-pointer"
-      onClick={() => setIsClick(!isClick)}
+      onClick={onToggle}
     >
-      {isClick ? (
-        <FaHeart style={{ color: color }} /> // Red filled heart when clicked
+      {liked ? (
+        <FaHeart style={{ color: color }} />
       ) : (
-        <FiHeart style={{ color: "black" }} /> // Black unfilled heart when not clicked
+        <FiHeart style={{ color: "black" }} />
       )}
     </div>
   );

@@ -1,31 +1,49 @@
 import { useState, useEffect } from 'react';
-import { FiShoppingBag, FiTruck, FiPackage, FiTrendingUp, FiTrendingDown, FiMenu, FiGrid } from "react-icons/fi";
-import search from './img/shape.png';
-import notis from './img/bell.png';
+import { FiMenu, FiGrid } from "react-icons/fi";
+import AdminHeaders from './AdminHeaders';
+import AdminAggregates from './AdminAggregates';
 import Dropdown from "./Dropdown";
 import { fetchData } from './api';
-import { Order, Aggregate } from "./types";
+import { Order } from "./types";
 import formatEstimatedDelivery from "./Date";
 import Pagination from './Pagination';
-import { Link } from 'react-router-dom';
-// import Pagination from './Pagination';
+import SearchForm from './SearchForm';
+import SelectedOrderPopup from './SelectedOrder';
+
 
 const AdminOrders = () => {
   const [layout, setLayout] = useState("menu");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [aggregate, setAggregate] = useState<Aggregate>({
-    total_orders: 0,
-    returned_orders: 0,
-    delivered_orders: 0
-  });
+  const [statusFilter, setStatusFilter] = useState<string>("All Categories");
+
+  const statusColors: { [key: string]: { dot: string; bg: string } } = {
+    Paid: { dot: "#4CAF50", bg: "#4CAF5026" },
+    Shipped: { dot: "#2196F3", bg: "#2196F326" },
+    Delivered: { dot: "#9C27B0", bg: "#9C27B026" },
+    Cancelled: { dot: "#F44336", bg: "#F4433626" },
+    Refunded: { dot: "#FF9800", bg: "#FF980026" },
+  };
+
+  const filteredOrders = statusFilter === "All Categories"
+  ? orders
+  : orders.filter((order) => order.status === statusFilter);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const displayedOrders = filteredOrders.slice(startIndex, endIndex);
+  
+
+
 
   useEffect(() => {
     const getOrders = async () => {
       try {
         const data = await fetchData();
         setOrders(data.results);
-        setAggregate(data.aggregate);
       } catch (error) {
         console.error("Error loading orders:", error);
       }
@@ -36,83 +54,38 @@ const AdminOrders = () => {
 
   return (
     <div className="leading-[150%] relative">
-      {/* Header */}
-      <div className="flex justify-between">
+      <AdminHeaders />
+      <AdminAggregates />
+      <div className="flex items-center mt-10">
+        <div className='basis-[]'>
+          <SearchForm />
+        </div>
         <div>
-          <h2 className="font-medium text-[28px] mb-2.5">Product Orders</h2>
-          <p className="text-base text-[#7C8DB5]">Here is the information about all your orders</p>
+          <Dropdown
+            label="All Categories"
+            options={["All Categories", "Paid", "Shipped", "Delivered", "Cancelled", "Refunded"]}
+            widthClass="w-50"
+            onSelect={(value) => setStatusFilter(value)}
+          />
         </div>
-        <div className="flex items-start gap-4">
-          <img src={search} className="w-[24px]" alt="search" />
-          <img src={notis} className="w-[24px]" alt="notification" />
-        </div>
-      </div>
-
-      {/* Aggregate Section */}
-      <div className="flex justify-between items-center w-[75%] border border-[#E6EDFF] rounded-2xl p-6 mt-6">
-        <div className="w-[33%] border-r border-[#E6EDFF] pr-10">
-          <div className="flex justify-between items-center mb-2.5">
-            <h4 className="font-semibold text-[28px]">{aggregate.total_orders || 0}</h4>
-            <FiShoppingBag size={20} className="text-[#7C8DB5]" />
-          </div>
-          <p className="mb-2.5 font-normal">Total Orders</p>
-          <p className="flex items-center">
-            <FiTrendingUp className="text-[#34C759] mr-2.5" />
-            <span className="text-[14px] mr-2.5">10.2</span>
-            <span className="text-[14px]">+1.01% this week</span>
-          </p>
+        <div
+          className={`p-2 rounded-lg cursor-pointer ${layout === "menu" ? "bg-black" : "border border-[#CACACA]"}`}
+          onClick={() => setLayout("menu")}
+        >
+          <FiMenu className={`${layout === "menu" ? "text-white" : "text-black"} w-[24px] h-[24px]`} />
         </div>
 
-        <div className="w-[33%] border-r border-[#E6EDFF] px-5">
-          <div className="flex justify-between items-center mb-2.5">
-            <h4 className="font-semibold text-[28px]">{aggregate.returned_orders || 0}</h4>
-            <FiPackage size={20} className="text-[#7C8DB5]" />
-          </div>
-          <p className="mb-2.5 font-normal">Cancelled Orders</p>
-          <p className="flex items-center">
-            <FiTrendingUp className="text-[#34C759] mr-2.5" />
-            <span className="text-[14px] text-[#7C8DB5] mr-2.5">3.1</span>
-            <span className="text-[14px]">+0.49% this week</span>
-          </p>
-        </div>
-
-        <div className="w-[33%] pl-5">
-          <div className="flex justify-between items-center mb-2.5">
-            <h4 className="font-semibold text-[28px]">{aggregate.delivered_orders || 0}</h4>
-            <FiTruck size={20} className="text-[#7C8DB5]" />
-          </div>
-          <p className="mb-2.5 font-normal">Total Delivered</p>
-          <p className="flex items-center">
-            <FiTrendingDown className="text-[#FF3B30] mr-2.5" />
-            <span className="text-[14px] mr-2.5">2.56</span>
-            <span className="text-[14px]">-0.91% this week</span>
-          </p>
-        </div>
-      </div>
-
-      {/* Layout Controls */}
-      <div className="flex items-center gap-8 mt-10">
-        <form className="flex items-center gap-4 px-4 py-2.5 border border-[#CACACA] rounded-lg mr-auto">
-          <img src={search} alt="search" className="h-[18px] w-[18px]" />
-          <input type="text" placeholder="Search" className="focus:outline-none" />
-        </form>
-        <Dropdown
-          label="All Categories"
-          options={["Active", "Delivered"]}
-          widthClass="w-50"
-          onSelect={(value) => console.log("Selected:", value)}
-        />
-        <div className="bg-black p-2 rounded-lg cursor-pointer" onClick={() => setLayout("menu")}>
-          <FiMenu className="text-white w-[24px] h-[24px]" />
-        </div>
-        <div className="p-2 border border-[#CACACA] rounded-lg cursor-pointer" onClick={() => setLayout("grid")}>
-          <FiGrid className="w-[24px] h-[24px]" />
+        <div
+          className={`p-2 rounded-lg cursor-pointer ${layout === "grid" ? "bg-black" : "border border-[#CACACA]"}`}
+          onClick={() => setLayout("grid")}
+        >
+          <FiGrid className={`${layout === "grid" ? "text-white" : "text-black"} w-[24px] h-[24px]`} />
         </div>
       </div>
 
       {/* Menu View */}
       {layout === "menu" && (
-        <div className="MENU mt-10 border border-[#E6EDFF] rounded-2xl py-4 px-6">
+        <div className="mt-10 border border-[#E6EDFF] rounded-2xl py-4 px-6">
           <ul className="text-[12px] font-semibold flex py-5 border-b border-[#E6EDFF]">
             <li className="w-[10%]">ID</li>
             <li className="w-[10%]">Date</li>
@@ -123,7 +96,7 @@ const AdminOrders = () => {
             <li className="w-[10%]">Status</li>
           </ul>
           <ul>
-            {orders.map((order) => (
+          {displayedOrders.map((order) => (
               <li key={order.id} className="text-[12px] font-semibold flex py-5 border-b border-[#E6EDFF] cursor-pointer" onClick={() => setSelectedOrder(order)}>
                 <p className="w-[10%]">{order.id.slice(0, 6)}</p>
                 <p className="w-[10%]">{new Date(order.order_date).toLocaleDateString()}</p>
@@ -133,9 +106,9 @@ const AdminOrders = () => {
                   ₦{order.order_items.reduce((acc, item) => acc + item.quantity * parseFloat(item.price), 0) + parseFloat(order.delivery_fee)}
                 </p>
                 <p className='w-[20%] text-[12px]'>{formatEstimatedDelivery(order.estimated_delivery)}</p>
-                <p className="w-[10%] bg-[#34C75926] pl-3 flex items-center gap-2 py-1 rounded-lg">
-                  <span className="block rounded-full w-2 h-2 bg-[#34C759]"></span>
-                  <span>{order.status}</span>
+                <p className={`flex items-center gap-4 px-6 py-1 rounded-lg`} style={{ backgroundColor: statusColors[order.status].bg }}>
+                  <span className={`w-2 h-2 rounded-full`} style={{ backgroundColor: statusColors[order.status].dot }}></span>
+                  <span className="capitalize">{order.status}</span>
                 </p>
               </li>
             ))}
@@ -144,16 +117,16 @@ const AdminOrders = () => {
       )}
 
       {layout === 'grid' && (
-        <div className="GRID grid grid-cols-2 sm:grid-cols-4 gap-8 mb-8 sm:mb-16 mt-10">
-          {orders.map((order) => {
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-8 sm:mb-16 mt-10">
+          {filteredOrders.map((order) => {
             const firstItem = order.order_items[0]; // get first item in order
             const imageSrc = firstItem?.product?.image1
 
             return (
-              <div key={order.id} className="mb-10">
+              <div key={order.id} className="mb-10" onClick={() => setSelectedOrder(order)}>
                 <div className="relative w-fit mb-4">
-                  <p className={`absolute top-2 right-2 ${order.status === "Delivered" ? "bg-[#34C75926]" : "bg-[#FF950026]"} flex items-center gap-2 rounded-lg px-4`}>
-                    <span className={`block rounded-full w-2 h-2 ${order.status === "Delivered" ? "bg-[#34C759]" : "bg-[#FF9500]"}`}></span>
+                  <p className={`absolute top-2 right-2 flex items-center gap-2`} style={{ backgroundColor: statusColors[order.status].bg }}>
+                    <span className={`w-2 h-2 rounded-full`} style={{ backgroundColor: statusColors[order.status].dot }}></span>
                     <span className="text-[12px]">{order.status}</span>
                   </p>
                   <img src={imageSrc} alt={firstItem?.name || 'Product'} className="rounded-3xl w-full" />
@@ -176,76 +149,20 @@ const AdminOrders = () => {
         </div>
       )}
 
-      <div className='flex justify-between items-center px-24 mt-20'>
-         <Pagination />
-         <Link to={""} className='text-[#184455] font-semibold'>Next</Link>
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={Math.ceil(filteredOrders.length / itemsPerPage)}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
+
 
       {selectedOrder && (
-        <div className="absolute top-0 left-0 w-full h-full bg-white/10 backdrop-blur-sm flex justify-center items-start z-50 pt-20">
-          <div className="bg-white w-[80%] p-6 rounded-lg shadow-lg overflow-y-auto max-h-[90vh]">
-            <div className='flex justify-between items-center mb-3 '>
-              <h3 className="text-[18px] font-medium">Order {selectedOrder.id}</h3>
-              <button onClick={() => setSelectedOrder(null)} className="mb-4 text-red-500 font-bold text-[25px]">X</button>
-            </div>
-
-            <p className="text-[14px] mb-4 font-medium">
-              Placed on {new Date(selectedOrder.order_date).toLocaleDateString()} by {selectedOrder.first_name} {selectedOrder.last_name}
-            </p>
-
-            <p className="text-[14px] font-semibold mb-3">Customer’s Details</p>
-            <div className="grid grid-cols-3 gap-y-3">
-              <p className="flex items-center gap-3 text-[14px]"><span className="font-medium">First Name:</span><span>{selectedOrder.first_name}</span></p>
-              <p className="flex items-center gap-3 text-[14px]"><span className="font-medium">Last Name:</span><span>{selectedOrder.last_name}</span></p>
-              <p className="flex items-center gap-3 text-[14px]"><span className="font-medium">Delivery Address:</span><span>{selectedOrder.delivery_address}</span></p>
-              <p className="flex items-center gap-3 text-[14px]"><span className="font-medium">Email:</span><span>{selectedOrder.email}</span></p>
-              <p className="flex items-center gap-3 text-[14px]"><span className="font-medium">City/Region:</span><span>{selectedOrder.state}</span></p>
-              <p className="flex items-center gap-3 text-[14px]"><span className="font-medium">Estimated Delivery:</span><span>{formatEstimatedDelivery(selectedOrder.estimated_delivery)}</span></p>
-              <p className="flex items-center gap-3 text-[14px]"><span className="font-medium">Phone Number:</span><span>{selectedOrder.phone_number}</span></p>
-            </div>
-
-            <div className="mt-10 flex justify-between items-center">
-              <div>
-                <p className="text-[14px] font-medium">Status</p>
-                <Dropdown
-                  label="Status"
-                  options={["Active", "Delivered"]}
-                  widthClass="w-40"
-                  menuBgClass="bg-[#34C75926]"
-                  onSelect={(value) => console.log("Selected:", value)}
-                />
-              </div>
-              <div className="text-[14px]">
-                <p className="font-medium">Total Delivery Fee</p>
-                <p className="font-bold">₦{parseFloat(selectedOrder.delivery_fee).toLocaleString()}</p>
-              </div>
-            </div>
-
-            <div className="text-[#333333] text-[14px] mt-10">
-              <p className="flex items-center bg-[#DADADA80] text-[#333333] font-medium p-4 rounded-lg">
-                <span className="w-[25%]">Products</span>
-                <span className="w-[25%]">Quantity</span>
-                <span className="w-[25%]">Price</span>
-                <span className="w-[25%]">Total</span>
-              </p>
-
-              {selectedOrder.order_items.map((item, index) => (
-                <p key={index} className="flex items-center text-[#333333] font-medium py-3 rounded-lg mt-4">
-                  <span className="w-[25%]">{item.name}</span>
-                  <span className="w-[25%]">{item.quantity}</span>
-                  <span className="w-[25%]">₦{parseFloat(item.price).toLocaleString()}</span>
-                  <span className="w-[25%]">₦{(item.quantity * parseFloat(item.price)).toLocaleString()}</span>
-                </p>
-              ))}
-
-              <p className="flex items-center justify-end text-[#333333] font-bold py-3 rounded-lg mt-4">
-                <span className="w-[25%]">Subtotal</span>
-                <span className="w-[25%]">₦{selectedOrder.order_items.reduce((acc, item) => acc + item.quantity * parseFloat(item.price), 0).toLocaleString()}</span>
-              </p>
-            </div>
-          </div>
-        </div>
+        <SelectedOrderPopup
+          selectedOrder={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+        />
       )}
+
 
     </div>
   );

@@ -46,7 +46,7 @@ const Dropdown = ({
     <div ref={dropdownRef} className="relative inline-block text-sm">
       <button
         onClick={() => setIsOpen(prev => !prev)}
-        className={`px-4 py-2 flex items-center justify-between gap-4 border border-[#CACACA] rounded-lg min-w-[150px] ${menuBgClass} z-10`}
+        className={`px-2 py-1 sm:px-4 sm:py-2 text-[14px] sm:text-base flex items-center justify-between gap-4 border border-[#CACACA] rounded- min-w-[120px] lg:min-w-[150px] ${menuBgClass} z-10`}
       >
         <span>{selected}</span>
         <FiChevronDown />
@@ -54,7 +54,7 @@ const Dropdown = ({
 
       {isOpen && (
         <ul
-          className={`absolute left-0 mt-2 ${widthClass} border rounded shadow z-10 bg-white`}
+          className={`absolute left-0 mt-2 w-[100px] sm:w-[150px] ${widthClass} border rounded shadow z-10 bg-white`}
         >
           {options.map((option, index) => (
             <li
@@ -62,11 +62,20 @@ const Dropdown = ({
               className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
               onClick={() => handleOptionClick(option)}
             >
-              {option === "Active" && (
-                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+              {option === "Paid" && (
+                <span className="w-2 h-2 rounded-full bg-[#4CAF50]"></span>
+              )}
+              {option === "Shipped" && (
+                <span className="w-2 h-2 rounded-full bg-[#2196F3]"></span>
               )}
               {option === "Delivered" && (
-                <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                <span className="w-2 h-2 rounded-full bg-[#9C27B0]"></span>
+              )}
+              {option === "Cancelled" && (
+                <span className="w-2 h-2 rounded-full bg-[#F44336]"></span>
+              )}
+              {option === "Refunded" && (
+                <span className="w-2 h-2 rounded-full bg-[#FF9800]"></span>
               )}
               <span>{option}</span>
             </li>

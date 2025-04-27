@@ -31,4 +31,8 @@ export type OrderItem = {
     total_orders: number;
     returned_orders: number;
     delivered_orders: number;
+    pending_orders: number;
+    total_payment: number;
+    successful_payment: number;
+    refunded_payment: number;
   };

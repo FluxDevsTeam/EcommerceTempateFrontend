@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Wish from "./Wish"
+import Wish from "./Wish";
 import { WishData } from "./api";
 import { WishItem } from './types';
 
@@ -13,7 +13,7 @@ const Wishlist = () => {
       try {
         setLoading(true);
         const data = await WishData();
-        setWishlistItems(data);
+        setWishlistItems(data); // Initially, everything is liked
       } catch (err) {
         console.error("Failed to load wishlist:", err);
         setError("Failed to load wishlist.");
@@ -24,6 +24,10 @@ const Wishlist = () => {
 
     fetchWishlist();
   }, []);
+
+  const handleUnlike = (id: number) => {
+    setWishlistItems(prev => prev.filter(item => item.id !== id));
+  };
 
   if (loading) {
     return <p className="p-10 text-center">Loading wishlist...</p>;
@@ -45,7 +49,11 @@ const Wishlist = () => {
                 alt={item.product.name}
                 className="rounded-2xl h-[300px]"
               />
-              <Wish color="red" defaultLiked />
+              <Wish 
+                color="red"
+                liked={true}
+                onToggle={() => handleUnlike(item.id)}
+              />
             </div>
             <p className="text-base sm:text-[20px] mb-2">{item.product.name}</p>
             <div className="flex gap-2 sm:gap-4">

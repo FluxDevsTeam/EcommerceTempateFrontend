@@ -96,7 +96,7 @@ const Confirm = () => {
         </div>
         <div className="font-medium">
           <h6 className="text-[20px] leading-[30px]">Delivery Address</h6>
-            <p className="text-[18px] leading-[28px] text-[#667085]">847 Jewess Bridge Apt. 174<br />London, UK<br />474-769-3919</p>
+            <p className="text-[18px] leading-[28px] text-[#667085]">{order.delivery_address}<br />{order.state}<br />{order.phone_number}</p>
         </div>
       </div>
 
@@ -108,15 +108,15 @@ const Confirm = () => {
           <div className="text-[#667085] text-[18px] leading-[28px]">
             <p className='flex justify-between items-center text-[#475467] text-[20px] leading-[30px] mb-2'>
               <span className=''>Discount</span>
-              <span className='text-right'>$565</span>
+              <span className='text-right'>0</span>
             </p>
             <p className='flex justify-between items-center mb-2'>
               <span className='text-[#00000099]'>Discount</span>
-              <span className='text-right'>(20%) - $1109.40</span>
+              <span className='text-right'>0</span>
             </p>
             <p className='flex justify-between items-center mb-2'>
               <span className='text-[#00000099]'>Delivery</span>
-              <span className='text-right'>$0.00</span>
+              <span className='text-right'>N {order.delivery_fee}</span>
             </p>
             <p className='flex justify-between items-center mb-2 mt-10'>
               <span>Total</span>
