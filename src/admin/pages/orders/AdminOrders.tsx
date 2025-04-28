@@ -64,7 +64,6 @@ const AdminOrders = () => {
           <Dropdown
             label="Sort by"
             options={["All Categories", "Paid", "Shipped", "Delivered", "Cancelled", "Refunded"]}
-            widthClass="w-50"
             onSelect={(value) => setStatusFilter(value)}
           />
         </div>
@@ -160,6 +159,15 @@ const AdminOrders = () => {
         <SelectedOrderPopup
           selectedOrder={selectedOrder}
           onClose={() => setSelectedOrder(null)}
+          onStatusChange={(newStatus) => {
+            if (selectedOrder) {
+              const updatedOrders = orders.map(order => 
+                order.id === selectedOrder.id ? { ...order, status: newStatus } : order
+              );
+              setOrders(updatedOrders);
+              setSelectedOrder({ ...selectedOrder, status: newStatus });
+            }
+          }}
         />
       )}
 

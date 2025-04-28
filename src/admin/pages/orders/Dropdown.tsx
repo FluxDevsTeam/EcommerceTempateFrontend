@@ -3,8 +3,7 @@ import { FiChevronDown } from 'react-icons/fi';
 
 type DropdownProps = {
   label?: string;
-  options: string[];
-  widthClass?: string;      
+  options: string[];    
   menuBgClass?: string;      
   onSelect?: (value: string) => void;
 };
@@ -12,7 +11,6 @@ type DropdownProps = {
 const Dropdown = ({
   label = "Select Option",
   options,
-  widthClass = "w-48",
   menuBgClass = "bg-white",
   onSelect
 }: DropdownProps) => {
@@ -54,7 +52,7 @@ const Dropdown = ({
 
       {isOpen && (
         <ul
-          className={`absolute left-0 mt-2 ${widthClass} border rounded shadow z-10 bg-white`}
+          className={`absolute left-0 mt-2 w-36 sm:w-48 border rounded shadow z-10 bg-white`}
         >
           {options.map((option, index) => (
             <li
