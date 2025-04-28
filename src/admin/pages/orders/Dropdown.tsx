@@ -4,8 +4,8 @@ import { FiChevronDown } from 'react-icons/fi';
 type DropdownProps = {
   label?: string;
   options: string[];
-  widthClass?: string;          // e.g., "w-40"
-  menuBgClass?: string;         // e.g., "bg-[#f0f0f0]"
+  widthClass?: string;      
+  menuBgClass?: string;      
   onSelect?: (value: string) => void;
 };
 
@@ -43,10 +43,10 @@ const Dropdown = ({
   }, []);
 
   return (
-    <div ref={dropdownRef} className="relative inline-block text-sm">
+    <div ref={dropdownRef} className="relative inline-block text-sm px-2 py-1 sm:px-4 sm:py-2.5">
       <button
         onClick={() => setIsOpen(prev => !prev)}
-        className={`px-2 py-1 sm:px-4 sm:py-2 text-[14px] sm:text-base flex items-center justify-between gap-4 border border-[#CACACA] rounded- min-w-[120px] lg:min-w-[150px] ${menuBgClass} z-10`}
+        className={`px-2 py-1 sm:px-4 sm:py-2 text-[12px] sm:text-base flex items-center justify-between gap-4 border border-[#CACACA] rounded- min-w-[100px] sm:min-w-[150px] ${menuBgClass} z-10`}
       >
         <span>{selected}</span>
         <FiChevronDown />
@@ -54,7 +54,7 @@ const Dropdown = ({
 
       {isOpen && (
         <ul
-          className={`absolute left-0 mt-2 w-[100px] sm:w-[150px] ${widthClass} border rounded shadow z-10 bg-white`}
+          className={`absolute left-0 mt-2 ${widthClass} border rounded shadow z-10 bg-white`}
         >
           {options.map((option, index) => (
             <li

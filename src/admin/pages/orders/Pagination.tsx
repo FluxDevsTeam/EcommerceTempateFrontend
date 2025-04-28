@@ -10,7 +10,7 @@ type PaginationProps = {
   const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
 
   return (
-    <div className='flex justify-between items-center px-24 mt-20'>
+    <div className='flex justify-between items-center px-6 sm:px-24 mt-20'>
       <p className="flex border border-[#E0E0E0] rounded overflow-hidden">
         <span
           className="w-8 h-8 p-1 text-center flex items-center justify-center cursor-pointer"

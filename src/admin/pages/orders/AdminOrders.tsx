@@ -56,13 +56,13 @@ const AdminOrders = () => {
     <div className="leading-[150%] relative">
       <AdminHeaders />
       <AdminAggregates />
-      <div className="flex items-center mt-10">
-        <div className='basis-[]'>
+      <div className="flex gap-1.5 sm:gap-5 items-center mt-10 w-full">
+      <div className='basis-auto w-[160px] sm:basis-[35%] sm:w-auto sm:mr-auto'>
           <SearchForm />
         </div>
         <div>
           <Dropdown
-            label="All Categories"
+            label="Sort by"
             options={["All Categories", "Paid", "Shipped", "Delivered", "Cancelled", "Refunded"]}
             widthClass="w-50"
             onSelect={(value) => setStatusFilter(value)}
@@ -72,41 +72,41 @@ const AdminOrders = () => {
           className={`p-2 rounded-lg cursor-pointer ${layout === "menu" ? "bg-black" : "border border-[#CACACA]"}`}
           onClick={() => setLayout("menu")}
         >
-          <FiMenu className={`${layout === "menu" ? "text-white" : "text-black"} w-[24px] h-[24px]`} />
+          <FiMenu className={`${layout === "menu" ? "text-white" : "text-black"} sm:w-[24px] w-[12px] sm:h-[24px] h-[12px]`} />
         </div>
 
         <div
           className={`p-2 rounded-lg cursor-pointer ${layout === "grid" ? "bg-black" : "border border-[#CACACA]"}`}
           onClick={() => setLayout("grid")}
         >
-          <FiGrid className={`${layout === "grid" ? "text-white" : "text-black"} w-[24px] h-[24px]`} />
+          <FiGrid className={`${layout === "grid" ? "text-white" : "text-black"} sm:w-[24px] w-[16px] sm:h-[24px] h-[16px]`} />
         </div>
       </div>
 
       {/* Menu View */}
       {layout === "menu" && (
-        <div className="mt-10 border border-[#E6EDFF] rounded-2xl py-4 px-6">
-          <ul className="text-[12px] font-semibold flex py-5 border-b border-[#E6EDFF]">
-            <li className="w-[10%]">ID</li>
-            <li className="w-[10%]">Date</li>
-            <li className="w-[20%]">Product Name</li>
-            <li className="w-[20%]">Address</li>
-            <li className="w-[10%]">Price</li>
-            <li className="w-[20%]">Est. Delivery</li>
-            <li className="w-[10%]">Status</li>
+        <div className="mt-10 border border-[#E6EDFF] rounded-2xl sm:py-4 py-2 sm:px-6 px-2">
+          <ul className="text-[12px] font-semibold flex sm:py-5 py-2 border-b border-[#E6EDFF]">
+            <li className="sm:w-[10%] w-[15%]">ID</li>
+            <li className="sm:w-[10%] w-[30%]">Date</li>
+            <li className="sm:w-[20%] w-[40%]">Product Name</li>
+            <li className="w-[20%] hidden sm:block">Address</li>
+            <li className="sm:w-[10%] w-[15%]">Price</li>
+            <li className="w-[20%] hidden sm:block">Est. Delivery</li>
+            <li className="w-[10%] hidden sm:block">Status</li>
           </ul>
           <ul>
           {displayedOrders.map((order) => (
-              <li key={order.id} className="text-[12px] font-semibold flex py-5 border-b border-[#E6EDFF] cursor-pointer" onClick={() => setSelectedOrder(order)}>
-                <p className="w-[10%]">{order.id.slice(0, 6)}</p>
-                <p className="w-[10%]">{new Date(order.order_date).toLocaleDateString()}</p>
-                <p className="w-[20%]">{order.order_items.map(item => item.name).join(', ')}</p>
-                <p className="w-[20%]">{order.delivery_address}</p>
-                <p className="w-[10%]">
+              <li key={order.id} className="text-[10px] sm:text-[12px] font-semibold flex py-5 border-b border-[#E6EDFF] cursor-pointer" onClick={() => setSelectedOrder(order)}>
+                <p className="sm:w-[10%] w-[15%]">{order.id.slice(0, 6)}</p>
+                <p className="sm:w-[10%] w-[30%]">{new Date(order.order_date).toLocaleDateString()}</p>
+                <p className="sm:w-[20%] w-[40%]">{order.order_items.map(item => item.name).join(', ')}</p>
+                <p className="w-[20%] hidden sm:block">{order.delivery_address}</p>
+                <p className="sm:w-[10%] w-[15%]">
                   ₦{order.order_items.reduce((acc, item) => acc + item.quantity * parseFloat(item.price), 0) + parseFloat(order.delivery_fee)}
                 </p>
-                <p className='w-[20%] text-[12px]'>{formatEstimatedDelivery(order.estimated_delivery)}</p>
-                <p className={`flex items-center gap-4 px-6 py-1 rounded-lg`} style={{ backgroundColor: statusColors[order.status].bg }}>
+                <p className='w-[20%] text-[12px] hidden sm:block'>{formatEstimatedDelivery(order.estimated_delivery)}</p>
+                <p className={`items-center gap-4 px-6 py-1 hidden sm:flex rounded-lg`} style={{ backgroundColor: statusColors[order.status].bg }}>
                   <span className={`w-2 h-2 rounded-full`} style={{ backgroundColor: statusColors[order.status].dot }}></span>
                   <span className="capitalize">{order.status}</span>
                 </p>
