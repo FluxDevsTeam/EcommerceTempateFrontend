@@ -75,7 +75,7 @@ export default function SearchInput({ onItemSelect }: SearchInputProps) {
   }, [searchRef]);
 
   const handleSuggestionClick = (suggestion: string) => {
-    setSearchQuery("");
+    setSearchQuery(""); // Clear the search bar
     onItemSelect();
     setIsFocused(false);
     navigate(`/search?q=${encodeURIComponent(suggestion)}`);
@@ -93,6 +93,7 @@ export default function SearchInput({ onItemSelect }: SearchInputProps) {
   const performSearch = () => {
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery(""); // Clear the search bar after search
       onItemSelect();
       setIsFocused(false);
       inputRef.current?.blur();

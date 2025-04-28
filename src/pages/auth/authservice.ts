@@ -76,8 +76,8 @@ api.interceptors.response.use(
         if (response.access_token) {
           localStorage.setItem('accessToken', response.access_token);
           
-          // Update the original request with the new token
-          originalRequest.headers['Authorization'] = `Bearer ${response.access_token}`;
+          // Update the original request with the new token using JWT format
+          originalRequest.headers['Authorization'] = `JWT ${response.access_token}`;
           return api(originalRequest);
         }
       } catch (refreshError) {
@@ -96,7 +96,10 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `JWT ${token}`;
+      
+      // For debugging
+      console.log("Adding auth header:", `JWT ${token}`);
     }
     return config;
   },
@@ -154,14 +157,18 @@ const authService = {
       // Store tokens in localStorage
       if (response.data.access_token) {
         localStorage.setItem('accessToken', response.data.access_token);
-      }
-      if (response.data.refresh_token) {
-        localStorage.setItem('refreshToken', response.data.refresh_token);
+      } else if (response.data.access) { // Fallback for backward compatibility
+        localStorage.setItem('accessToken', response.data.access);
       }
       
-      // Since user data isn't included in login response, fetch it separately
+      if (response.data.refresh_token) {
+        localStorage.setItem('refreshToken', response.data.refresh_token);
+      } else if (response.data.refresh) { // Fallback for backward compatibility
+        localStorage.setItem('refreshToken', response.data.refresh);
+      }
+      
+      // Fetch user profile after storing the token
       try {
-        // Fetch user profile after storing the token
         const userResponse = await authService.getUserProfile();
         
         // Return combined data
@@ -188,6 +195,8 @@ const authService = {
       
       if (response.data.access_token) {
         localStorage.setItem('accessToken', response.data.access_token);
+      } else if (response.data.access) { // Fallback for backward compatibility
+        localStorage.setItem('accessToken', response.data.access);
       }
       
       return response.data;
@@ -329,21 +338,9 @@ const authService = {
   },
   
   // Get current user from localStorage
-  getCurrentUser: async (): Promise<User | null> => {
+  getCurrentUser: (): User | null => {
     const userJson = localStorage.getItem('user');
-    const accessToken = localStorage.getItem('accessToken');
     
-    // If we have a token but no user data, try to fetch the profile
-    if (accessToken && !userJson) {
-      try {
-        return await authService.getUserProfile();
-      } catch (e) {
-        console.error("Error fetching user profile:", e);
-        return null;
-      }
-    }
-    
-    // Return cached user data if available
     if (userJson) {
       try {
         return JSON.parse(userJson);
@@ -358,7 +355,7 @@ const authService = {
   
   // Check if user is logged in
   isLoggedIn: (): boolean => {
-    return !!localStorage.getItem('accessToken');
+    return !!localStorage.getItem('accessToken') && !!localStorage.getItem('user');
   }
 };
 

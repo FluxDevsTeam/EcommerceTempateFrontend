@@ -1,5 +1,5 @@
 import { FaRegHeart } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate ,Link} from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProducts } from "@/pages/homepage/api/apiService";
 import { ProductAPIResponse } from "@/pages/homepage/types/data-types";
@@ -40,7 +40,7 @@ const Suggested: React.FC = () => {
                   <img
                     src={item.image1}
                     alt={item.name}
-                    className="w-full h-auto shadow-lg object-cover"
+                    className="w-full h-[150px] shadow-lg object-cover"
                   />
                   <button
                     className="absolute top-2 right-2 text-gray-600 hover:text-red-500 p-2 transition-colors duration-200"
@@ -73,9 +73,10 @@ const Suggested: React.FC = () => {
       </div>
 
       <div className="flex justify-center items-center mt-8 sm:mt-10">
-        <button className="text-lg font-semibold hover:text-primary cursor-pointer transition-colors duration-200 border-b-2 border-transparent hover:border-primary">
+      <Link to ='/categories'>  <button className="text-lg font-semibold hover:text-primary cursor-pointer transition-colors duration-200 border-b-2 border-transparent hover:border-primary">
           View All
         </button>
+        </Link>
       </div>
     </div>
   );

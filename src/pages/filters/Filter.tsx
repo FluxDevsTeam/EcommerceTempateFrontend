@@ -195,7 +195,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
   // Reset filters
   const handleResetFilters = () => {
     setSelectedSubCategories([]);
-    setPriceRange([0, 300000]);
+    setPriceRange([0, 10000]);
     setSelectedSizes([]);
   };
   
@@ -248,14 +248,14 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
                 <div className="pt-2 pb-6">
                   <Slider
                     value={priceRange}
-                    max={300000}
+                    max={10000}
                     step={100}
                     onValueChange={handlePriceChange}
-                    className="mt-6 bg-black cursor-pointer"
+                    className="mt-6 font-bold bg-black cursor-pointer"
                   />
                   <div className="flex justify-between mt-2">
-                    <span className="text-gray-600">NGN{priceRange[0]}</span>
-                    <span className="text-gray-600">NGN{priceRange[1]}</span>
+                    <span className="text-gray-600 font-bold">NGN{priceRange[0]}</span>
+                    <span className="text-gray-600 font-bold">NGN{priceRange[1]}</span>
                   </div>
                 </div>
               </AccordionContent>

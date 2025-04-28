@@ -36,10 +36,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       {/* Main content area */}
       <div className="flex-1 md:ml-64 overflow-x-hidden">
         {/* Admin Header */}
-        <AdminHeader 
-          isMobileMenuOpen={isMobileMenuOpen}
-          toggleMobileMenu={toggleMobileMenu}
-        />
+  
         
         {/* Page Content */}
         <div className="p-4 md:p-6 lg:p-8">

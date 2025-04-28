@@ -36,6 +36,7 @@ interface AuthContextType {
   requestPasswordChange: (old_password: string, new_password: string, confirm_password: string) => Promise<any>;
   resendPasswordChangeOTP: () => Promise<any>;
   verifyPasswordChange: (otp: string) => Promise<any>;
+  refreshUserData: () => Promise<void>;
 }
 
 interface AuthProviderProps {
@@ -54,6 +55,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setError(null);
   };
 
+  // Function to refresh user data from localStorage or API
+  const refreshUserData = async (): Promise<void> => {
+    try {
+      // First check if we have the user in localStorage
+      const storedUser = authService.getCurrentUser();
+      if (storedUser) {
+        setCurrentUser(storedUser);
+        return;
+      }
+      
+      // If not, try to fetch from API if we have a token
+      const accessToken = localStorage.getItem('accessToken');
+      if (accessToken) {
+        const userProfile = await authService.getUserProfile();
+        setCurrentUser(userProfile);
+      } else {
+        setCurrentUser(null);
+      }
+    } catch (err) {
+      console.error("Failed to refresh user data", err);
+      setCurrentUser(null);
+    }
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -62,14 +87,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const refreshToken = localStorage.getItem('refreshToken');
         
         if (accessToken && refreshToken) {
-          // Tokens exist, try to get the user profile
+          // First try to get user from localStorage for faster UI response
+          const storedUser = authService.getCurrentUser();
+          if (storedUser) {
+            console.log("Loaded user from localStorage:", storedUser);
+            setCurrentUser(storedUser);
+          }
+          
+          // Then try to fetch fresh data from the API
           try {
             const userProfile = await authService.getUserProfile();
             console.log("Successfully fetched user profile:", userProfile);
             setCurrentUser(userProfile);
           } catch (profileError) {
-            console.error("Failed to fetch profile, logging out:", profileError);
-            await authService.logout(); // Clear invalid tokens
+            console.error("Failed to fetch profile, using stored data or logging out:", profileError);
+            if (!storedUser) {
+              // Only log out if we don't have locally stored user data
+              await authService.logout();
+              setCurrentUser(null);
+            }
           }
         } else {
           // No tokens found
@@ -115,6 +151,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       if (response.user) {
         setCurrentUser(response.user);
+      } else {
+        // If login response doesn't include user data, fetch it
+        await refreshUserData();
       }
       
       setLoading(false);
@@ -315,7 +354,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setNewPassword,
     requestPasswordChange,
     resendPasswordChangeOTP,
-    verifyPasswordChange
+    verifyPasswordChange,
+    refreshUserData
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
