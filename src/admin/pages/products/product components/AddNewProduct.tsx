@@ -389,7 +389,7 @@ const AddNewProduct: React.FC = () => {
                 <IoChevronBack size={24} />
               </button>
               <h1 className="flex-1 text-center font-medium">Products</h1>
-              <div className="w-8" /> {/* Spacer for alignment */}
+              <div className="w-8" />
             </div>
 
             {/* Desktop Header */}
@@ -416,7 +416,7 @@ const AddNewProduct: React.FC = () => {
                     <img
                       src={
                         imagePreviewUrls[selectedImageIndex] ||
-                        imagePreviewUrls[0] ||
+                        // imagePreviewUrls[0] ||
                         "/placeholder-image.jpg"
                       }
                       alt={productName || "Product Image"}
@@ -425,7 +425,7 @@ const AddNewProduct: React.FC = () => {
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     {imagePreviewUrls.map((url, idx) => (
-                      <button
+                      <article
                         key={idx}
                         onClick={() => setSelectedImageIndex(idx)}
                         className={`aspect-square rounded-lg border-2 ${
@@ -440,14 +440,14 @@ const AddNewProduct: React.FC = () => {
                           <img
                             src={url}
                             alt={`Thumbnail ${idx + 1}`}
-                            className="w-full h-full object-cover rounded-lg"
+                            className="w-full h-full object-cover rounded-md"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            No image
+                            No image {idx + 1}
                           </div>
                         )}
-                      </button>
+                      </article>
                     ))}
                   </div>
                 </div>
@@ -455,7 +455,7 @@ const AddNewProduct: React.FC = () => {
                 {/* Product Details */}
                 <div className="md:w-1/2 mt-6 md:mt-0">
                   <h2 className="text-2xl font-bold mb-2">
-                    {productName || "One Life Graphic T-shirt"}
+                    {productName || "No product name"}
                   </h2>
                   <div className="inline-block px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm mb-4">
                     Stock: {quantity || "-"}
