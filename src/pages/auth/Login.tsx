@@ -6,7 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from './AuthContext';
+import { toast } from 'sonner';
+
 
 // Define the schema for form validation
 const loginSchema = z.object({
@@ -21,6 +24,12 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const { login, error, clearError } = useAuth();
+  const navigate = useNavigate();
+  
+
   
   const {
     register,
@@ -30,8 +39,25 @@ const Login = () => {
     resolver: zodResolver(loginSchema)
   });
 
-  const onSubmit = (data: LoginFormData) => {
-    console.log(data); // Handle login logic here
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      setIsSubmitting(true);
+      clearError(); // Clear previous errors
+      
+      console.log(`Attempting login with email: ${data.email}`);
+      
+      // Call login service
+      await login(data.email, data.password);
+      
+      // If successful, redirect to dashboard or home
+      toast.success('Login successful!');
+      navigate('/dashboard'); // or whatever your main app route is
+    } catch (err: any) {
+      console.error('Login error:', err);
+      toast.error(error || 'Login failed. Please check your credentials.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -40,6 +66,7 @@ const Login = () => {
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold">SHOP.CO</h1>
         </div>
+     
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
@@ -89,8 +116,18 @@ const Login = () => {
             <Link to='/forgot-password'><p className="hover:underline">Forgot Password?</p></Link>  
           </div>
           
-          <Button type="submit" className="w-full bg-black text-white hover:bg-gray-800">
-            Login
+          {error && (
+            <div className="p-3 bg-red-50 text-red-500 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+          
+          <Button 
+            type="submit" 
+            className="w-full bg-black text-white hover:bg-gray-800"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Logging in...' : 'Login'}
           </Button>
         </form>
         

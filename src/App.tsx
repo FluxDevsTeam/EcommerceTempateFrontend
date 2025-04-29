@@ -1,26 +1,23 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider } from "./pages/auth/AuthContext";
 import MainLayout from "./pages/auth/Mainlayout";
 import Homepage from "./pages/homepage/Homepage";
 import Login from "./pages/auth/Login";
 import SignUp from "./pages/auth/Signup";
 import VerifyEmail from "./pages/auth/VerifyEmail";
+import VerifyForgotPassword from "./pages/auth/VerifyForgotPassword";
 import ChangePassword from "./pages/auth/ChangePassword";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import { Navigate } from "react-router-dom";
-import Header from './components/Header';
-import Footer from './components/Footer';
-
 import Cart from "./pages/cart/Cart";
 import ConfirmOrder from "./pages/cart/ConfirmOrder";
 import FAQs from "./pages/cart/FAQs";
 import GeneralSettings from "./pages/cart/Settings/Settings";
 import TermsOfService from "./pages/cart/TermsOfService";
-
 import AddNewProduct from "./admin/pages/products/product components/AddNewProduct";
 import EditProduct from "./admin/pages/products/product components/EditProduct";
-
 import Orders from "./pages/orders/Order";
 import ProductDetail from "./components/products/ProductDetail";
 import Categories from "./pages/categories/Categories";
@@ -30,16 +27,27 @@ import Dashboard from "./admin/pages/dashboard/Dashboard";
 import Products from "./admin/pages/products/Products";
 import Settings from "./admin/pages/settings/Settings";
 import AdminOrders from "./admin/pages/orders/AdminOrders";
+import SearchResults from "./components/products/SearchResults";
+import ShoeCategory from "./pages/categories/ShoeCategory";
+import ClothesCategory from "./pages/categories/ClothesCategory";
+import AccessoriesCategory from "./pages/categories/AccessoriesCategory";
+import ProductsPage from "./pages/filters/FilteredPages";
+import Wishlist from "./pages/orders/Wishlist";
+import Confirm from "./pages/orders/Confirm";
+import Contact from "./pages/orders/Contact";
+
 
 const queryClient = new QueryClient();
 
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
+    <AuthProvider> {/* Move AuthProvider here */}
       <Router>
         <AppContent />
       </Router>
-    </QueryClientProvider>
+    </AuthProvider>
+  </QueryClientProvider>
   );
 };
 
@@ -49,19 +57,28 @@ const AppContent: React.FC = () => {
       {/* Public routes with MainLayout */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<Homepage />} />
-        <Route path="/products/:id" element={<ProductDetail />} />
+        <Route path="/product/item/:id" element={<ProductDetail />} />
+        <Route path="/search" element={<SearchResults />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<Orders />} />
+        <Route path="//verify-reset-otp" element={<VerifyForgotPassword/>} />
         <Route path="/categories" element={<Categories />} />
+        <Route path="/shoe-category" element={<ShoeCategory />} />
+        <Route path="/clothes-category" element={<ClothesCategory />} />
+        <Route path="/accessories-category" element={<AccessoriesCategory />} />
+        <Route path="/filtered-products" element={<ProductsPage />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/confirm-order" element={<ConfirmOrder />} />
         <Route path="/faqs" element={<FAQs />} />
         <Route path="/settings" element={<GeneralSettings />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
-        <Route path="/orders" element={<Orders />} />
+        <Route path="/orders/:id" element={<Confirm />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/contact-us" element={<Contact />} />
       </Route>
 
       {/* AuthLayout Routes */}
+     
       <Route element={<AuthLayout />}>
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<SignUp />} />
@@ -69,7 +86,7 @@ const AppContent: React.FC = () => {
         <Route path="verify-email" element={<VerifyEmail />} />
         <Route path="change-password" element={<ChangePassword />} />
       </Route>
-
+      
       {/* Admin routes with AdminLayout */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
