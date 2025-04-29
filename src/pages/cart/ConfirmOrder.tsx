@@ -21,11 +21,11 @@ const ConfirmOrder = () => {
   const [isLoadingSummary, setIsLoadingSummary] = useState(true);
   const [isLoadingCart, setIsLoadingCart] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false); // State for success modal
-  const [showErrorModal, setShowErrorModal] = useState(false); // State for error modal visibility
-  const [modalErrorMessage, setModalErrorMessage] = useState(""); // State for error modal message
-  const [selectedProvider, setSelectedProvider] = useState<string>("paystack"); // State for selected payment provider, default to paystack
-  const [error, setError] = useState<string | null>(null); // Keep general error state if needed elsewhere
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [modalErrorMessage, setModalErrorMessage] = useState("");
+  const [selectedProvider, setSelectedProvider] = useState<string>("paystack");
+  const [error, setError] = useState<string | null>(null);
   const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
   const navigate = useNavigate();
 
@@ -92,7 +92,7 @@ const ConfirmOrder = () => {
       }
       setOrderSummary(null);
     } finally {
-      setIsLoadingSummary(false); // Set specific loading state to false
+      setIsLoadingSummary(false);
     }
   };
 
@@ -331,7 +331,7 @@ const ConfirmOrder = () => {
         );
         paymentButton.classList.add("bg-black", "hover:bg-gray-800");
       }
-    }, 5000);
+    }, 10000);
 
     const accessToken = localStorage.getItem("accessToken");
     if (!accessToken) {
@@ -506,7 +506,7 @@ const ConfirmOrder = () => {
               <input
                 required
                 type="tel"
-                name="phone_number" // Correct name attribute
+                name="phone_number"
                 value={formData.phone_number}
                 onChange={handleInputChange}
                 placeholder="+123 456 7890"
@@ -563,9 +563,8 @@ const ConfirmOrder = () => {
                 </div>
                 <div className="flex justify-between">
                   <span>No. of Items</span>
-                  {/* Calculate total quantity from cart_items */}
                   <span>
-                    {orderSummary?.cart_items?.reduce(
+                    {cartDetails?.cart_items?.reduce(
                       (total: number, item: { quantity: number }) =>
                         total + item.quantity,
                       0
@@ -622,11 +621,11 @@ const ConfirmOrder = () => {
                 <button
                   onClick={initiatePayment}
                   className={`paymentBtn w-full bg-black text-white py-3 px-6 rounded-full mt-4 flex items-center justify-center gap-2 ${
-                    isSubmitting || isLoadingSummary
+                    isSubmitting || isLoadingSummary || !formData.city || !formData.delivery_address || !formData.email || !formData.first_name || !formData.last_name || !formData.phone_number || !formData.state
                       ? "opacity-50 cursor-not-allowed"
                       : "hover:bg-gray-800"
                   }`}
-                  disabled={isSubmitting || isLoadingSummary}
+                  disabled={isSubmitting || isLoadingSummary  || !formData.city || !formData.delivery_address || !formData.email || !formData.first_name || !formData.last_name || !formData.phone_number || !formData.state}
                 >
                   Proceed to Payment
                   <FiArrowRight />
@@ -680,9 +679,7 @@ const ConfirmOrder = () => {
 
       {/* Success Modal */}
       {showSuccessModal && (
-        // Overlay div for centering and background dimming
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          {/* Modal Content Box */}
           <div
             className="bg-green-100 border border-green-400 text-green-700 px-8 py-6 rounded-lg shadow-xl max-w-md w-full text-center"
             role="alert"
