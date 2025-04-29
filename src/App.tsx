@@ -32,6 +32,9 @@ import ShoeCategory from "./pages/categories/ShoeCategory";
 import ClothesCategory from "./pages/categories/ClothesCategory";
 import AccessoriesCategory from "./pages/categories/AccessoriesCategory";
 import ProductsPage from "./pages/filters/FilteredPages";
+import Wishlist from "./pages/orders/Wishlist";
+import Confirm from "./pages/orders/Confirm";
+import Contact from "./pages/orders/Contact";
 
 
 const queryClient = new QueryClient();
@@ -69,7 +72,9 @@ const AppContent: React.FC = () => {
         <Route path="/faqs" element={<FAQs />} />
         <Route path="/settings" element={<GeneralSettings />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
-        <Route path="/orders" element={<Orders />} />
+        <Route path="/orders/:id" element={<Confirm />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/contact-us" element={<Contact />} />
       </Route>
 
       {/* AuthLayout Routes */}

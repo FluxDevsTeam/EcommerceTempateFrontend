@@ -1,36 +1,107 @@
-import slippers from './img/slippers.png'
-import { FaTrashAlt } from 'react-icons/fa'
-
-
-
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faCalendar } from "@fortawesome/free-solid-svg-icons";
+import { useEffect, useState } from "react";
+import { fetchData } from "./api";
+import { Link } from "react-router-dom";
+import type { OrderData, OrderItem } from './types';
+import formatEstimatedDelivery from "./Date";
 
 const Order = () => {
-  return (
-    <div className='p-14'>
-      <h2 className="font-normal text-[40px] leading-[100%] tracking-[0%] align-middle">Your Cart</h2>
-      <div className='flex'>
-        <div className='flex border border-[#0000001A]'>
-          <div>
-            <img src={slippers} alt="img" className='w-[124px]' />
-          </div>
-          <div>
-            <h4 className='flex gap-20 items-center'>
-              <span className='text-[20px] font-bold'>Gradient Graphic T-Shirt</span>
-              <FaTrashAlt className="text-red-500 w-6 h-6" />
-            </h4>
-            <p className='text-[14px] flex gap-1.5'>
-              <span className='font-bold'>Size:</span>
-              <span className='font-extralight'>Large</span></p>
-            <p className='text-[14px] flex gap-1.5'>
-              <span className='font-bold'>Color:</span>
-              <span className='font-extralight'>White</span></p>
-            <p>$145</p>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-  )
-}
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [orders, setOrders] = useState<OrderData[]>([]);
 
-export default Order
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchData();
+        setOrders(data);
+
+        if (!data || !Array.isArray(data)) {
+          setError("Invalid data received.");
+        }
+      } catch (err) {
+        console.error("Error fetching customers:", err);
+        setError("Failed to load customers.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomers();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-4">
+        <div className="animate-pulse space-y-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 bg-gray-200 rounded"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-red-500 text-center mt-10">{error}</div>;
+  }
+
+  return (
+    <div className="p-4 sm:p-14 pb-10 sm:pb-28">
+      <h2 className="font-normal text-[32px] sm:text-[40px] tracking mb-8">My Orders</h2>
+
+      {orders.map((order: OrderData) => (
+        <div key={order.id} className="mb-14">
+          <h4 className="text-[#344054] font-bold text-[18px] sm:text-[30px] mb-6">Order ID: {order.id}</h4>
+          <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center mb-6">
+            <p className="flex gap-2 items-center">
+              <span className="text-[#667085] text-sm leading-5">Order date:</span>
+              <span className="text-[#1D2939]">{order.order_date}</span>
+            </p>
+            <p className="flex gap-2 items-center">
+              <FontAwesomeIcon icon={faCalendar} className="text-black w-5" />
+              <span>Estimated Delivery: {formatEstimatedDelivery(order.estimated_delivery)}</span>
+            </p>
+          </div>
+
+          <div className="mb-4 flex flex-col">
+            <span className="text-[20px] inline-block leading-[30px] mb-2">Status</span>
+            <span className="bg-[#72D3E940] inline-block rounded-2xl pl-2 py-1 w-[150px]">{order.status}</span>
+          </div>
+
+          <ul className="flex flex-col gap-6 sm:gap-3">
+            {order.order_items.map((item: OrderItem) => (
+              <li key={item.id} className="flex flex-wrap justify-between items-center gap-4 p-4 rounded-xl">
+                <div className="basis-[50%] sm:basis-[20%] bg-[#F0EEED] max-w-[124px] rounded-2xl overflow-hidden">
+                  <img src={item.image1} className="w-full" alt={item.name} />
+                </div>
+                <div className="basis-[50%] sm:basis-[20%]">
+                  <p className="text-2xl leading-8 mb-2">{item.name}</p>
+                  <p className="leading-6 text-[#667085] capitalize">
+                    {item.colour} | {item.size}
+                  </p>
+                </div>
+                <div className="">
+                  <p className="font-semibold text-lg leading-[30px] text-right">₦{item.price}</p>
+                  <p className="text-[#667085] text-right">Qty: {item.quantity}</p>
+                </div>
+                <div>
+                  <p className="text-[20px] leading-[30px] mb-1.5">Expected Delivery</p>
+                  <span>{formatEstimatedDelivery(order.estimated_delivery)}</span>
+                </div>
+              </li>
+              
+            ))}
+          </ul>
+          <Link to={`/orders/${order.id}`}className="inline-block text-white bg-black px-16 py-4 mt-4 rounded-2xl">Track Order</Link>
+          <hr className="mt-10 border-t border-t-gray-300" />
+          <hr className="mt-5 border-t border-t-gray-300" />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default Order;
