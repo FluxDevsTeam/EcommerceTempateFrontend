@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import FiltersComponent from './Filter';
 import { FaRegHeart } from "react-icons/fa";
 import SortDropdown from './FilterDropDown';
 
@@ -34,10 +33,9 @@ const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(12);
+  
   const [sortOption, setSortOption] = useState<'latest' | 'highest' | 'lowest'>('latest');
 
   // URL filter parsing
@@ -75,7 +73,7 @@ const ProductsPage: React.FC = () => {
         apiParams.append('min_price', currentFilters.priceRange[0].toString());
         apiParams.append('max_price', currentFilters.priceRange[1].toString());
         apiParams.append('page', currentPage.toString());
-        apiParams.append('page_size', pageSize.toString());
+       
 
         const response = await fetch(
           `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?${apiParams.toString()}`
@@ -98,7 +96,7 @@ const ProductsPage: React.FC = () => {
     };
 
     fetchProducts();
-  }, [currentPage, pageSize, searchParams]);
+  }, [currentPage,  searchParams]);
 
   // Sort products client-side when sortOption or products change
   useEffect(() => {
@@ -117,17 +115,11 @@ const ProductsPage: React.FC = () => {
     }
   }, [sortOption]);
 
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    window.scrollTo(0, 0);
-  };
-
-  const totalPages = Math.ceil(totalCount / pageSize);
-
+ 
   return (
-    <div className="container mx-auto px-4 sm:px-14 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-4xl font-medium">Filtered Products</h1>
+    <div className="container mx-auto px-6 md:px-14 py-8 md:py-12 ">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+        <h1 className="text-2xl md:text-4xl font-medium">Filtered Products</h1>
 
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <p className="text-gray-600">{totalCount} products found</p>
@@ -149,7 +141,7 @@ const ProductsPage: React.FC = () => {
         )}
         {(currentFilters.priceRange[0] > 0 || currentFilters.priceRange[1] < 300000) && (
           <div className="bg-gray-100 px-3 py-1 rounded-full text-sm">
-            NGN{currentFilters.priceRange[0]} - NGN{currentFilters.priceRange[1]}
+            ₦ {currentFilters.priceRange[0]} -  ₦{currentFilters.priceRange[1]}
           </div>
         )}
         {currentFilters.selectedSizes.length > 0 && (
@@ -179,52 +171,52 @@ const ProductsPage: React.FC = () => {
       ) : (
         <>
           {/* Products grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8 sm:mb-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 sm:mb-16">
             {products.map((item) => {
                const price = parseFloat(item.price);
                const discountedPrice = parseFloat(item.discounted_price);
                const amountSaved = price - discountedPrice;
               return (
-              <div
-                                key={item.id}
-                                className="group hover:shadow-lg transition-shadow duration-300 rounded-xl overflow-hidden cursor-pointer"
-                                onClick={() =>
-                                  navigate(`/product/item/${item.id}`)
-                                }
-                              >
-                                <div className="bg-[#F0EEED] rounded-lg p-14 relative">
-                                  <div>
-                                    <img
-                                      src={item.image1}
-                                      alt={item.name}
-                                      className="w-full h-[150px]  shadow-lg   object-cover"
-                                    />
-                                    <button
-                                      className="absolute top-2 right-2 text-gray-600 hover:text-red-500 p-2 transition-colors duration-200"
-                                      aria-label="Add to favorites"
-                                    >
-                                      <FaRegHeart size={15} />
-                                    </button>
-                                  </div>
-                                </div>
-                  
-                                <div className="p-3 sm:p-4">
-                            <h3 className="text-xl uppercase leading-[100%] sm:text-lg font-normal text-gray-800 truncate">
-                              {item.name}
-                            </h3>
-                            <div className="mt-2 flex flex-wrap items-center gap-1 sm:gap-2">
-                              <span className="text-2xl sm:text-xl font-normal leading-[100%] text-primary">
-                                NGN{discountedPrice.toFixed(0)}
-                              </span>
-                              <span className="text-gray-500 line-through text-2xl sm:text-xl ">
-                                NGN{price.toFixed(0)}
-                              </span>
-                              <span className="bg-pink-100 text-pink-700 px-2 py-1 rounded-full text-xs sm:text-sm">
-                                 NGN{amountSaved.toFixed(0)}
-                              </span>
-                            </div>
+               <div
+                        key={item.id}
+                        className="group hover:shadow-lg transition-shadow duration-300 rounded-xl overflow-hidden cursor-pointer"
+                        onClick={() =>
+                          navigate(`/product/item/${item.id}`)
+                        }
+                      >
+                        <div className=" rounded-lg relative">
+                          <div>
+                            <img
+                              src={item.image1}
+                              alt={item.name}
+                              className="w-full h-[200px] md:h-[300px] shadow-lg   object-cover"
+                            />
+                            <button
+                              className="absolute top-2 right-2 text-gray-600 hover:text-red-500 p-2 transition-colors duration-200"
+                              aria-label="Add to favorites"
+                            >
+                              <FaRegHeart size={15} />
+                            </button>
                           </div>
-                              </div>
+                        </div>
+            
+                        <div className="p-3 sm:p-4">
+                    <h3 className="text-base leading-[100%]  sm:text-lg font-normal truncate">
+                      {item.name}
+                    </h3>
+                    <div className="mt-2 flex flex-wrap items-center gap-1 sm:gap-2">
+                      <span className="text-xl  font-normal leading-[100%] text-primary">
+                      ₦ {discountedPrice.toFixed(0)}
+                      </span>
+                      <span className="text-gray-500 line-through text-xl sm:text-xl ">
+                      ₦ {price.toFixed(0)}
+                      </span>
+                      <span className="bg-red-200 text-[#FF3333] px-2 py-1 rounded-full text-xs sm:text-sm">
+                      ₦  {amountSaved.toFixed(0)}
+                      </span>
+                    </div>
+                  </div>
+                      </div>
               );
             })}
           </div>

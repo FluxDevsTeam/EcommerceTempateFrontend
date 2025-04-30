@@ -18,17 +18,19 @@ export default function SortDropdown({ onSortChange }: SortDropdownProps) {
   };
 
   return (
-    <div className="relative inline-flex">
+    <div className="relative inline-block text-left ">
       <button 
-        className="p-3 w-[121px] bg-white text-black border-none rounded-2xl border-black flex items-center justify-between cursor-pointer" 
+        className="inline-flex items-center justify-between w-40 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" 
         onClick={toggleDropdown}
       >
-        <span>{selectedOption}</span> {/* Changed to show selected option */}
-        <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+         <span>{selectedOption || 'Sort by'}</span>
+        <ChevronDown
+          className={`h-4 w-4 ml-2 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+        />
       </button>
       
       {isOpen && (
-        <div className="absolute left-0 top-14 z-10 w-36 flex flex-col divide-y divide-gray-200 overflow-hidden rounded-lg border border-gray-300 bg-white shadow-md">
+        <div className="absolute z-10 mt-2 w-40 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
           <button
             onClick={() => selectOption('Latest', 'latest')}
             className={`block w-full px-4 py-2 text-left text-sm font-medium ${
@@ -39,7 +41,7 @@ export default function SortDropdown({ onSortChange }: SortDropdownProps) {
           </button>
           <button
             onClick={() => selectOption('Highest price', 'highest')}
-            className={`block w-full px-4 py-2 text-left text-sm font-medium ${
+            className={`w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-left ${
               selectedOption === 'Highest price' ? 'bg-gray-100' : 'hover:bg-gray-50'
             }`}
           >

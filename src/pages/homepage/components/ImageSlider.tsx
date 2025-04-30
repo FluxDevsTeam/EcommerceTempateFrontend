@@ -43,7 +43,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
            
            {/* Text overlay */}
            <div className="w-[45%] absolute bottom-10 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 rounded-b-xl">
-             <h3 className="text-white uppercase text-5xl font-medium">{image.name}</h3>
+             <h3 className="text-white uppercase text-3xl md:text-5xl font-medium">{image.name}</h3>
              {/* You can add more text elements here */}
            </div>
          </div>

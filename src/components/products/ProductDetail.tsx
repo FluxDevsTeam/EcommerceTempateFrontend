@@ -145,7 +145,7 @@ const ProductDetail = () => {
   };
 
   return (
-    <div className="w-full min-h-screen px-4 sm:px-8 md:px-12 lg:px-24 my-6 md:my-10 pt-4">
+    <div className="w-full min-h-screen md:mt-8 px-6 md:px-12 py-4 lg:px-20">
       {/* Product Main Section */}
       <div className="flex flex-col lg:flex-row justify-center items-start gap-8">
         {/* Thumbnail Images (Left Column) */}
@@ -195,14 +195,15 @@ const ProductDetail = () => {
               {availableQuantity} left in stock 
             </span>
             
-            <div className="flex items-center gap-3">
-              <span className="text-xl md:text-3xl font-normal">NGN {product.discounted_price}</span>
-              <span className="text-gray-500 line-through text-3xl">NGN {product.price}</span>
+            <div className="flex flex-col md:flex-row md:items-center gap-3">
+              <span className="text-xl md:text-3xl font-normal"> ₦ {product.discounted_price}</span>
+            <div className="flex space-x-2">  <span className="text-gray-500 line-through text-3xl"> ₦ {product.price}</span>
               {discountPercentage > 0 && (
-                <span className="bg-pink-100 text-pink-700 px-2 py-1 rounded-full text-sm">
+                <span className="bg-red-200 text-[#FF3333] p-3  rounded-full  text-sm">
                   {discountPercentage}% off
                 </span>
               )}
+              </div>
             </div>
             
             <p className="text-gray-700 text-base leading-relaxed">
@@ -230,7 +231,7 @@ const ProductDetail = () => {
                         setQuantity(1); // Reset quantity when size changes
                       }}
                       disabled={item.quantity <= 0}
-                      className={`p-2 text-sm sm:text-base border rounded-2xl transition-colors ${
+                      className={`p-3 text-sm sm:text-base border rounded-2xl transition-colors ${
                         item.size === selectedSize
                           ? 'bg-black text-white border-black'
                           : item.quantity <= 0

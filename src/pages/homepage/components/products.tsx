@@ -4,7 +4,7 @@
 const Products = () => {
   return (
     <div >
-        <div className="hidden md:block">
+        <div className="hidden md:block ">
              <p className="text-4xl font-medium  flex justify-center ">Latest Items</p>
         </div>
 
