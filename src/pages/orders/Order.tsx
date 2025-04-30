@@ -74,7 +74,7 @@ const Order = () => {
           <ul className="flex flex-col gap-6 sm:gap-3">
             {order.order_items.map((item: OrderItem) => (
               <li key={item.id} className="flex flex-wrap justify-between items-center gap-4 p-4 rounded-xl">
-                <div className="basis-[50%] sm:basis-[20%] bg-[#F0EEED] max-w-[124px] rounded-2xl overflow-hidden">
+                <div className="basis-[50%] sm:basis-[30%] bg-[#F0EEED] max-w-[124px] rounded-2xl overflow-hidden">
                   <img src={item.image1} className="w-full" alt={item.name} />
                 </div>
                 <div className="basis-[50%] sm:basis-[20%]">

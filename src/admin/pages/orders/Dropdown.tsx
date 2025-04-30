@@ -44,7 +44,7 @@ const Dropdown = ({
     <div ref={dropdownRef} className="relative inline-block text-sm px-2 py-1 sm:px-4 sm:py-2.5">
       <button
         onClick={() => setIsOpen(prev => !prev)}
-        className={`px-2 py-1 sm:px-4 sm:py-2 text-[12px] sm:text-base flex items-center justify-between gap-4 border border-[#CACACA] rounded- min-w-[100px] sm:min-w-[150px] ${menuBgClass} z-10`}
+        className={`px-2 py-1 sm:px-4 sm:py-2 text-[12px] sm:text-base flex items-center justify-between gap-4 border border-[#CACACA] rounded-lg min-w-[100px] sm:min-w-[150px] ${menuBgClass} z-10`}
       >
         <span>{selected}</span>
         <FiChevronDown />
