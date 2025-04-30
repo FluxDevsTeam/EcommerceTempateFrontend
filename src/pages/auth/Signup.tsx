@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
+import { toast } from 'sonner';
 
 // Define the schema for form validation
 const signupSchema = z.object({
@@ -16,6 +18,10 @@ const signupSchema = z.object({
   lastName: z.string()
     .min(2, { message: "Last name must be at least 2 characters" })
     .max(50, { message: "Last name must not exceed 50 characters" }),
+  phoneNumber: z.string()
+    .min(10, { message: "Phone number must be at least 10 characters" })
+    .max(15, { message: "Phone number must not exceed 15 characters" })
+    .regex(/^\+?\d+$/, { message: "Please enter a valid phone number" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string()
     .min(6, { message: "Password must be at least 6 characters long" })
@@ -32,8 +38,13 @@ const signupSchema = z.object({
 type SignupFormData = z.infer<typeof signupSchema>;
 
 const Signup = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Local error state
+  
+  const { signup } = useAuth();
+  const navigate = useNavigate();
   
   const {
     register,
@@ -43,8 +54,34 @@ const Signup = () => {
     resolver: zodResolver(signupSchema)
   });
 
-  const onSubmit = (data: SignupFormData) => {
-    console.log(data); // Handle signup logic here
+  const onSubmit = async (data: SignupFormData): Promise<void> => {
+    try {
+      setIsSubmitting(true);
+      setErrorMessage(null); // Clear previous errors
+      
+      // Prepare user data
+      const userData = {
+        first_name: data.firstName,
+        last_name: data.lastName,
+        phone_number: data.phoneNumber,
+        email: data.email,
+        password: data.password,
+        verify_password: data.confirmPassword 
+      };
+      
+      // Call signup service
+      await signup(userData);
+      
+      // If successful, navigate to verification page
+      toast.success('Signup successful! Please verify your email.');
+      navigate('/verify-email', { state: { email: data.email } });
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Signup failed. Please try again.';
+      setErrorMessage(message);
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -81,6 +118,21 @@ const Signup = () => {
             <div className="h-5">
               {errors.lastName && (
                 <p className="text-sm text-red-500">{errors.lastName.message}</p>
+              )}
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="phoneNumber">Phone Number</Label>
+            <Input 
+              id="phoneNumber" 
+              placeholder="Enter Phone Number" 
+              className='p-5'
+              {...register("phoneNumber")}
+            />
+            <div className="h-5">
+              {errors.phoneNumber && (
+                <p className="text-sm text-red-500">{errors.phoneNumber.message}</p>
               )}
             </div>
           </div>
@@ -155,11 +207,21 @@ const Signup = () => {
             </div>
           </div>
           
-          <Button type="submit" className="w-full bg-black text-white hover:bg-gray-800">
-            Create Account
+          {errorMessage && (
+            <div className="p-3 bg-red-50 text-red-500 rounded-md text-sm">
+              {errorMessage}
+            </div>
+          )}
+          
+          <Button 
+            type="submit" 
+            className="w-full bg-black text-white hover:bg-gray-800"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Creating Account...' : 'Create Account'}
           </Button>
         </form>
-        
+          
         <div className="flex w-full items-center gap-4 py-6">
           <div className="w-[50%] h-1 bg-neutral-900" />
           <span className="text-sm text-gray-500">OR</span>

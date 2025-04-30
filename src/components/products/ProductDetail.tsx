@@ -1,16 +1,148 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
 import Suggested from "./Suggested";
 import DescriptionList from "./DescriptionList";
 
+// Define TypeScript interfaces for the API responses
+interface Category {
+  id: number;
+  name: string;
+}
+
+interface SubCategory {
+  id: number;
+  category: Category;
+  name: string;
+}
+
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  total_quantity: number;
+  sub_category: SubCategory;
+  colour: string;
+  image1: string;
+  image2: string;
+  image3: string;
+  discounted_price: string;
+  price: string;
+  is_available: boolean;
+  dimensional_size: string;
+  weight: string;
+}
+
+interface ProductSize {
+  id: number;
+  product: {
+    id: number;
+    name: string;
+    image1: string;
+    discounted_price: string;
+    price: string;
+  };
+  size: string;
+  quantity: number;
+}
+
+interface ProductSizesResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ProductSize[];
+}
+
+interface ProductDetailParams {
+  id: string; 
+}
+
+const fetchProduct = async (id: number): Promise<Product> => {
+  const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${id}/`);
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+  return response.json();
+};
+
+const fetchSizes = async (productId: number): Promise<ProductSize[]> => {
+  const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/product/size/?product=${productId}`);
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+  const data: ProductSizesResponse = await response.json();
+  return data.results;
+};
+
 const ProductDetail = () => {
-  const images = [
-    "https://picsum.photos/400/300",
-    "https://picsum.photos/200/540",
-    "https://picsum.photos/435/324"
-  ];
-  
-  // Set the first image as default
-  const [mainImage, setMainImage] = useState(images[0]);
+  const { id } = useParams<keyof ProductDetailParams>() as ProductDetailParams;
+  const productId = parseInt(id);
+  const [mainImage, setMainImage] = useState<string>("");
+  const [selectedSize, setSelectedSize] = useState<string>("");
+  const [quantity, setQuantity] = useState<number>(1);
+
+  // Fetch product data
+  const { data: product, isLoading, error } = useQuery<Product, Error>({
+    queryKey: ['product', productId],
+    queryFn: () => fetchProduct(productId),
+    enabled: !!productId
+  });
+
+  // Fetch sizes for this specific product
+  const { data: productSizes, isLoading: sizesLoading } = useQuery<ProductSize[], Error>({
+    queryKey: ['productSizes', productId],
+    queryFn: () => fetchSizes(productId),
+    enabled: !!productId
+  });
+
+  // Initialize main image and selected size when product data is loaded
+  useEffect(() => {
+    if (product) {
+      const images = [product.image1, product.image2, product.image3].filter(Boolean);
+      if (images.length > 0 && !mainImage) {
+        setMainImage(images[0]);
+      }
+      // Set the first available size as default if none selected
+      if (productSizes && productSizes.length > 0 && !selectedSize) {
+        setSelectedSize(productSizes[0].size);
+      }
+    }
+  }, [product, productSizes, mainImage, selectedSize]);
+
+  if (!id) {
+    return <div className="text-center py-8">Product ID not provided</div>;
+  }
+
+  if (isLoading) return <div className="text-center py-8">Loading product...</div>;
+  if (error) return <div className="text-center py-8 text-red-500">Error: {error.message}</div>;
+  if (!product) return <div className="text-center py-8">Product not found</div>;
+
+  // Images array - filter out falsy values for better type safety
+  const images = [product.image1, product.image2, product.image3].filter(Boolean);
+
+  // Calculate discount percentage
+  const price = parseFloat(product.price);
+  const discountedPrice = parseFloat(product.discounted_price);
+  const discountPercentage = price > 0 
+    ? Math.round(((price - discountedPrice) / price) * 100) 
+    : 0;
+
+  // Get available quantity for selected size
+  const selectedSizeData = productSizes?.find(size => size.size === selectedSize);
+  const availableQuantity = selectedSizeData?.quantity || 0;
+
+  // Handle quantity changes
+  const handleQuantityIncrease = () => {
+    if (quantity < availableQuantity) {
+      setQuantity(quantity + 1);
+    }
+  };
+
+  const handleQuantityDecrease = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
+  };
 
   return (
     <div className="w-full min-h-screen px-4 sm:px-8 md:px-12 lg:px-24 my-6 md:my-10 pt-4">
@@ -28,78 +160,123 @@ const ProductDetail = () => {
                 src={img} 
                 alt={`Thumbnail ${index + 1}`} 
                 className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = 'https://via.placeholder.com/100';
+                }}
               />
             </div>
           ))}
         </div>
 
         {/* Main Product Image (Middle Column) */}
-        <div className="bg-gray-200 rounded-lg p-4 sm:p-6 flex-1 max-w-[500px] lg:order-2">
-          <img
-            src={mainImage}
-            alt="Main Product"
-            className="w-full h-auto aspect-square object-cover"
-          />
+        <div className=" rounded-lg  max-w-md lg:order-2">
+          {mainImage && (
+            <img
+              src={mainImage}
+              alt="Main Product"
+              className="w-full h-auto aspect-square object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = 'https://via.placeholder.com/500';
+              }}
+            />
+          )}
         </div>
 
         {/* Product Info (Right Column) */}
-        <div className="flex-1 max-w-[600px] order-2 lg:order-3">
-          <div className="space-y-4 sm:space-y-6">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium leading-tight">
-              One Life Graphic T-Shirt
+        <div className="flex-1 max-w-lg order-2 lg:order-3">
+          <div className="space-y-2 sm:space-y-6">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl uppercase font-medium leading-tight">
+              {product.name}
             </h1>
             
-            <span className="inline-block bg-[#72D3E9] text-sm md:text-base rounded-2xl py-1 px-3">
-              5 left in stock
+            <span className="inline-block bg-blue-100 text-sm md:text-base rounded-2xl p-2">
+              {availableQuantity} left in stock 
             </span>
             
             <div className="flex items-center gap-3">
-              <span className="text-xl md:text-2xl font-bold">$500</span>
-              <span className="text-gray-500 line-through text-lg">$200</span>
-              <span className="bg-pink-100 text-pink-700 px-2 py-1 rounded-full text-sm">
-                10% off
-              </span>
+              <span className="text-xl md:text-3xl font-normal">NGN {product.discounted_price}</span>
+              <span className="text-gray-500 line-through text-3xl">NGN {product.price}</span>
+              {discountPercentage > 0 && (
+                <span className="bg-pink-100 text-pink-700 px-2 py-1 rounded-full text-sm">
+                  {discountPercentage}% off
+                </span>
+              )}
             </div>
             
-            <p className="text-gray-700 text-sm sm:text-base leading-relaxed">
-              This shirt is made of synthetic fiber which can last for years, available offers start right here
+            <p className="text-gray-700 text-base leading-relaxed">
+              {product.description}
             </p>
             
             <div className="space-y-1">
               <p className="text-gray-600 text-sm sm:text-base">Color</p>
-              <p className="text-gray-900 font-bold">Teal</p>
+              <p className="text-gray-900 font-bold capitalize">{product.colour}</p>
+            </div>
+            
+            {/* Size Selector */}
+            <div className="space-y-2">
+              <p className="text-gray-600 text-sm sm:text-base">Size</p>
+              <div className="grid grid-cols-4 gap-2">
+                {sizesLoading ? (
+                  <div className="col-span-4 text-center py-2">Loading sizes...</div>
+                ) : productSizes && productSizes.length > 0 ? (
+                  productSizes.map((item) => (
+                    <button
+                      type="button"
+                      key={item.id}
+                      onClick={() => {
+                        setSelectedSize(item.size);
+                        setQuantity(1); // Reset quantity when size changes
+                      }}
+                      disabled={item.quantity <= 0}
+                      className={`p-2 text-sm sm:text-base border rounded-2xl transition-colors ${
+                        item.size === selectedSize
+                          ? 'bg-black text-white border-black'
+                          : item.quantity <= 0
+                            ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                            : 'bg-gray-200 hover:bg-gray-300 border-gray-300 cursor-pointer'
+                      }`}
+                      title={item.quantity <= 0 ? 'Out of stock' : ''}
+                    >
+                      {item.size.toUpperCase()}
+                      {item.quantity <= 0 && (
+                        <span className="block text-xs text-red-500">(Sold out)</span>
+                      )}
+                    </button>
+                  ))
+                ) : (
+                  <div className="col-span-4 text-center py-2 text-red-500">No sizes available</div>
+                )}
+              </div>
             </div>
             
             {/* Quantity Selector */}
             <div className="flex items-center gap-4">
-              <button className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer">
+              <button 
+                className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleQuantityDecrease}
+                disabled={quantity <= 1}
+              >
                 -
               </button>
-              <span className="text-lg">1</span>
-              <button className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer">
+              <span className="text-lg">{quantity}</span>
+              <button 
+                className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleQuantityIncrease}
+                disabled={quantity >= availableQuantity}
+              >
                 +
               </button>
             </div>
             
-            {/* Size Selector */}
-            <div className="grid grid-cols-4 gap-2">
-              {['Small', 'Medium', 'Large', 'X Large'].map((size) => (
-                <button
-                  key={size}
-                  className={`p-2 text-sm sm:text-base border rounded-2xl transition-colors cursor-pointer ${
-                    size === 'Large'
-                      ? 'bg-black text-white border-black'
-                      : 'bg-gray-200 hover:bg-gray-300 border-gray-300'
-                  }`}
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-            
             {/* Add to Cart */}
-            <button className="w-full py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition-colors cursor-pointer">
-              Add to Cart
+            <button 
+              className="w-full py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              type="button"
+              disabled={availableQuantity <= 0}
+            >
+              {availableQuantity <= 0 ? 'Out of Stock' : 'Add to Cart'}
             </button>
           </div>
         </div>
@@ -109,9 +286,17 @@ const ProductDetail = () => {
       <div className="mt-12 space-y-6">
         <h2 className="text-xl sm:text-2xl font-medium">Description</h2>
         <p className="text-gray-700 text-sm sm:text-base">
-          This is a vintage product produced by Versace under their label, Medusa. It offers an authentic blend of modern and antique.
+          {product.description}
         </p>
-        <DescriptionList />
+        <DescriptionList 
+          details={{
+            "Category": product.sub_category.category.name,
+            "Subcategory": product.sub_category.name,
+            "Weight": product.weight,
+            "Size": product.dimensional_size,
+            "Color": product.colour
+          }}
+        />
         <Suggested />
       </div>
     </div>

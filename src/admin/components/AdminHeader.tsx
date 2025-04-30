@@ -1,18 +1,11 @@
-import { Menu,X } from "lucide-react";
 
-interface AdminHeaderProps {
-  isMobileMenuOpen: boolean;
-  toggleMobileMenu: () => void;
-}
 
-const AdminHeader = ({ isMobileMenuOpen, toggleMobileMenu }: AdminHeaderProps) => {
+
+const AdminHeader = () => {
   return (
     <div className="md:flex-row flex flex-col space-y-4 md:space-y-0 justify-between items-center p-8">
       <div className=" w-full flex justify-between items-center mb-6">
-        <button onClick={toggleMobileMenu} className="text-black md:hidden">
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-        
+      
        
                <h1 className="md:text-2xl text-lg font-bold">Welcome Back, Marci</h1>
                <div className="flex gap-4">

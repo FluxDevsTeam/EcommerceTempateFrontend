@@ -1,10 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 /* Your custom styles below */
 body {
   font-family: 'Poppins', sans-serif;
+}
+
+/* Override default slick arrow styles */
+.slick-prev:before,
+.slick-next:before {
+  color: black !important; /* Makes arrows black */
+  font-size: 24px !important; /* Adjust size if needed */
 }
 
 /* Keep your custom styles below */
