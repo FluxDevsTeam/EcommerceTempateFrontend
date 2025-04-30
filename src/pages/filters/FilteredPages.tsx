@@ -119,9 +119,9 @@ const ProductsPage: React.FC = () => {
   return (
     <div className="container mx-auto px-6 md:px-14 py-8 md:py-12 ">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
-        <h1 className="text-2xl md:text-4xl font-medium">Filtered Products</h1>
+        <h1 className="text-3xl md:text-4xl font-medium">Filtered Products</h1>
 
-        <div className="flex flex-col md:flex-row md:items-center gap-4">
+        <div className="flex items-center gap-4">
           <p className="text-gray-600">{totalCount} products found</p>
           <SortDropdown
             onSortChange={(sortValue) => {

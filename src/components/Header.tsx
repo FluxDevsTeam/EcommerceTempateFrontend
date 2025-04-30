@@ -113,10 +113,16 @@ const Header = () => {
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
+    // Close filter if menu is being opened
+    if (!isOpen) {
+      setShowFilter(false);
+    }
   };
 
   const toggleFilter = () => {
     setShowFilter(!showFilter);
+    // Close mobile menu when filter is toggled
+    setIsOpen(false);
   };
 
   const toggleAccountDropdown = (e: React.MouseEvent) => {
@@ -307,10 +313,11 @@ const Header = () => {
               >
                 {!isOpen ? <AiOutlineMenu size={30} /> : <AiOutlineClose size={30}/>}
               </button>
-              <Link to='/' onClick={handleMobileMenuLinkClick}><p className="font-bold text-3xl">SHOP.CO</p></Link>
+              <Link to='/' onClick={handleMobileMenuLinkClick}><p className="font-bold text-2xl">SHOP.CO</p></Link>
             </div>
             <div className="flex space-x-4 items-center">
-              <BsCart size={30} className="cursor-pointer hover:text-gray-600"/>
+              <BsCart size={25} className="cursor-pointer hover:text-gray-600"/>
+              
               <div className="relative" ref={dropdownRef}>
                 <div 
                   onClick={toggleAccountDropdown}
@@ -321,7 +328,7 @@ const Header = () => {
                       Hi, {displayName}
                     </span>
                   ) : null}
-                  <IoPersonCircleOutline size={35}/>
+                  <IoPersonCircleOutline size={30}/>
                 </div>
                 
                 {/* Mobile dropdown */}
@@ -377,8 +384,8 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        {isOpen && (
+        {/* Mobile Menu - Only show if isOpen is true and showFilter is false */}
+        {isOpen && !showFilter && (
           <div className="block md:hidden p-7">
             <div className="flex flex-col w-full space-y-4">
               {isUserAuthenticated && displayName && (
