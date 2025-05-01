@@ -148,7 +148,7 @@ const SearchResults = () => {
     }
 
     return (
-      <div className="flex justify-center mt-8 space-x-2">
+      <div className="flex justify-center mt-8 space-x-2 px-4 sm:px-6 py-8 md:py-12">
         {currentPage > 1 && (
           <button 
             className="px-3 py-1 border rounded-md hover:bg-gray-100"
@@ -184,7 +184,7 @@ const SearchResults = () => {
 
   if (error) {
     return (
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto px-6  py-8 md:py-12">
         <div className="bg-red-50 border-l-4 border-red-400 p-4">
           <div className="flex">
             <div className="flex-shrink-0">
@@ -213,7 +213,7 @@ const SearchResults = () => {
   const hasResults = products.length > 0;
 
   return (
-    <div className="container mx-auto p-4 my-8">
+    <div className="container mx-auto px-6 md:px-14 py-8 md:py-12">
       {hasResults && (
         <div className="mb-6">
           <h1 className=" text-3xl font-medium flex justify-center items-center">
@@ -235,7 +235,7 @@ const SearchResults = () => {
       {/* Products Grid - Display all products without grouping */}
       {hasResults && (
         <div className="mb-8">
-          <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 sm:mb-16">
             {products.map((item) => (
               <ProductCard key={item.id} item={item} />
             ))}

@@ -35,7 +35,8 @@ import ProductsPage from "./pages/filters/FilteredPages";
 import Wishlist from "./pages/orders/Wishlist";
 import Confirm from "./pages/orders/Confirm";
 import Contact from "./pages/orders/Contact";
-
+import SuggestedItemDetails from "./components/products/SuggestedItemsDetails";
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
     <AuthProvider> {/* Move AuthProvider here */}
       <Router>
+        <ScrollToTop/>
         <AppContent />
       </Router>
     </AuthProvider>
@@ -58,6 +60,7 @@ const AppContent: React.FC = () => {
       <Route element={<MainLayout />}>
         <Route path="/" element={<Homepage />} />
         <Route path="/product/item/:id" element={<ProductDetail />} />
+        <Route path="/suggested/:id"  element={<SuggestedItemDetails />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<Orders />} />

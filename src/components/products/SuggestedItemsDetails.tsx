@@ -1,8 +1,9 @@
+
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
-import Suggested from "./Suggested";
-
+import { useParams} from "react-router-dom";
+import SuggestedProductDetails from "./SuggestedProductDetail";
 import DescriptionList from "./DescriptionList";
 
 // Define TypeScript interfaces for the API responses
@@ -58,9 +59,6 @@ interface ProductDetailParams {
   id: string; 
 }
 
-
-
-
 const fetchProduct = async (id: number): Promise<Product> => {
   const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${id}/`);
   if (!response.ok) {
@@ -78,7 +76,7 @@ const fetchSizes = async (productId: number): Promise<ProductSize[]> => {
   return data.results;
 };
 
-const ProductDetail = () => {
+const SuggestedItemDetails= () => {
   const { id } = useParams<keyof ProductDetailParams>() as ProductDetailParams;
   const productId = parseInt(id);
   const [mainImage, setMainImage] = useState<string>("");
@@ -305,10 +303,10 @@ const ProductDetail = () => {
         />
         
         {/* Conditional rendering for Suggested or SuggestedProductDetails */}
-        <Suggested/>
+        <SuggestedProductDetails />
       </div>
     </div>
   );
 };
 
-export default ProductDetail;
+export default SuggestedItemDetails;

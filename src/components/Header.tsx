@@ -113,17 +113,25 @@ const Header = () => {
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
+    // Close filter if menu is being opened
+    if (!isOpen) {
+      setShowFilter(false);
+    }
   };
 
   const toggleFilter = () => {
     setShowFilter(!showFilter);
+    // Close mobile menu when filter is toggled
+    setIsOpen(false);
   };
 
-  const toggleAccountDropdown = () => {
+  const toggleAccountDropdown = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Stop event from bubbling up
     setShowAccountDropdown(!showAccountDropdown);
   };
   
-  const handleLogout = async () => {
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Stop event from bubbling up
     try {
       await logout();
       navigate('/');
@@ -133,6 +141,13 @@ const Header = () => {
     } catch (error) {
       console.error("Logout failed", error);
     }
+  };
+  
+  const handleLinkClick = (e: React.MouseEvent, path: string) => {
+    e.stopPropagation(); // Stop event from bubbling up
+    setShowAccountDropdown(false); // Close dropdown
+    setIsOpen(false); // Close mobile menu if open
+    navigate(path); // Navigate to the desired path
   };
   
   // Handle applying filters from the header
@@ -183,11 +198,16 @@ const Header = () => {
   const isUserAuthenticated = isAuthenticated || checkIsAuthenticated();
   const displayName = getDisplayName();
 
+  // Handle mobile menu link click to close menu
+  const handleMobileMenuLinkClick = () => {
+    setIsOpen(false); // Close the mobile menu
+  };
+
   return (
     <>
       <div 
         ref={navbarRef}
-        className={`fixed top-0 left-0 w-full bg-white z-50 md:px-24 py-4
+        className={`fixed top-0 left-0 w-full bg-white z-50 md:px-24 py-5 
           ${scrolled ? 'shadow-md' : ''}
           transition-all duration-300 ease-in-out
           ${showNavbar ? 'translate-y-0' : '-translate-y-full'}`}
@@ -218,27 +238,24 @@ const Header = () => {
                 {/* Account dropdown menu */}
                 {showAccountDropdown && isUserAuthenticated && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                    <Link 
-                      to="/account" 
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setShowAccountDropdown(false)}
+                    <button 
+                      onClick={(e) => handleLinkClick(e, "/account")}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       My Account
-                    </Link>
-                    <Link 
-                          to="/orders" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAccountDropdown(false)}
-                        >
-                          Orders
-                        </Link>
-                        <Link 
-                          to="/cart" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAccountDropdown(false)}
-                        >
-                         Cart
-                        </Link>
+                    </button>
+                    <button 
+                      onClick={(e) => handleLinkClick(e, "/orders")}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Orders
+                    </button>
+                    <button 
+                      onClick={(e) => handleLinkClick(e, "/cart")}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Cart
+                    </button>
                     
                     <button
                       onClick={handleLogout}
@@ -252,20 +269,18 @@ const Header = () => {
                 {/* If not authenticated, clicking shows login/sign up options */}
                 {showAccountDropdown && !isUserAuthenticated && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                    <Link
-                      to="/login"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setShowAccountDropdown(false)}
+                    <button
+                      onClick={(e) => handleLinkClick(e, "/login")}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Sign In
-                    </Link>
-                    <Link
-                      to="/signup"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setShowAccountDropdown(false)}
+                    </button>
+                    <button
+                      onClick={(e) => handleLinkClick(e, "/signup")}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Create Account
-                    </Link>
+                    </button>
                   </div>
                 )}
               </div>
@@ -298,70 +313,69 @@ const Header = () => {
               >
                 {!isOpen ? <AiOutlineMenu size={30} /> : <AiOutlineClose size={30}/>}
               </button>
-              <Link to='/'><p className="font-bold text-3xl">SHOP.CO</p></Link>
+              <Link to='/' onClick={handleMobileMenuLinkClick}><p className="font-bold text-2xl">SHOP.CO</p></Link>
             </div>
             <div className="flex space-x-4 items-center">
-              <BsCart size={30} className="cursor-pointer hover:text-gray-600"/>
-              <div onClick={toggleAccountDropdown} className="relative">
-                <div className="flex items-center gap-2 hover:text-gray-600 transition-colors cursor-pointer">
+              <BsCart size={25} className="cursor-pointer hover:text-gray-600"/>
+              
+              <div className="relative" ref={dropdownRef}>
+                <div 
+                  onClick={toggleAccountDropdown}
+                  className="flex items-center gap-2 hover:text-gray-600 transition-colors cursor-pointer"
+                >
                   {isUserAuthenticated && displayName ? (
                     <span className="text-xs font-medium bg-blue-100 px-2 py-1 rounded truncate max-w-20">
                       Hi, {displayName}
                     </span>
                   ) : null}
-                  <IoPersonCircleOutline size={35}/>
+                  <IoPersonCircleOutline size={30}/>
                 </div>
                 
                 {/* Mobile dropdown */}
                 {showAccountDropdown && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
                     {isUserAuthenticated ? (
-                      <>
-                        <Link 
-                          to="/account" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAccountDropdown(false)}
+                      <div>
+                        <button 
+                          onClick={(e) => handleLinkClick(e, "/account")}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           My Account
-                        </Link>
-                        <Link 
-                          to="/orders" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAccountDropdown(false)}
+                        </button>
+                        <button 
+                          onClick={(e) => handleLinkClick(e, "/orders")}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           Orders
-                        </Link>
-                        <Link 
-                          to="/cart" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAccountDropdown(false)}
+                        </button>
+                        <button 
+                          onClick={(e) => handleLinkClick(e, "/cart")}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
-                         Cart
-                        </Link>
+                          Cart
+                        </button>
                         <button
                           onClick={handleLogout}
                           className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           <FiLogOut className="mr-2" /> Logout
                         </button>
-                      </>
+                      </div>
                     ) : (
-                      <>
-                        <Link
-                          to="/login"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAccountDropdown(false)}
+                      <div>
+                        <button
+                          onClick={(e) => handleLinkClick(e, "/login")}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           Sign In
-                        </Link>
-                        <Link
-                          to="/signup"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAccountDropdown(false)}
+                        </button>
+                        <button
+                          onClick={(e) => handleLinkClick(e, "/signup")}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           Create Account
-                        </Link>
-                      </>
+                        </button>
+                      </div>
                     )}
                   </div>
                 )}
@@ -370,20 +384,20 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        {isOpen && (
+        {/* Mobile Menu - Only show if isOpen is true and showFilter is false */}
+        {isOpen && !showFilter && (
           <div className="block md:hidden p-7">
             <div className="flex flex-col w-full space-y-4">
               {isUserAuthenticated && displayName && (
                 <div className="bg-blue-50 rounded-md p-3 mb-2">
                   <p className="text-sm text-blue-700">Welcome back, {displayName}!</p>
                   <div className="flex mt-2">
-                    <Link 
-                      to="/account" 
+                    <button 
+                      onClick={(e) => handleLinkClick(e, "/account")}
                       className="text-sm text-blue-600 hover:text-blue-800 mr-4"
                     >
                       My Account
-                    </Link>
+                    </button>
                     <button
                       onClick={handleLogout}
                       className="flex items-center text-sm text-red-600 hover:text-red-800"
@@ -394,10 +408,18 @@ const Header = () => {
                 </div>
               )}
               <ul className="flex flex-col space-y-5 text-[16px] font-medium leading-[100%]">
-                <Link to='/categories' className="hover:text-gray-600 transition-colors"><li>New Arrivals</li></Link>  
-                <Link to='/shoe-category' className="hover:text-gray-600 transition-colors"><li>Shoes</li></Link>
-                <Link to='/accessories-category' className="hover:text-gray-600 transition-colors"><li>Accessories</li></Link>
-                <Link to='/clothes-category' className="hover:text-gray-600 transition-colors"><li>Clothes</li></Link>
+                <Link to='/categories' onClick={handleMobileMenuLinkClick} className="hover:text-gray-600 transition-colors">
+                  <li>New Arrivals</li>
+                </Link>  
+                <Link to='/shoe-category' onClick={handleMobileMenuLinkClick} className="hover:text-gray-600 transition-colors">
+                  <li>Shoes</li>
+                </Link>
+                <Link to='/accessories-category' onClick={handleMobileMenuLinkClick} className="hover:text-gray-600 transition-colors">
+                  <li>Accessories</li>
+                </Link>
+                <Link to='/clothes-category' onClick={handleMobileMenuLinkClick} className="hover:text-gray-600 transition-colors">
+                  <li>Clothes</li>
+                </Link>
               </ul>
               <SearchInput onItemSelect={handleSearchItemSelect}/>
               <div className="flex space-x-3">
