@@ -21,6 +21,7 @@ const Header = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [showNavbar, setShowNavbar] = useState<boolean>(true);
   const [scrolled, setScrolled] = useState<boolean>(false);
+  
     
   const { currentUser, isAuthenticated, refreshUserData, logout } = useAuth();
   const navigate = useNavigate();
@@ -107,7 +108,12 @@ const Header = () => {
     }
   };
 
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  
+    const toggleDropdown = () => {
+      setIsOpen((prev) => !prev);
+    };
+  
 
   const toggleFilter = () => {
     setShowFilter(!showFilter);
@@ -206,7 +212,7 @@ const Header = () => {
                   <IoPersonCircleOutline size={35}/>
                 </div>
                 
-                <div className="absolute hidden group-hover:block right-10 top-12 z-auto w-56 overflow-hidden rounded border border-gray-300 bg-white shadow-sm">
+                <div className="absolute hidden group-hover:block right-10 top-18 z-auto w-56 overflow-hidden rounded border border-gray-300 bg-white shadow-sm">
                   {isUserAuthenticated ? (
                     <>
                       <Link to="/orders" className="block px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900 cursor-pointer">
@@ -277,7 +283,7 @@ const Header = () => {
               <div className="relative group">
                 <div className="relative inline-flex hover:text-gray-600 transition-colors cursor-pointer">
                   {isUserAuthenticated && displayName ? (
-                    <span className="text-xs font-medium bg-blue-100 px-2 py-1 rounded truncate max-w-20">
+                    <span className="text-sm font-medium bg-blue-100 px-2 py-1 rounded truncate max-w-20">
                       Hi, {displayName}
                     </span>
                   ) : null}
