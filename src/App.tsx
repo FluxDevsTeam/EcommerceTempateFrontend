@@ -70,10 +70,9 @@ const AppContent: React.FC = () => {
         <Route path="/clothes-category" element={<ClothesCategory />} />
         <Route path="/accessories-category" element={<AccessoriesCategory />} />
         <Route path="/filtered-products" element={<ProductsPage />} />
-        <Route path="/cart" element={<Cart />} />
         <Route path="/confirm-order" element={<ConfirmOrder />} />
         <Route path="/faqs" element={<FAQs />} />
-        <Route path="/settings" element={<GeneralSettings />} />
+        <Route path="/general-settings" element={<GeneralSettings />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/orders/:id" element={<Confirm />} />
           <Route path="/wishlist" element={<Wishlist />} />

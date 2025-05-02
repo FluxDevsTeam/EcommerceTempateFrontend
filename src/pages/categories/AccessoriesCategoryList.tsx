@@ -7,7 +7,9 @@ interface Category {
   id: number;
   name: string;
 }
-
+interface AccessoriesListProps {
+  sortOption: string;
+}
 interface SubCategory {
   id: number;
   category: Category;
@@ -40,11 +42,25 @@ const fetchAccessories = async (): Promise<ApiResponse> => {
   return response.json();
 };
 
-const AccessoriesCategoryList = () => {
+const AccessoriesCategoryList = ({ sortOption }:AccessoriesListProps)=>{
   const navigate = useNavigate();
   const { data, isLoading, error } = useQuery<ApiResponse>({
     queryKey: ['accessories'],
     queryFn: fetchAccessories
+  });
+
+  const sortedProducts = [...(data?.results || [])].sort((a, b) => {
+    const priceA = parseFloat(a.discounted_price);
+    const priceB = parseFloat(b.discounted_price);
+
+    if (sortOption === 'Highest price') {
+      return priceB - priceA;
+    } else if (sortOption === 'Lowest price') {
+      return priceA - priceB;
+    } else {
+      // Latest items (assuming latest means higher ID)
+      return b.id - a.id;
+    }
   });
 
   if (isLoading) return (
@@ -59,7 +75,7 @@ const AccessoriesCategoryList = () => {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 my-8 sm:mb-16">
-      {data.results.map((item) => {
+      {sortedProducts.map((item) => {
         const price = parseFloat(item.price);
         const discountedPrice = parseFloat(item.discounted_price);
         const amountSaved = price - discountedPrice;
