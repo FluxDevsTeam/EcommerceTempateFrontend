@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { BsCart } from "react-icons/bs";
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 import { IoPersonCircleOutline } from "react-icons/io5";
-import { FiLogOut } from "react-icons/fi"; // Import logout icon
+import { FiLogOut } from "react-icons/fi";
 import FiltersComponent from "@/pages/filters/Filter";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { RiEqualizerLine } from "react-icons/ri";
@@ -21,14 +21,12 @@ const Header = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [showNavbar, setShowNavbar] = useState<boolean>(true);
   const [scrolled, setScrolled] = useState<boolean>(false);
-  const [showAccountDropdown, setShowAccountDropdown] = useState<boolean>(false);
     
   const { currentUser, isAuthenticated, refreshUserData, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const lastScrollY = useRef<number>(0);
   const navbarRef = useRef<HTMLDivElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Force refresh of user data when the component mounts or location changes
   useEffect(() => {
@@ -70,19 +68,9 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowAccountDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  const handleMobileMenuLinkClick = () => {
+    setIsOpen(false); // Close the mobile menu
+  };
 
   // Create display name function to ensure consistency
   const getDisplayName = (): string | null => {
@@ -119,24 +107,19 @@ const Header = () => {
     }
   };
 
-  
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   const toggleFilter = () => {
     setShowFilter(!showFilter);
     // Close mobile menu when filter is toggled
     setIsOpen(false);
-  };
-
-  
-  const toggleAccountDropdown = () => {
-    setShowAccountDropdown(!showAccountDropdown);
   };
   
   const handleLogout = async () => {
     try {
       await logout();
       navigate('/');
-      // Close any open menus
-      setShowAccountDropdown(false);
+      // Close any open menu
       setIsOpen(false);
     } catch (error) {
       console.error("Logout failed", error);
@@ -205,80 +188,55 @@ const Header = () => {
           <div className="flex justify-between items-center">
             <Link to='/'><p className="font-bold text-3xl">SHOP.CO</p></Link>  
             <div className="flex space-x-4 items-center">
-              <BsCart size={30} className="cursor-pointer hover:text-gray-600"/>
-              <div className="relative" ref={dropdownRef}>
-                <div 
-                  onClick={toggleAccountDropdown}
-                  className="flex items-center gap-2 hover:text-gray-600 transition-colors cursor-pointer"
-                >
+              <Link to="/cart">
+                <BsCart size={30} className="cursor-pointer hover:text-gray-600"/>
+              </Link>
+              
+              <div className=" group z-20">
+                <div className="relative inline-flex hover:text-gray-600 transition-colors cursor-pointer ">
                   {isUserAuthenticated && displayName ? (
-                    <div className="flex items-center">
+                    <div className="inline-flex divide-x divide-gray-300 overflow-hidden rounded border border-gray-300 bg-white shadow-sm ">
                       <span className="text-sm font-medium bg-blue-200 px-3 py-1 rounded-r-md">
-                      Welcome back, {displayName}
+                        Welcome back, {displayName}
                       </span>
                     </div>
                   ) : (
-                    <span className="text-sm font-medium">Sign In</span>
+                    <span className="text-sm font-medium pt-2">Sign In</span>
                   )}
                   <IoPersonCircleOutline size={35}/>
                 </div>
                 
-                {/* Account dropdown menu */}
-                {showAccountDropdown && isUserAuthenticated && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                   
-                    <Link 
-                          to="/orders" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAccountDropdown(false)}
-                        >
-                          Orders
-                        </Link>
-                        <Link 
-                          to="/cart" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAccountDropdown(false)}
-                        >
-                         Cart
-                        </Link>
-                        <Link 
-                          to="/wishlist" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAccountDropdown(false)}
-                        >
-                          Wishlists
-                        </Link>
-
-            
-                    
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      <FiLogOut className="mr-2" /> Logout
-                    </button>
-                  </div>
-                )}
-                
-                {/* If not authenticated, clicking shows login/sign up options */}
-                {showAccountDropdown && !isUserAuthenticated && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                    <Link
-                      to="/login"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setShowAccountDropdown(false)}
-                    >
-                      Sign In
-                    </Link>
-                    <Link
-                      to="/signup"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setShowAccountDropdown(false)}
-                    >
-                      Create Account
-                    </Link>
-                  </div>
-                )}
+                <div className="absolute hidden group-hover:block right-10 top-12 z-auto w-56 overflow-hidden rounded border border-gray-300 bg-white shadow-sm">
+                  {isUserAuthenticated ? (
+                    <>
+                      <Link to="/orders" className="block px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900 cursor-pointer">
+                        Orders
+                      </Link>
+                      <Link to="/cart" className="block px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900 cursor-pointer">
+                        Cart
+                      </Link>
+                      <Link to="/wishlist" className="block px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900 cursor-pointer">
+                        Wishlists
+                      </Link>
+                      <div className="border-t border-gray-200"></div>
+                      <div
+                        onClick={handleLogout} 
+                        className="flex items-center px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+                      >
+                        <FiLogOut className="mr-2" /> Logout
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Link to="/login" className="block px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900 cursor-pointer">
+                        Sign In
+                      </Link>
+                      <Link to="/signup" className="block px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900 cursor-pointer">
+                        Create Account
+                      </Link>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -312,9 +270,12 @@ const Header = () => {
               <Link to='/'><p className="font-bold text-3xl">SHOP.CO</p></Link>
             </div>
             <div className="flex space-x-4 items-center">
-              <BsCart size={30} className="cursor-pointer hover:text-gray-600"/>
-              <div onClick={toggleAccountDropdown} className="relative">
-                <div className="flex items-center gap-2 hover:text-gray-600 transition-colors cursor-pointer">
+              <Link to="/cart" className="hover:text-gray-600">
+                <BsCart size={30} />
+              </Link>
+              
+              <div className="relative group">
+                <div className="relative inline-flex hover:text-gray-600 transition-colors cursor-pointer">
                   {isUserAuthenticated && displayName ? (
                     <span className="text-xs font-medium bg-blue-100 px-2 py-1 rounded truncate max-w-20">
                       Hi, {displayName}
@@ -323,64 +284,38 @@ const Header = () => {
                   <IoPersonCircleOutline size={35}/>
                 </div>
                 
-                {/* Mobile dropdown */}
-                {showAccountDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                    {isUserAuthenticated ? (
-                      <div>
-                      
-                        <Link 
-                          to="/orders" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAccountDropdown(false)}
-                        >
-                          Orders
-                        </Link>
-                        <Link 
-                          to="/cart" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAccountDropdown(false)}
-                        >
-                         Cart
-                        </Link>
-                        <Link 
-                          to="/wishlist" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAccountDropdown(false)}
-                        >
-                          Wishlists
-                        </Link>
-                     
-
-
-
-                    <button
-                          onClick={handleLogout}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        >
-                          <FiLogOut className="mr-2" /> Logout
-                        </button>
+                <div className="absolute hidden group-hover:block right-0 top-12 z-auto w-auto  overflow-hidden rounded border border-gray-300 bg-white shadow-sm">
+                  {isUserAuthenticated ? (
+                    <>
+                      <Link to="/orders" className="block px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900 cursor-pointer">
+                        Orders
+                      </Link>
+                      <Link to="/cart" className="block px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900 cursor-pointer">
+                        Cart
+                      </Link>
+                      <Link to="/wishlist"  className="block px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900 cursor-pointer">
+                        Wishlists
+                      </Link>
+                      <div className="border-t border-gray-200"></div>
+                      <div
+                        onClick={handleLogout} 
+                        
+                        className="flex items-center px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+                      >
+                        <FiLogOut className="mr-2" /> Logout
                       </div>
-                    ) : (
-                      <div>
-                        <Link
-                          to="/login"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAccountDropdown(false)}
-                        >
-                          Sign In
-                        </Link>
-                        <Link
-                          to="/signup"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowAccountDropdown(false)}
-                        >
-                          Create Account
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                )}
+                    </>
+                  ) : (
+                    <>
+                      <Link to="/login" className="block px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900 cursor-pointer">
+                        Sign In
+                      </Link>
+                      <Link to="/signup" className="block px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900 cursor-pointer">
+                        Create Account
+                      </Link>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -394,7 +329,6 @@ const Header = () => {
                 <div className="bg-blue-50 rounded-md p-3 mb-2">
                   <p className="text-sm text-blue-700">Welcome back, {displayName}!</p>
                   <div className="flex mt-2">
-              
                     <button
                       onClick={handleLogout}
                       className="flex items-center text-sm text-red-600 hover:text-red-800"
@@ -405,10 +339,10 @@ const Header = () => {
                 </div>
               )}
               <ul className="flex flex-col space-y-5 text-[16px] font-medium leading-[100%]">
-                <Link to='/categories' className="hover:text-gray-600 transition-colors"><li>New Arrivals</li></Link>  
-                <Link to='/shoe-category' className="hover:text-gray-600 transition-colors"><li>Shoes</li></Link>
-                <Link to='/accessories-category' className="hover:text-gray-600 transition-colors"><li>Accessories</li></Link>
-                <Link to='/clothes-category' className="hover:text-gray-600 transition-colors"><li>Clothes</li></Link>
+                <Link to='/categories' onClick={handleMobileMenuLinkClick} className="hover:text-gray-600 transition-colors"><li>New Arrivals</li></Link>  
+                <Link to='/shoe-category' onClick={handleMobileMenuLinkClick} className="hover:text-gray-600 transition-colors"><li>Shoes</li></Link>
+                <Link to='/accessories-category' onClick={handleMobileMenuLinkClick} className="hover:text-gray-600 transition-colors"><li>Accessories</li></Link>
+                <Link to='/clothes-category' onClick={handleMobileMenuLinkClick} className="hover:text-gray-600 transition-colors"><li>Clothes</li></Link>
               </ul>
               <SearchInput onItemSelect={handleSearchItemSelect}/>
               <div className="flex space-x-3">

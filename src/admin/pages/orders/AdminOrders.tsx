@@ -7,7 +7,7 @@ import { fetchData } from './api';
 import { Order } from "./types";
 import formatEstimatedDelivery from "./Date";
 import Pagination from './Pagination';
-import SearchForm from './SearchForm';
+import SearchInput from './SearchForm';
 import SelectedOrderPopup from './SelectedOrder';
 
 
@@ -16,6 +16,7 @@ const AdminOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("All Categories");
+  const [isOpen, setIsOpen] = useState(false);
 
   const statusColors: { [key: string]: { dot: string; bg: string } } = {
     Paid: { dot: "#4CAF50", bg: "#4CAF5026" },
@@ -24,6 +25,7 @@ const AdminOrders = () => {
     Cancelled: { dot: "#F44336", bg: "#F4433626" },
     Refunded: { dot: "#FF9800", bg: "#FF980026" },
   };
+
 
   const filteredOrders = statusFilter === "All Categories"
   ? orders
@@ -35,20 +37,25 @@ const AdminOrders = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const displayedOrders = filteredOrders.slice(startIndex, endIndex);
-  
 
-
+  const handleSearchItemSelect = (): void => {
+    setIsOpen(false);
+  };
 
   useEffect(() => {
     const getOrders = async () => {
       try {
         const data = await fetchData();
-        setOrders(data.results);
+        const normalizedResults = data.results.map((order: Order) => ({
+          ...order,
+          status: order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()
+        }));
+        setOrders(normalizedResults);
       } catch (error) {
         console.error("Error loading orders:", error);
       }
     };
-
+  
     getOrders();
   }, []);
 
@@ -58,7 +65,7 @@ const AdminOrders = () => {
       <AdminAggregates />
       <div className="flex gap-1.5 sm:gap-5 items-center mt-10 w-full">
       <div className='basis-auto w-[160px] sm:basis-[35%] sm:w-auto sm:mr-auto'>
-          <SearchForm />
+          <SearchInput onItemSelect={handleSearchItemSelect} />
         </div>
         <div>
           <Dropdown
@@ -96,7 +103,7 @@ const AdminOrders = () => {
           </ul>
           <ul>
           {displayedOrders.map((order) => (
-              <li key={order.id} className="text-[10px] sm:text-[12px] font-semibold flex py-5 border-b border-[#E6EDFF] cursor-pointer" onClick={() => setSelectedOrder(order)}>
+              <li key={order.id} className="text-[10px] sm:text-[12px] font-medium flex py-5 border-b border-[#E6EDFF] cursor-pointer" onClick={() => setSelectedOrder(order)}>
                 <p className="sm:w-[10%] w-[15%]">{order.id.slice(0, 6)}</p>
                 <p className="sm:w-[10%] w-[30%]">{new Date(order.order_date).toLocaleDateString()}</p>
                 <p className="sm:w-[20%] w-[40%]">{order.order_items.map(item => item.name).join(', ')}</p>

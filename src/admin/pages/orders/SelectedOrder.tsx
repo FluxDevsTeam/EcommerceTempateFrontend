@@ -11,7 +11,7 @@ interface SelectedOrderPopupProps {
 
 const SelectedOrderPopup: React.FC<SelectedOrderPopupProps> = ({ selectedOrder, onClose, onStatusChange }) => {
   return (
-    <div className="absolute top-0 left-0 w-full h-full bg-white/10 backdrop-blur-sm flex justify-center items-start z-50 pt-5 sm:pt-20">
+    <div className="absolute -top-3 -left-3 lg:w-[82.5vw] w-[100vw] h-[100%] bg-white/10 backdrop-blur-sm flex justify-center items-start z-50 pt-5 sm:pt-20">
       <div className="bg-white w-[90%] sm:w-[80%] p-2 sm:p-6 rounded-lg shadow-lg overflow-y-auto max-h-[90vh]">
         <div className='flex justify-between items-center sm:mb-3 mb-2'>
           <h3 className="text-[18px] font-medium">Order {selectedOrder.id}</h3>
@@ -60,11 +60,13 @@ const SelectedOrderPopup: React.FC<SelectedOrderPopupProps> = ({ selectedOrder, 
 
           {selectedOrder.order_items.map((item, index) => (
             <p key={index} className="flex items-center text-[#333333] font-medium py-2 sm:py-3 rounded-lg mt-2 sm:mt-4">
-              <span className="w-[25%]">{item.name}</span>
-              <span className="w-[25%]">{item.quantity}</span>
-              <span className="w-[25%]">₦{parseFloat(item.price).toLocaleString()}</span>
-              <span className="w-[25%]">₦{(item.quantity * parseFloat(item.price)).toLocaleString()}</span>
-            </p>
+            <span className="w-[25%] overflow-hidden text-ellipsis whitespace-nowrap block">
+              {item.name}
+            </span>
+            <span className="w-[25%]">{item.quantity}</span>
+            <span className="w-[25%]">₦{parseFloat(item.price).toLocaleString()}</span>
+            <span className="w-[25%]">₦{(item.quantity * parseFloat(item.price)).toLocaleString()}</span>
+          </p>
           ))}
           <p className="flex items-center justify-end text-[#333333] font-semibold py-2 sm:py-3 rounded-lg mt-2 sm:mt-4">
             <span className="w-[25%]">Subtotal</span>

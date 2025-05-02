@@ -22,7 +22,7 @@ if (isLoading) return <div className="flex justify-center items-center py-10 tex
 if (isError) return <div>Error loading data.</div>;
 
   return (
-    <div className="w-full min-h-full px-4 sm:px-6 md:px-12 py-4 lg:px-20">
+    <div className="w-full min-h-full px-4  md:px-12 py-4 lg:px-20">
       {/* Hero Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 ">
         <div className="flex flex-col md:space-y-2 space-y-4  md:pt-6  px-4 md:px-0">

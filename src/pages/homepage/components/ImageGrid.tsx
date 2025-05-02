@@ -13,12 +13,12 @@ const ImageGrid: React.FC<LatestItemsProps> = ({ data }) => {
    
 
   return (
-    <div className="px-6 md:px-3 py-8 md:py-12 space-y-5">
+    <div className="px-3 py-8 md:py-12 space-y-5">
      
       <p className="text-3xl md:text-5xl font-medium leading-tight text-center mb-6 sm:mb-8 md:mb-10 ">Latest Items</p>
     
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 sm:mb-16">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-8 sm:mb-16">
         {data.map((item) => {
           const price = parseFloat(item.price);
           const discountedPrice = parseFloat(item.discounted_price);
