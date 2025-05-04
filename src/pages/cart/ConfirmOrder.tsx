@@ -4,6 +4,15 @@ import { FiArrowRight } from "react-icons/fi";
 // import { ThreeDots } from "react-loader-spinner";
 
 const ConfirmOrder = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (!accessToken) {
+      navigate("/login?redirect=/confirm-order");
+    }
+  }, [navigate]);
+
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -27,7 +36,7 @@ const ConfirmOrder = () => {
   const [selectedProvider, setSelectedProvider] = useState<string>("paystack");
   const [error, setError] = useState<string | null>(null);
   const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -595,10 +604,10 @@ const ConfirmOrder = () => {
                   <div>
                     <input
                       type="radio"
-                      name="paymentProvider" 
-                      id="paystack"          
-                      value="paystack"       
-                      checked={selectedProvider === "paystack"} 
+                      name="paymentProvider"
+                      id="paystack"
+                      value="paystack"
+                      checked={selectedProvider === "paystack"}
                       onChange={(e) => setSelectedProvider(e.target.value)}
                       className="mr-1"
                     />
@@ -607,11 +616,11 @@ const ConfirmOrder = () => {
                   <div>
                     <input
                       type="radio"
-                      name="paymentProvider" 
-                      id="flutterwave"       
-                      value="flutterwave"    
-                      checked={selectedProvider === "flutterwave"} 
-                      onChange={(e) => setSelectedProvider(e.target.value)} 
+                      name="paymentProvider"
+                      id="flutterwave"
+                      value="flutterwave"
+                      checked={selectedProvider === "flutterwave"}
+                      onChange={(e) => setSelectedProvider(e.target.value)}
                       className="mr-1"
                     />
                     <label htmlFor="flutterwave">Flutterwave</label>
@@ -621,11 +630,29 @@ const ConfirmOrder = () => {
                 <button
                   onClick={initiatePayment}
                   className={`paymentBtn w-full bg-black text-white py-3 px-6 rounded-full mt-4 flex items-center justify-center gap-2 ${
-                    isSubmitting || isLoadingSummary || !formData.city || !formData.delivery_address || !formData.email || !formData.first_name || !formData.last_name || !formData.phone_number || !formData.state
+                    isSubmitting ||
+                    isLoadingSummary ||
+                    !formData.city ||
+                    !formData.delivery_address ||
+                    !formData.email ||
+                    !formData.first_name ||
+                    !formData.last_name ||
+                    !formData.phone_number ||
+                    !formData.state
                       ? "opacity-50 cursor-not-allowed"
                       : "hover:bg-gray-800"
                   }`}
-                  disabled={isSubmitting || isLoadingSummary  || !formData.city || !formData.delivery_address || !formData.email || !formData.first_name || !formData.last_name || !formData.phone_number || !formData.state}
+                  disabled={
+                    isSubmitting ||
+                    isLoadingSummary ||
+                    !formData.city ||
+                    !formData.delivery_address ||
+                    !formData.email ||
+                    !formData.first_name ||
+                    !formData.last_name ||
+                    !formData.phone_number ||
+                    !formData.state
+                  }
                 >
                   Proceed to Payment
                   <FiArrowRight />

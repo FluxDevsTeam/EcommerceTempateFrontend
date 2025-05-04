@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { IoChevronBack } from "react-icons/io5";
+import { IoChevronBack, IoSearch, IoClose } from "react-icons/io5";
 import Modal from "../../../../components/ui/Modal";
 
 interface SubCategory {
@@ -16,7 +16,11 @@ const EditProduct: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
-  const [selectedImages, setSelectedImages] = useState<(File | null)[]>([null, null, null]);
+  const [selectedImages, setSelectedImages] = useState<(File | null)[]>([
+    null,
+    null,
+    null,
+  ]);
   const [previewImages, setPreviewImages] = useState<string[]>(["", "", ""]);
   const [categories, setCategories] = useState<SubCategory[]>([]);
   const [viewProductPreviewModal, setViewProductPreviewModal] = useState(false);
@@ -32,7 +36,7 @@ const EditProduct: React.FC = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    sub_category: null as number | null,
+    sub_category: null as any | null,
     colour: "",
     image1: null,
     image2: null,
@@ -49,45 +53,79 @@ const EditProduct: React.FC = () => {
   });
 
   // Define size and weight options
-  const sizeOptions = ["Very Small", "Small", "Medium", "Large", "Very Large", "XXL"];
-  const weightOptions = ["Very Light", "Light", "Medium", "Heavy", "Very Heavy", "XX Heavy"];
+  const sizeOptions = [
+    "Very Small",
+    "Small",
+    "Medium",
+    "Large",
+    "Very Large",
+    "XXL",
+  ];
+  const weightOptions = [
+    "Very Light",
+    "Light",
+    "Medium",
+    "Heavy",
+    "Very Heavy",
+    "XX Heavy",
+  ];
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredCategories, setFilteredCategories] = useState<SubCategory[]>(
+    []
+  );
+
+  const [isSearchMode, setIsSearchMode] = useState(false);
+
+  // Add this new function inside component but before useEffect
+  const fetchAllCategories = async (
+    url: string,
+    allCategories: SubCategory[] = []
+  ): Promise<SubCategory[]> => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (!accessToken) {
+      throw new Error("No access token found");
+    }
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `JWT ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const updatedCategories = [...allCategories, ...data.results];
+
+    // If there's a next page, fetch it recursively
+    if (data.next) {
+      return fetchAllCategories(data.next, updatedCategories);
+    }
+
+    return updatedCategories;
+  };
+
+  // Replace the existing categories fetch useEffect with this one
   useEffect(() => {
     const fetchCategories = async () => {
-      const accessToken = localStorage.getItem("accessToken");
-      if (!accessToken) {
-        setModalConfig({
-          isOpen: true,
-          title: "Error",
-          message: "No access token found. Please login again.",
-          type: "error",
-        });
-        return;
-      }
-
       try {
-        const response = await fetch(
-          "https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/",
-          {
-            headers: {
-              Authorization: `JWT ${accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setCategories(data.results);
+        const baseUrl =
+          "https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/";
+        const allCategories = await fetchAllCategories(baseUrl);
+        setCategories(allCategories);
       } catch (error) {
         console.error("Error fetching categories:", error);
         setModalConfig({
           isOpen: true,
           title: "Error",
-          message: error instanceof Error ? error.message : "Failed to fetch categories",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to fetch categories",
           type: "error",
         });
       }
@@ -95,6 +133,14 @@ const EditProduct: React.FC = () => {
 
     fetchCategories();
   }, []);
+
+  // Add this new useEffect to handle category filtering
+  useEffect(() => {
+    const filtered = categories.filter((category) =>
+      category.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredCategories(filtered);
+  }, [searchQuery, categories]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -128,6 +174,9 @@ const EditProduct: React.FC = () => {
         }
 
         const data = await response.json();
+
+        console.log(data);
+
         setFormData({
           name: data.name || "",
           description: data.description || "",
@@ -158,7 +207,8 @@ const EditProduct: React.FC = () => {
         setModalConfig({
           isOpen: true,
           title: "Error",
-          message: error instanceof Error ? error.message : "Failed to fetch product",
+          message:
+            error instanceof Error ? error.message : "Failed to fetch product",
           type: "error",
         });
       } finally {
@@ -195,7 +245,18 @@ const EditProduct: React.FC = () => {
 
     // Append all non-null form fields
     Object.entries(formData).forEach(([key, value]) => {
-      if (value !== null && !['image1', 'image2', 'image3'].includes(key)) {
+      // For sub_category, use the existing value if no new selection
+      if (key === "sub_category") {
+        const categoryValue = value?.id || value; // Use id if object, otherwise use value directly
+        if (categoryValue) {
+          formDataToSend.append(key, categoryValue.toString());
+        }
+      }
+      // For other fields
+      else if (
+        value !== null &&
+        !["image1", "image2", "image3"].includes(key)
+      ) {
         formDataToSend.append(key, value.toString());
       }
     });
@@ -234,7 +295,8 @@ const EditProduct: React.FC = () => {
       setModalConfig({
         isOpen: true,
         title: "Error",
-        message: error instanceof Error ? error.message : "Failed to update product",
+        message:
+          error instanceof Error ? error.message : "Failed to update product",
         type: "error",
       });
     } finally {
@@ -304,7 +366,13 @@ const EditProduct: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {modalConfig.isOpen && (
-          <div className={`mb-4 p-4 rounded-lg ${modalConfig.type === "error" ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"}`}>
+          <div
+            className={`mb-4 p-4 rounded-lg ${
+              modalConfig.type === "error"
+                ? "bg-red-50 text-red-600"
+                : "bg-green-50 text-green-600"
+            }`}
+          >
             {modalConfig.message}
           </div>
         )}
@@ -358,22 +426,83 @@ const EditProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category
+                    Category: <strong>{formData.sub_category?.name}</strong>
                   </label>
-                  <select
-                    name="sub_category"
-                    required
-                    value={formData.sub_category || ""}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                  >
-                    <option value="">Select Category</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    {isSearchMode ? (
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Search categories..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => {
+                            setIsSearchMode(false);
+                            setSearchQuery("");
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <IoClose size={20} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <select
+                          name="sub_category"
+                          value={formData.sub_category || ""}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm appearance-none"
+                        >
+                          <option value="">Select Category</option>
+                          {filteredCategories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setIsSearchMode(true);
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <IoSearch size={20} />
+                        </button>
+                      </div>
+                    )}
+                    {isSearchMode && searchQuery && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                        {filteredCategories.length > 0 ? (
+                          filteredCategories.map((category) => (
+                            <button
+                              key={category.id}
+                              onClick={() => {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  sub_category: category.id,
+                                }));
+                                setIsSearchMode(false);
+                                setSearchQuery("");
+                              }}
+                              className="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                            >
+                              {category.name}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="px-4 py-2 text-gray-500">
+                            No categories found
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="md:col-span-2">
@@ -562,7 +691,9 @@ const EditProduct: React.FC = () => {
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
-                            latest_item_position: e.target.value ? parseInt(e.target.value) : null,
+                            latest_item_position: e.target.value
+                              ? parseInt(e.target.value)
+                              : null,
                           }))
                         }
                         min="0"
@@ -607,7 +738,9 @@ const EditProduct: React.FC = () => {
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
-                            top_selling_position: e.target.value ? parseInt(e.target.value) : null,
+                            top_selling_position: e.target.value
+                              ? parseInt(e.target.value)
+                              : null,
                           }))
                         }
                         min="0"
@@ -913,7 +1046,9 @@ const EditProduct: React.FC = () => {
                         </h3>
                         <p className="text-gray-600">
                           {categories.find(
-                            (c) => c.id.toString() === formData.sub_category?.toString()
+                            (c) =>
+                              c.id.toString() ===
+                              formData.sub_category?.toString()
                           )?.name || "Not specified"}
                         </p>
                       </div>

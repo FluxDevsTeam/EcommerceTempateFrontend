@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Modal from "../../../../components/ui/Modal";
-import { IoChevronBack } from "react-icons/io5";
+import { IoChevronBack, IoSearch, IoClose } from "react-icons/io5";
 
 interface SubCategory {
   id: number;
@@ -73,6 +73,19 @@ const AddNewProduct: React.FC = () => {
     "XX Heavy",
   ];
 
+  const [isSearchMode, setIsSearchMode] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredCategories, setFilteredCategories] = useState<SubCategory[]>(
+    []
+  );
+
+  useEffect(() => {
+    const filtered = categories.filter((category) =>
+      category.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredCategories(filtered);
+  }, [searchQuery, categories]);
+
   useEffect(() => {
     const fetchCategories = async () => {
       setLoading(true);
@@ -90,7 +103,8 @@ const AddNewProduct: React.FC = () => {
       }
 
       try {
-        const response = await fetch(
+        // First fetch to get total count
+        const initialResponse = await fetch(
           "https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/",
           {
             headers: {
@@ -100,12 +114,40 @@ const AddNewProduct: React.FC = () => {
           }
         );
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (!initialResponse.ok) {
+          throw new Error(`HTTP error! status: ${initialResponse.status}`);
         }
 
-        const data = await response.json();
-        setCategories(data.results);
+        const initialData = await initialResponse.json();
+        const totalItems = initialData.count;
+        const itemsPerPage = 10;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+        // Fetch all pages
+        const fetchPromises = [];
+        for (let page = 1; page <= totalPages; page++) {
+          fetchPromises.push(
+            fetch(
+              `https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/?page=${page}`,
+              {
+                headers: {
+                  Authorization: `JWT ${accessToken}`,
+                  "Content-Type": "application/json",
+                },
+              }
+            ).then((response) => response.json())
+          );
+        }
+
+        // Wait for all requests to complete
+        const responses = await Promise.all(fetchPromises);
+
+        // Combine all results
+        const allCategories = responses.reduce((acc, response) => {
+          return [...acc, ...response.results];
+        }, []);
+
+        setCategories(allCategories);
       } catch (error) {
         console.error("Error fetching categories:", error);
         setModalConfig({
@@ -191,7 +233,10 @@ const AddNewProduct: React.FC = () => {
     formDataToSend.append("sub_category", formData.sub_category);
     formDataToSend.append("colour", formData.colour);
     formDataToSend.append("price", formData.price);
-    formDataToSend.append("discounted_price", formData.discounted_price ? formData.discounted_price : "0");
+    formDataToSend.append(
+      "discounted_price",
+      formData.discounted_price ? formData.discounted_price : "0"
+    );
     formDataToSend.append("is_available", String(formData.is_available));
     formDataToSend.append("latest_item", String(formData.latest_item));
     formDataToSend.append(
@@ -334,20 +379,84 @@ const AddNewProduct: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Category
                   </label>
-                  <select
-                    name="sub_category"
-                    required
-                    value={formData.sub_category}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                  >
-                    <option value="">Select Category</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    {isSearchMode ? (
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Search categories..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsSearchMode(false);
+                            setSearchQuery("");
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <IoClose size={20} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <select
+                          name="sub_category"
+                          required
+                          value={formData.sub_category}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm appearance-none"
+                        >
+                          <option value="">Select Category</option>
+                          {filteredCategories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setIsSearchMode(true);
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <IoSearch size={20} />
+                        </button>
+                      </div>
+                    )}
+                    {isSearchMode && searchQuery && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                        {filteredCategories.length > 0 ? (
+                          filteredCategories.map((category) => (
+                            <button
+                              key={category.id}
+                              type="button"
+                              onClick={() => {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  sub_category: category.id,
+                                }));
+                                setIsSearchMode(false);
+                                setSearchQuery("");
+                              }}
+                              className="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                            >
+                              {category.name}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="px-4 py-2 text-gray-500">
+                            No categories found
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="md:col-span-2">
