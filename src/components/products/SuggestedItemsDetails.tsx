@@ -209,7 +209,7 @@ const SuggestedItemDetails= () => {
               </div>
             </div>
             
-            <p className="text-gray-700 text-base leading-relaxed">
+            <p className="text-gray-700 text-base leading-relaxed line-clamp-2">
               {product.description}
             </p>
             

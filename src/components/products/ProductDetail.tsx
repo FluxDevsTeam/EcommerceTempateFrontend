@@ -211,7 +211,7 @@ const ProductDetail = () => {
               </div>
             </div>
             
-            <p className="text-gray-700 text-base leading-relaxed">
+            <p className="text-gray-700 text-base leading-relaxed line-clamp-2  ">
               {product.description}
             </p>
             
@@ -290,7 +290,7 @@ const ProductDetail = () => {
 
       {/* Description Section */}
       <div className="mt-12 space-y-6">
-        <h2 className="text-xl sm:text-2xl font-medium">Description</h2>
+        <h2 className="text-xl sm:text-2xl font-medium ">Description</h2>
         <p className="text-gray-700 text-sm sm:text-base">
           {product.description}
         </p>

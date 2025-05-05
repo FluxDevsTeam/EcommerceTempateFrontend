@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchProducts } from "./api/apiService";
 import { ProductAPIResponse } from "./types/data-types";
 import { Link } from "react-router-dom";
+import CardItems from "./components/CardItems";
 
 const Homepage = () => {
 
@@ -22,10 +23,10 @@ if (isLoading) return <div className="flex justify-center items-center py-10 tex
 if (isError) return <div>Error loading data.</div>;
 
   return (
-    <div className="w-full min-h-full px-4  md:px-12 py-4 lg:px-20">
+    <div className="w-full min-h-full px-4  md:px-12 py-4 lg:px-20 ">
       {/* Hero Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 ">
-        <div className="flex flex-col md:space-y-2 space-y-4  md:pt-6  px-4 md:px-0">
+        <div className="flex flex-col space-y-2  md:pt-6  px-4 md:px-0">
           <h1 className='text-4xl sm:text-5xl md:text-6xl font-bold leading-tight lg:leading-[63px] text-black'>
             Shop Smarter, Live Better - Find What You Love
           </h1>
@@ -48,12 +49,12 @@ if (isError) return <div>Error loading data.</div>;
       </div>
 
       {/* Content Sections */}
-      <div className="md:mt-3 mt-12 space-y-10">
+      <div className="md:mt-3  md:space-y-10">
         
      <ImageGrid data={data?.latest_items?.results ?? []} />
      <TopSelling data={data?.top_selling_items?.results ?? []} />
      <ImageSlider data={data?.latest_items?.results ?? []}/>
-
+     <CardItems data="https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/homepage/"/>
       </div>
     </div>
   )

@@ -3,6 +3,7 @@ import { ProductItem } from "../types/data-types";
 import { Link, useNavigate } from "react-router-dom";
 import { FaRegHeart } from "react-icons/fa";
 
+
 interface LatestItemsProps {
   data: ProductItem[];
 }

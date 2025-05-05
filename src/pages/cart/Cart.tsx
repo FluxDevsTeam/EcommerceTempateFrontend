@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FiArrowRight, FiTrash2 } from "react-icons/fi";
+import Suggested from "@/components/products/Suggested";
 
 interface Product {
   id: number;
@@ -387,7 +388,7 @@ const Cart = () => {
       <div className="mt-16">
         <h2 className="text-2xl font-bold mb-6">You might also like</h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+       /* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {recommendedProducts.map((product) => (
             <div
               key={product.id}
@@ -435,7 +436,8 @@ const Cart = () => {
               </div>
             </div>
           ))}
-        </div>
+       // </div> 
+        <Suggested/>
       </div>
     </div>
   );

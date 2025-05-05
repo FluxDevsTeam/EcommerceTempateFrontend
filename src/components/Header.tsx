@@ -8,6 +8,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { RiEqualizerLine } from "react-icons/ri";
 import SearchInput from "./SearchInput";
 import { useAuth } from "@/pages/auth/AuthContext";
+import { FaUserCheck } from "react-icons/fa6";
+import { FaRegHeart } from "react-icons/fa";
 
 // Define the FilterState type
 interface FilterState {
@@ -200,10 +202,10 @@ const Header = () => {
   const displayName = getDisplayName();
 
   return (
-    <div>
+   <div className=' '>
       <div 
         ref={navbarRef}
-        className={`fixed top-0 left-0 w-full bg-white z-50 md:px-24 py-4
+        className={`w-full h-[70px] md:h-[150px] bg-white fixed top-0 left-0 w-full z-50 md:px-24 py-4
           ${scrolled ? 'shadow-md' : ''}
           transition-all duration-300 ease-in-out
           ${showNavbar ? 'translate-y-0' : '-translate-y-full'}`}
@@ -332,28 +334,31 @@ const Header = () => {
               </button>
               <Link to='/'><p className="font-bold text-2xl">SHOP.CO</p></Link>
             </div>
-            <div className="flex space-x-4 items-center">
-              <Link to="/cart" className="hover:text-gray-600">
-                <BsCart size={28} />
-              </Link>
-              
+            <div >
+             
               <div className="relative">
                 {/* Clickable trigger area */}
                 <div 
-                  className="flex items-center gap-2 cursor-pointer"
-                  onClick={toggleUserDropdown}
+                  className="flex items-center gap-2 space-x-1 cursor-pointer"
+                 
                 >
                   {isUserAuthenticated && displayName && (
-                    <span className="text-sm font-medium bg-blue-100 px-2 py-1  rounded truncate max-w-20">
-                      Hi, {displayName}
-                    </span>
+
+
+              <span className="flex space-x-2">
+                    <span  onClick={toggleUserDropdown}> <FaUserCheck size={28} /></span>   
+                       <Link to="/wishlist" className="hover:text-gray-600"><FaRegHeart size={28} /></Link>  
+                  </span>
+             
                   )}
-                  <IoPersonCircleOutline size={32} />
+                  <Link to="/cart" className="hover:text-gray-600">
+                <BsCart size={28} />
+              </Link>
                 </div>
                 
                 {/* User dropdown menu - now controlled by isUserDropdownOpen */}
                 {isUserDropdownOpen && (
-                  <div className="absolute right-0 top-12 z-50 w-48 rounded-md border border-gray-300 bg-white shadow-lg">
+                  <div className="absolute right-10 top-10 z-50 w-auto rounded-md border border-gray-300 bg-white shadow-lg">
                     {isUserAuthenticated ? (
                       <>
                         <Link 
@@ -362,20 +367,6 @@ const Header = () => {
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         >
                           Orders
-                        </Link>
-                        <Link 
-                          to="/cart"
-                          onClick={() => setIsUserDropdownOpen(false)}
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          Cart
-                        </Link>
-                        <Link 
-                          to="/wishlist"
-                          onClick={() => setIsUserDropdownOpen(false)}
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          Wishlists
                         </Link>
                         <div className="border-t border-gray-200"></div>
                         <button
@@ -414,18 +405,13 @@ const Header = () => {
 
           {/* Mobile Menu - now controlled by isMobileMenuOpen */}
           {isMobileMenuOpen && (
-            <div className="block md:hidden p-7">
+            <div className="block bg-white md:hidden p-7">
               <div className="flex flex-col w-full space-y-4">
                 {isUserAuthenticated && displayName && (
                   <div className="bg-blue-50 rounded-md p-2 mb-2">
                     <p className="text-xs text-blue-700">Welcome back, {displayName}!</p>
                     <div className="flex mt-2">
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center text-sm text-red-600 hover:text-red-800"
-                      >
-                        <FiLogOut className="mr-1" /> Logout
-                      </button>
+                    
                     </div>
                   </div>
                 )}
@@ -448,7 +434,7 @@ const Header = () => {
             </div>
           )}
         </div>
-      </div>
+   
 
       {/* Add spacer to prevent content from hiding behind fixed header */}
       <div className="h-24 md:h-28"></div>
@@ -459,7 +445,8 @@ const Header = () => {
         onClose={toggleFilter}
         onApplyFilters={handleApplyFilters}
       />
-    </div>
+    </div>  
+    </div> 
   );
 };
 
