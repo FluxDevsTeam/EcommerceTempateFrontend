@@ -244,37 +244,7 @@ const Cart = () => {
   const discountAmount = Math.round((subtotal * discountPercentage) / 100);
   const total = subtotal - discountAmount;
 
-  // Recommended products
-  const recommendedProducts = [
-    {
-      id: 1,
-      name: "Polo with Contrast Trims",
-      price: 212,
-      originalPrice: 242,
-      discount: 20,
-      image: `https://th.bing.com/th/id/OIP.dkNJ_ODZxla-khcYAQ6t8QHaLH?w=156&h=192&c=7&r=0&o=5&pid=1.7`,
-    },
-    {
-      id: 2,
-      name: `Polo with Contrast Trims`,
-      price: 145,
-      image: `https://th.bing.com/th/id/OIP.mxALY9ebC8FBKs-t3z1z1AHaLH?w=156&h=180&c=7&r=0&o=5&pid=1.7`,
-    },
-    {
-      id: 3,
-      name: `Polo with Tipping Details`,
-      price: 180,
-      image: `https://th.bing.com/th/id/OIP.JELDOYDe6rdYtlYo2jyj9wHaLH?w=204&h=306&c=7&r=0&o=5&pid=1.7`,
-    },
-    {
-      id: 4,
-      name: `Black Striped T-shirt`,
-      price: 120,
-      originalPrice: 150,
-      discount: 20,
-      image: `https://th.bing.com/th/id/OIP.wpEI3wVdH-Pj2w9K7mIBjAHaHa?w=205&h=205&c=7&r=0&o=5&pid=1.7`,
-    },
-  ];
+  
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 font-poppins">
@@ -388,55 +358,6 @@ const Cart = () => {
       <div className="mt-16">
         <h2 className="text-2xl font-bold mb-6">You might also like</h2>
 
-       /* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {recommendedProducts.map((product) => (
-            <div
-              key={product.id}
-              className="bg-gray-50 rounded-lg p-4 relative"
-            >
-              <button className="absolute top-4 right-4 z-10">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                    stroke="black"
-                    strokeWidth="1.5"
-                    fill="none"
-                  />
-                </svg>
-              </button>
-
-              <div className="h-40 bg-white rounded-lg mb-4 flex items-center justify-center">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="max-h-full max-w-full object-contain"
-                />
-              </div>
-
-              <h3 className="font-medium">{product.name}</h3>
-
-              <div className="flex items-center mt-2">
-                <span className="font-bold">${product.price}</span>
-                {product.originalPrice && (
-                  <>
-                    <span className="text-gray-400 line-through ml-2">
-                      ${product.originalPrice}
-                    </span>
-                    <span className="bg-red-100 text-red-500 text-xs px-2 py-1 ml-2 rounded">
-                      -{product.discount}%
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
-       // </div> 
         <Suggested/>
       </div>
     </div>

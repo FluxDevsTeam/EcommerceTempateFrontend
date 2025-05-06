@@ -37,6 +37,8 @@ import Confirm from "./pages/orders/Confirm";
 import Contact from "./pages/orders/Contact";
 import SuggestedItemDetails from "./components/products/SuggestedItemsDetails";
 import ScrollToTop from "./components/ScrollToTop";
+import Producter from "./pages/orders/Ade";
+
 
 const queryClient = new QueryClient();
 
@@ -77,6 +79,7 @@ const AppContent: React.FC = () => {
         <Route path="/orders/:id" element={<Confirm />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/contact-us" element={<Contact />} />
+          <Route path="/ade" element={<Producter />} />
       </Route>
 
       {/* AuthLayout Routes */}

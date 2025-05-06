@@ -3,8 +3,8 @@ export interface Product {
     id: number;
     name: string;
     image1: string;
-    price: string;
-    discounted_price: string;
+    price: number;
+    undiscounted_price: number;
   }
   
   export interface OrderItem {
@@ -41,8 +41,8 @@ export interface Product {
     id: number;
     name: string;
     image1: string;
-    discounted_price: string;
-    price: string;
+    undiscounted_price: number;
+    price: number;
   }
   
   export interface WishItem {

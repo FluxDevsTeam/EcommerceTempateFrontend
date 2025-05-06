@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import ProductCard from './ProductsCard';
 import { Product } from '@/types/api-types';
 import search from '/images/Empty-rafiki 1 (1).png';
+import Card from '@/card/Card';
 
 
 // Full search API endpoint
@@ -237,7 +238,7 @@ const SearchResults = () => {
         <div className="mb-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 sm:mb-16">
             {products.map((item) => (
-              <ProductCard key={item.id} item={item} />
+              <Card key={item.id} product={item} />
             ))}
           </div>
           

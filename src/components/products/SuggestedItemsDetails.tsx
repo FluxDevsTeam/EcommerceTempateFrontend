@@ -1,8 +1,6 @@
-
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useParams} from "react-router-dom";
+import { useParams } from "react-router-dom";
 import SuggestedProductDetails from "./SuggestedProductDetail";
 import DescriptionList from "./DescriptionList";
 
@@ -16,6 +14,13 @@ interface SubCategory {
   id: number;
   category: Category;
   name: string;
+}
+
+// Define proper size object structure
+interface Size {
+  id: number;
+  size: string;
+  quantity: number;
 }
 
 interface Product {
@@ -33,30 +38,12 @@ interface Product {
   is_available: boolean;
   dimensional_size: string;
   weight: string;
+  sizes: Size[]; // Updated to proper type
 }
 
-interface ProductSize {
-  id: number;
-  product: {
-    id: number;
-    name: string;
-    image1: string;
-    discounted_price: string;
-    price: string;
-  };
-  size: string;
-  quantity: number;
-}
-
-interface ProductSizesResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: ProductSize[];
-}
 
 interface ProductDetailParams {
-  id: string; 
+  id: string;
 }
 
 const fetchProduct = async (id: number): Promise<Product> => {
@@ -67,16 +54,16 @@ const fetchProduct = async (id: number): Promise<Product> => {
   return response.json();
 };
 
-const fetchSizes = async (productId: number): Promise<ProductSize[]> => {
+/*const fetchSizes = async (productId: number): Promise<ProductSize[]> => {
   const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/product/size/?product=${productId}`);
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
   const data: ProductSizesResponse = await response.json();
   return data.results;
-};
+}; */
 
-const SuggestedItemDetails= () => {
+const SuggestedItemDetails = () => {
   const { id } = useParams<keyof ProductDetailParams>() as ProductDetailParams;
   const productId = parseInt(id);
   const [mainImage, setMainImage] = useState<string>("");
@@ -87,15 +74,15 @@ const SuggestedItemDetails= () => {
   const { data: product, isLoading, error } = useQuery<Product, Error>({
     queryKey: ['product', productId],
     queryFn: () => fetchProduct(productId),
-    enabled: !!productId
+    enabled: !!productId && !isNaN(productId)
   });
 
   // Fetch sizes for this specific product
-  const { data: productSizes, isLoading: sizesLoading } = useQuery<ProductSize[], Error>({
+  /*const { data: productSizes, isLoading: sizesLoading } = useQuery<ProductSize[], Error>({
     queryKey: ['productSizes', productId],
     queryFn: () => fetchSizes(productId),
-    enabled: !!productId
-  });
+    enabled: !!productId && !isNaN(productId)
+  });*/
 
   // Initialize main image and selected size when product data is loaded
   useEffect(() => {
@@ -105,14 +92,14 @@ const SuggestedItemDetails= () => {
         setMainImage(images[0]);
       }
       // Set the first available size as default if none selected
-      if (productSizes && productSizes.length > 0 && !selectedSize) {
-        setSelectedSize(productSizes[0].size);
+      if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+        setSelectedSize(product.sizes[0].size);
       }
     }
-  }, [product, productSizes, mainImage, selectedSize]);
+  }, [product,/* productSizes*/, mainImage, selectedSize]);
 
-  if (!id) {
-    return <div className="text-center py-8">Product ID not provided</div>;
+  if (!id || isNaN(productId)) {
+    return <div className="text-center py-8">Invalid or missing product ID</div>;
   }
 
   if (isLoading) return <div className="text-center py-8">Loading product...</div>;
@@ -130,7 +117,7 @@ const SuggestedItemDetails= () => {
     : 0;
 
   // Get available quantity for selected size
-  const selectedSizeData = productSizes?.find(size => size.size === selectedSize);
+  const selectedSizeData = product.sizes.find(size => size.size === selectedSize);
   const availableQuantity = selectedSizeData?.quantity || 0;
 
   // Handle quantity changes
@@ -222,10 +209,10 @@ const SuggestedItemDetails= () => {
             <div className="space-y-2">
               <p className="text-gray-600 text-sm sm:text-base">Size</p>
               <div className="grid grid-cols-4 gap-2">
-                {sizesLoading ? (
+                {isLoading ? (
                   <div className="col-span-4 text-center py-2">Loading sizes...</div>
-                ) : productSizes && productSizes.length > 0 ? (
-                  productSizes.map((item) => (
+                ) : product.sizes && product.sizes.length > 0 ? (
+                  product.sizes.map((item) => (
                     <button
                       type="button"
                       key={item.id}
@@ -297,7 +284,6 @@ const SuggestedItemDetails= () => {
             "Category": product.sub_category.category.name,
             "Subcategory": product.sub_category.name,
             "Weight": product.weight,
-            "Size": product.dimensional_size,
             "Color": product.colour
           }}
         />

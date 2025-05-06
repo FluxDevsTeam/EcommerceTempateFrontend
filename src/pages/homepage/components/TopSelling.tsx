@@ -1,15 +1,14 @@
-import { FaRegHeart } from "react-icons/fa";
 import { ProductItem } from "../types/data-types"; 
-import {Link, useNavigate } from "react-router-dom"
-
+import {Link} from "react-router-dom"
+import Card from "@/card/Card"
 
 
 interface TopSellingProps {
-  data: ProductItem[];
+  product: ProductItem[];
 }
 
-const TopSelling: React.FC<TopSellingProps> = ({ data }) => {
-   const navigate = useNavigate(); 
+const TopSelling: React.FC<TopSellingProps> = ({ product }) => {
+ 
   return (
     <div className="px-3  py-8 md:py-12">
       <h2 className="text-3xl md:text-5xl font-medium leading-tight text-center mb-6 sm:mb-8 md:mb-10">
@@ -17,54 +16,9 @@ const TopSelling: React.FC<TopSellingProps> = ({ data }) => {
       </h2>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-8 sm:mb-16">
-        {data.map((item) => {
-          const price = parseFloat(item.price);
-          const discountedPrice = parseFloat(item.discounted_price);
-          const amountSaved = price - discountedPrice;
-
-        return (
-          <div
-          key={item.id}
-          className="group hover:shadow-lg transition-shadow duration-300 rounded-xl overflow-hidden cursor-pointer"
-          onClick={() =>
-            navigate(`/product/item/${item.id}`)
-          }
-        >
-          <div className=" rounded-lg relative">
-            <div>
-              <img
-                src={item.image1}
-                alt={item.name}
-                className="w-full h-[200px] md:h-[300px] shadow-lg   object-cover"
-              />
-              <button
-                className="absolute top-2 right-2 text-gray-600 hover:text-red-500 p-2 transition-colors duration-200"
-                aria-label="Add to favorites"
-              >
-                <FaRegHeart size={15} />
-              </button>
-            </div>
-          </div>
-
-          <div className="p-3 sm:p-4">
-      <h3 className="text-base leading-[100%]  sm:text-lg font-normal truncate">
-        {item.name}
-      </h3>
-      <div className="mt-2 flex flex-wrap items-center gap-1 sm:gap-2">
-        <span className="text-xl  font-normal leading-[100%] text-primary">
-        ₦{discountedPrice.toFixed(0)}
-        </span>
-        <span className="text-gray-500 line-through text-xl sm:text-xl ">
-        ₦{price.toFixed(0)}
-        </span>
-        <span className="bg-red-200 text-[#FF3333] px-2 py-1 rounded-full text-xs sm:text-sm">
-        ₦{amountSaved.toFixed(0)}
-        </span>
-      </div>
-    </div>
-        </div>
-                );
-        })}
+      {product.map((item) => (
+        <Card key={item.id} product={item} />
+      ))}
       </div>
 
       <div className="flex justify-center items-center mt-8 sm:mt-10">
