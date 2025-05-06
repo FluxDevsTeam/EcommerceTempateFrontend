@@ -205,7 +205,7 @@ const Header = () => {
    <div className=' '>
       <div 
         ref={navbarRef}
-        className={`w-full h-[70px] md:h-[150px] bg-white fixed top-0 left-0 w-full z-50 md:px-24 py-4
+        className={`w-full h-[70px] md:h-[150px] bg-white fixed top-0 left-0  z-50 md:px-24 py-4
           ${scrolled ? 'shadow-md' : ''}
           transition-all duration-300 ease-in-out
           ${showNavbar ? 'translate-y-0' : '-translate-y-full'}`}

@@ -17,6 +17,12 @@ interface SubCategory {
   name: string;
 }
 
+interface SubCategory {
+  id: number;
+  category: Category;
+  name: string;
+}
+
 interface Product {
   id: number;
   name: string;
@@ -227,7 +233,7 @@ const ProductDetail = () => {
                 {sizesLoading ? (
                   <div className="col-span-4 text-center py-2">Loading sizes...</div>
                 ) : productSizes && productSizes.length > 0 ? (
-                  productSizes.map((item) => (
+                  product.sizes.map((item) => (
                     <button
                       type="button"
                       key={item.id}

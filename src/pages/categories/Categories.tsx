@@ -1,10 +1,10 @@
 // Categories.tsx
 import { useState } from 'react';
 import NewProductsList from "./NewProductsList";
-import SortDropdown from "./SortButton"; // not SortButton
+import SortDropdown from "./SortButton"; 
 
 const Categories = () => {
-  const [sortOption, setSortOption] = useState('Latest items');
+  const [sortOption, setSortOption] = useState('');
 
   return (
     <div className="w-full min-h-full flex flex-col px-6  md:px-24 py-8 md:py-12">

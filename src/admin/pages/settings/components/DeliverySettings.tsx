@@ -1,13 +1,57 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
+
+
+interface DeliverySettingsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: DeliverySettings[];
+}
+
+interface DeliverySettings {
+  base_fee: string;
+  fee_per_km: string;
+  weigh_fee: string;
+  size_fee: string;
+}
 
 const DeliverySettings = () => {
-  const [formData, setFormData] = useState({
-    baseFee: '',
-    feePerKm: '',
-    weightFee: '', // Fixed typo from "weighFee" to "weightFee"
-    sizeFee: '',
+  const [formData, setFormData] = useState<DeliverySettings>({
+    base_fee: '',
+    fee_per_km: '',
+    weigh_fee: '',
+    size_fee: '',
   });
-  
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Fetch delivery settings on component mount
+  useEffect(() => {
+    fetchDeliverySettings();
+  }, []);
+
+  const fetchDeliverySettings = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get<DeliverySettingsResponse>(
+        'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/delivery-settings/',
+      );
+      
+      // Assuming the first result is what we want to display
+      if (response.data.results.length > 0) {
+        setFormData(response.data.results[0]);
+      }
+      setError(null);
+    } catch (err) {
+      setError('Failed to load delivery settings');
+      console.error( err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -16,20 +60,57 @@ const DeliverySettings = () => {
     }));
   };
   
-  const handleSave = () => {
-    console.log('Saving changes:', formData);
-    // Implementation for saving data would go here
-  };
-  
-  const handleDelete = () => {
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      console.log('Deleting account');
-      // Implementation for account deletion would go here
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      
+      // Convert field names to match API schema
+      const apiFormData = {
+        base_fee: formData.base_fee,
+        fee_per_km: formData.fee_per_km,
+        weigh_fee: formData.weigh_fee,
+        size_fee: formData.size_fee
+      };
+      
+      // Send PATCH request to update delivery settings
+      await axios.patch<DeliverySettings>(
+        'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/delivery-settings/',
+        apiFormData,
+      );
+      
+      setSuccessMessage('Delivery settings updated successfully');
+      setError(null);
+      
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 3000);
+    } catch (err) {
+      setError('Failed to update delivery settings');
+      console.error('Error updating delivery settings:', err);
+    } finally {
+      setLoading(false);
     }
   };
   
+  if (loading && !formData.base_fee) {
+    return <div className="p-4">Loading delivery settings...</div>;
+  }
+
   return (
-    <div> {/* Added root div wrapper to match other components */}
+    <div className="p-4">
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+      
+      {successMessage && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          {successMessage}
+        </div>
+      )}
+      
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-6">Delivery Settings</h2>
         
@@ -38,10 +119,10 @@ const DeliverySettings = () => {
             <label className="block text-sm font-medium mb-2">Base Fee</label>
             <input
               type="text"
-              name="baseFee"
-              value={formData.baseFee}
+              name="base_fee"
+              value={formData.base_fee}
               onChange={handleChange}
-              placeholder="Enter Base Fee" // Improved placeholder text
+              placeholder="Enter Base Fee"
               className="w-full p-3 border border-gray-300 rounded-md"
             />
           </div>
@@ -50,10 +131,10 @@ const DeliverySettings = () => {
             <label className="block text-sm font-medium mb-2">Fee per km</label>
             <input
               type="text"
-              name="feePerKm"
-              value={formData.feePerKm}
+              name="fee_per_km"
+              value={formData.fee_per_km}
               onChange={handleChange}
-              placeholder="Enter Fee per km" // Fixed incorrect placeholder
+              placeholder="Enter Fee per km"
               className="w-full p-3 border border-gray-300 rounded-md"
             />
           </div>
@@ -64,8 +145,8 @@ const DeliverySettings = () => {
             <label className="block text-sm font-medium mb-2">Size Fee</label>
             <input
               type="text"
-              name="sizeFee"
-              value={formData.sizeFee}
+              name="size_fee"
+              value={formData.size_fee}
               onChange={handleChange}
               placeholder="Enter Size Fee"
               className="w-full p-3 border border-gray-300 rounded-md"
@@ -73,38 +154,34 @@ const DeliverySettings = () => {
           </div>
           
           <div>
-            <label className="block text-sm font-medium mb-2">Weight Fee</label> {/* Fixed typo in label */}
+            <label className="block text-sm font-medium mb-2">Weight Fee</label>
             <input
               type="text"
-              name="weightFee" /* Fixed property name to match state */
-              value={formData.weightFee} /* Updated to match corrected state property */
+              name="weigh_fee"
+              value={formData.weigh_fee}
               onChange={handleChange}
-              placeholder="Enter Weight Fee" /* Added appropriate placeholder */
+              placeholder="Enter Weight Fee"
               className="w-full p-3 border border-gray-300 rounded-md"
             />
           </div>
         </div>
       </div>
-      
-      <div className="mt-12">
-        <button 
-          className="text-red-500 font-medium"
-          onClick={handleDelete}
-        >
-          Delete Account
-        </button>
-      </div>  
 
       <div className="mb-6">
         <div className="flex justify-end space-x-4 mb-8">
-          <button className="px-6 py-2 border border-gray-300 rounded-md">
+          <button 
+            className="px-6 py-2 border border-gray-300 rounded-md"
+            onClick={fetchDeliverySettings}
+            disabled={loading}
+          >
             Cancel
           </button>
           <button 
             className="px-6 py-2 bg-gray-800 text-white rounded-md"
             onClick={handleSave}
+            disabled={loading}
           >
-            Save Changes
+            {loading ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>
