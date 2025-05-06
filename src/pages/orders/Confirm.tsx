@@ -41,6 +41,12 @@ const Confirm = () => {
   if (loading) return <div className="p-10 text-center">Loading...</div>;
   if (error) return <div className="p-10 text-red-500 text-center">{error}</div>;
   if (!order) return null;
+  
+  const steps = ["Paid", "Shipped", "Delivered"];
+  const normalizedStatus = order.status.toLowerCase();
+  const currentStepIndex = steps.findIndex(step => step.toLowerCase() === normalizedStatus);
+  const isValidStatus = currentStepIndex !== -1;
+  
 
   return (
     <div className="p-4 sm:p-14 pb-10 sm:pb-28">
@@ -56,9 +62,43 @@ const Confirm = () => {
           <span>Estimated delivery: {formatEstimatedDelivery(order.estimated_delivery)}</span>
         </p>
       </div>
+      {isValidStatus && (
+        <div className="flex flex-col mb-8">
+          {/* Labels */}
+          <div className="flex gap-20 sm:gap-24 mb-2 text-base font-medium text-gray-700">
+            {steps.map((step, index) => (
+              <span key={index}>{step}</span>
+            ))}
+          </div>
+
+          {/* Circles and Lines */}
+          <div className="ml-3 flex items-center justify-between w-full max-w-md">
+            {steps.map((_, index) => (
+              <div key={index} className="flex items-center w-full">
+                {/* Circle */}
+                <div
+                  className={`w-4 h-4 rounded-full ${
+                    index <= currentStepIndex ? 'bg-black' : 'bg-gray-300'
+                  }`}
+                />
+                {/* Line (except after last circle) */}
+                {index < steps.length - 1 && (
+                  <div
+                    className={`flex-1 h-1 mx-1 ${
+                      index < currentStepIndex ? 'bg-black' : 'bg-gray-300'
+                    }`}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+
       <div className="mb-4 flex flex-col">
         <span className="text-[20px] inline-block leading-[30px] mb-2">Status</span>
-        <span className="bg-[#72D3E940] inline-block rounded-2xl pl-2 py-1 w-[150px]">{order.status}</span>
+        <span className="bg-[#72D3E940] inline-block rounded-2xl pl-2 py-1 w-[150px]">{order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}</span>
       </div>
 
       <ul className="w-full sm:w-[80%] flex flex-col gap-6 sm:gap-3">

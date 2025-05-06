@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Card from '@/card/Card'; // adjust this import if needed
+import Card from './Card'; // adjust this import if needed
 
 interface Product {
   id: number;
