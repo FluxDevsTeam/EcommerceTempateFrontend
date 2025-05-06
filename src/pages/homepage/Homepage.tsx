@@ -26,7 +26,7 @@ if (isError) return <div>Error loading data.</div>;
     <div className="w-full min-h-full px-4  md:px-12 py-4 lg:px-20 ">
       {/* Hero Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 ">
-        <div className="flex flex-col space-y-2  md:pt-6  px-4 md:px-0">
+        <div className="flex flex-col space-y-2 pt-3 md:pt-6  px-4 md:px-0">
           <h1 className='text-4xl sm:text-5xl md:text-6xl font-bold leading-tight lg:leading-[63px] text-black'>
             Shop Smarter, Live Better - Find What You Love
           </h1>

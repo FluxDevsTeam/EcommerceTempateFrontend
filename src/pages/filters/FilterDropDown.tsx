@@ -18,7 +18,7 @@ export default function SortDropdown({ onSortChange }: SortDropdownProps) {
   };
 
   return (
-    <div className="z-50 relative inline-block text-left ">
+    <div className="relative inline-block text-left ">
       <button 
         className="inline-flex items-center justify-between w-40 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" 
         onClick={toggleDropdown}

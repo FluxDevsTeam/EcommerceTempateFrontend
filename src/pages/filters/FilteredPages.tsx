@@ -121,7 +121,7 @@ const ProductsPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
         <h1 className="text-3xl md:text-4xl font-medium">Filtered Products</h1>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 pt-3 md:pt-0">
           <p className="text-gray-600">{totalCount} products found</p>
           <SortDropdown
             onSortChange={(sortValue) => {

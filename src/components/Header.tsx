@@ -204,7 +204,7 @@ const Header = () => {
   return (
     <div 
       ref={navbarRef}
-      className={`w-full bg-white fixed top-0 left-0 h-[70px] md:h-[150px] z-50 md:px-24 py-4
+      className={`w-full bg-white fixed top-0 left-0  z-50 md:px-24 py-4
         ${scrolled ? 'shadow-md' : ''}
         transition-all duration-300 ease-in-out
         ${showNavbar ? 'translate-y-0' : '-translate-y-full'}`}
@@ -214,9 +214,7 @@ const Header = () => {
         <div className="flex justify-between items-center">
           <Link to='/'><p className="font-bold text-3xl">SHOP.CO</p></Link>  
           <div className="flex space-x-6 items-center">
-            {/* Always show wishlist and cart */}
        
-          
             
             {/* User account section */}
             <div className="relative">
@@ -322,7 +320,7 @@ const Header = () => {
               </button>
             ) : (
               <Link to="/login" className="hover:text-gray-600 transition-colors" aria-label="Sign in">
-                <IoPersonCircleOutline size={24} />
+                <IoPersonCircleOutline size={28} />
               </Link>
             )}
 
@@ -334,7 +332,7 @@ const Header = () => {
 
         {/* Mobile dropdown menu */}
         {isUserAuthenticated && isUserDropdownOpen && (
-          <div className="absolute right-4 top-16 z-50 w-auto rounded-md border border-gray-300 bg-white shadow-lg">
+          <div className="absolute right-4 top-12 z-50 w-auto rounded-md border border-gray-300 bg-white shadow-lg">
             <Link 
               to="/orders"
               onClick={() => setIsUserDropdownOpen(false)}
@@ -395,8 +393,7 @@ const Header = () => {
         )}
       </div>
 
-      {/* Add spacer to prevent content from hiding behind fixed header */}
-      <div className="h-24 md:h-28"></div>
+     
 
       {/* Filter Component */}
       <FiltersComponent 
