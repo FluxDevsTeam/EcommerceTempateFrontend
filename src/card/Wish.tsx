@@ -13,6 +13,7 @@ const Wish: React.FC<WishProps> = ({ color = "red", liked, onToggle }) => {
     <div
       className="absolute top-2 right-2 text-[23px] sm:text-[30px] cursor-pointer"
       onClick={onToggle}
+      aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'}
     >
       {liked ? (
         <FaHeart style={{ color: color }} />

@@ -36,6 +36,8 @@ import Wishlist from "./pages/orders/Wishlist";
 import Confirm from "./pages/orders/Confirm";
 import Contact from "./pages/orders/Contact";
 
+import Producter from "./pages/orders/Ade";
+
 
 const queryClient = new QueryClient();
 
@@ -75,6 +77,7 @@ const AppContent: React.FC = () => {
         <Route path="/orders/:id" element={<Confirm />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/contact-us" element={<Contact />} />
+          <Route path="/ade" element={<Producter />} />
       </Route>
 
       {/* AuthLayout Routes */}
