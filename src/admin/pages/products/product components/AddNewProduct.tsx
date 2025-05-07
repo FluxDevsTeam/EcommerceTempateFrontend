@@ -32,22 +32,19 @@ const AddNewProduct: React.FC = () => {
   // Form data state
   const [formData, setFormData] = useState({
     name: "",
-    sub_category: "",
     description: "",
+    sub_category: null as number | null,
     colour: "",
     price: "",
-    quantity: "",
-    discounted_price: "",
-    is_available: true,
-    dimensional_size: "",
-    weight: "",
-    length: "",
-    width: "",
-    height: "",
+    is_available: false,
+    dimensional_size: null as string | null,
+    weight: null as string | null,
     latest_item: false,
-    latest_item_position: "",
+    latest_item_position: null as number | null,
     top_selling_items: false,
-    top_selling_position: "",
+    top_selling_position: null as number | null,
+    unlimited: false,
+    production_days: null as number | null,
     image1: null as File | null,
     image2: null as File | null,
     image3: null as File | null,
@@ -227,58 +224,42 @@ const AddNewProduct: React.FC = () => {
     }
 
     const formDataToSend = new FormData();
-
-    formDataToSend.append("name", formData.name);
-    formDataToSend.append("description", formData.description);
-    formDataToSend.append("sub_category", formData.sub_category);
-    formDataToSend.append("colour", formData.colour);
-    formDataToSend.append("price", formData.price);
-    formDataToSend.append(
-      "discounted_price",
-      formData.discounted_price ? formData.discounted_price : "0"
-    );
-    formDataToSend.append("is_available", String(formData.is_available));
-    formDataToSend.append("latest_item", String(formData.latest_item));
-    formDataToSend.append(
-      "latest_item_position",
-      formData.latest_item_position || "0"
-    );
-    formDataToSend.append("dimensional_size", formData.dimensional_size);
-    formDataToSend.append("weight", formData.weight);
-    formDataToSend.append(
-      "top_selling_items",
-      String(formData.top_selling_items)
-    );
-    formDataToSend.append(
-      "top_selling_position",
-      formData.top_selling_position || "0"
-    );
+    Object.keys(formData).forEach((key) => {
+      if (
+        formData[key as keyof typeof formData] !== null &&
+        key !== "image1" &&
+        key !== "image2" &&
+        key !== "image3"
+      ) {
+        formDataToSend.append(key, String(formData[key as keyof typeof formData]));
+      }
+    });
 
     if (formData.image1) formDataToSend.append("image1", formData.image1);
     if (formData.image2) formDataToSend.append("image2", formData.image2);
     if (formData.image3) formDataToSend.append("image3", formData.image3);
 
     // Log the form data for debugging
-    console.log("Form data being sent:", {
-      name: formData.name,
-      description: formData.description,
-      sub_category: formData.sub_category,
-      colour: formData.colour,
-      price: formData.price,
-      discounted_price: formData.discounted_price,
-      is_available: formData.is_available,
-      latest_item: formData.latest_item,
-      latest_item_position: formData.latest_item_position,
-      dimensional_size: formData.dimensional_size,
-      weight: formData.weight,
-      top_selling_items: formData.top_selling_items,
-      top_selling_position: formData.top_selling_position,
-      images: {
-        image1: formData.image1?.name,
-        image2: formData.image2?.name,
-        image3: formData.image3?.name,
-      },
-    });
+    // console.log("Form data being sent:", {
+    //   name: formData.name,
+    //   description: formData.description,
+    //   sub_category: formData.sub_category,
+    //   colour: formData.colour,
+    //   price: formData.price,
+    //   discounted_price: formData.discounted_price,
+    //   is_available: formData.is_available,
+    //   latest_item: formData.latest_item,
+    //   latest_item_position: formData.latest_item_position,
+    //   dimensional_size: formData.dimensional_size,
+    //   weight: formData.weight,
+    //   top_selling_items: formData.top_selling_items,
+    //   top_selling_position: formData.top_selling_position,
+    //   images: {
+    //     image1: formData.image1?.name,
+    //     image2: formData.image2?.name,
+    //     image3: formData.image3?.name,
+    //   },
+    // });
 
     try {
       const response = await fetch(
@@ -406,7 +387,7 @@ const AddNewProduct: React.FC = () => {
                         <select
                           name="sub_category"
                           required
-                          value={formData.sub_category}
+                          value={formData.sub_category || ""}
                           onChange={handleChange}
                           className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm appearance-none"
                         >
@@ -504,26 +485,6 @@ const AddNewProduct: React.FC = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Discounted Price (Optional)
-                  </label>
-                  <div className="relative rounded-md shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500 sm:text-sm">$</span>
-                    </div>
-                    <input
-                      type="number"
-                      name="discounted_price"
-                      value={formData.discounted_price}
-                      onChange={handleChange}
-                      className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -549,11 +510,11 @@ const AddNewProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Dimensional Size
+                    Transport Size
                   </label>
                   <select
                     name="dimensional_size"
-                    value={formData.dimensional_size}
+                    value={formData.dimensional_size || ""}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                   >
@@ -568,11 +529,11 @@ const AddNewProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Weight
+                    Transport Weight
                   </label>
                   <select
                     name="weight"
-                    value={formData.weight}
+                    value={formData.weight || ""}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                   >
@@ -583,6 +544,30 @@ const AddNewProduct: React.FC = () => {
                       </option>
                     ))}
                   </select>
+                </div>
+
+
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Production Days
+                  </label>
+                  <input
+                    type="number"
+                    name="production_days"
+                    value={formData.production_days || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        production_days: e.target.value
+                          ? Number(e.target.value)
+                          : null,
+                      }))
+                    }
+                    min="0"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                    placeholder="Enter production days"
+                  />
                 </div>
               </div>
             </div>
@@ -611,6 +596,26 @@ const AddNewProduct: React.FC = () => {
                   </label>
                 </div>
 
+                <div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="unlimited"
+                      checked={formData.unlimited}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          unlimited: e.target.checked,
+                        }))
+                      }
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <span className="ml-2 text-sm text-gray-900">
+                      Stock is unlimited
+                    </span>
+                  </div>
+                </div>
+
                 <div className="space-y-4">
                   <div className="flex items-center">
                     <input
@@ -623,7 +628,7 @@ const AddNewProduct: React.FC = () => {
                           latest_item: e.target.checked,
                           latest_item_position: e.target.checked
                             ? prev.latest_item_position
-                            : "",
+                            : null,
                         }))
                       }
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -641,11 +646,13 @@ const AddNewProduct: React.FC = () => {
                       <input
                         type="number"
                         name="latest_item_position"
-                        value={formData.latest_item_position}
+                        value={formData.latest_item_position || ""}
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
-                            latest_item_position: e.target.value,
+                            latest_item_position: e.target.value
+                              ? Number(e.target.value)
+                              : null,
                           }))
                         }
                         min="0"
@@ -668,7 +675,7 @@ const AddNewProduct: React.FC = () => {
                           top_selling_items: e.target.checked,
                           top_selling_position: e.target.checked
                             ? prev.top_selling_position
-                            : "",
+                            : null,
                         }))
                       }
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -686,11 +693,13 @@ const AddNewProduct: React.FC = () => {
                       <input
                         type="number"
                         name="top_selling_position"
-                        value={formData.top_selling_position}
+                        value={formData.top_selling_position || ""}
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
-                            top_selling_position: e.target.value,
+                            top_selling_position: e.target.value
+                              ? Number(e.target.value)
+                              : null,
                           }))
                         }
                         min="0"
@@ -982,11 +991,7 @@ const AddNewProduct: React.FC = () => {
                         <span className="text-2xl font-bold text-gray-900">
                           ${formData.price || "0.00"}
                         </span>
-                        {formData.discounted_price && (
-                          <span className="text-lg text-gray-500 line-through">
-                            ${formData.discounted_price}
-                          </span>
-                        )}
+                        
                       </div>
                     </div>
 
@@ -1006,7 +1011,9 @@ const AddNewProduct: React.FC = () => {
                         </h3>
                         <p className="text-gray-600">
                           {categories.find(
-                            (c) => c.id.toString() === formData.sub_category
+                            (c) =>
+                              c.id.toString() ===
+                              formData.sub_category?.toString()
                           )?.name || "Not specified"}
                         </p>
                       </div>

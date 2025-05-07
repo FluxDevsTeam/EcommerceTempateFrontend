@@ -18,6 +18,7 @@ import GeneralSettings from "./pages/cart/Settings/Settings";
 import TermsOfService from "./pages/cart/TermsOfService";
 import AddNewProduct from "./admin/pages/products/product components/AddNewProduct";
 import EditProduct from "./admin/pages/products/product components/EditProduct";
+import AdminProductDetails from "./admin/pages/products/product components/AdminProductDetails";
 import Orders from "./pages/orders/Order";
 import ProductDetail from "./components/products/ProductDetail";
 import Categories from "./pages/categories/Categories";
@@ -96,6 +97,7 @@ const AppContent: React.FC = () => {
         <Route path="products" element={<Products />} />
         <Route path="add-new-product" element={<AddNewProduct />} />
         <Route path="products/edit/:id" element={<EditProduct />} />
+        <Route path="admin-products-details/:id" element={<AdminProductDetails />} />
 
         <Route path="orders" element={<AdminOrders />} />
         <Route path="settings" element={<Settings />} />
