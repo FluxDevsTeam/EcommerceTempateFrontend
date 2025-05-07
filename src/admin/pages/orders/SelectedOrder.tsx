@@ -40,7 +40,7 @@ const SelectedOrderPopup: React.FC<SelectedOrderPopupProps> = ({ selectedOrder, 
               label="Status"
               options={["Paid", "Shipped", "Delivered", "Cancelled", "Refunded"]}
               onSelect={(value) => {
-                onStatusChange(value);  // 👈 use the new function
+                onStatusChange(value);
               }}
             />
           </div>

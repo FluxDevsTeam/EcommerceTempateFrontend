@@ -11,15 +11,15 @@ const Contact = () => {
         <div className="flex-col sm:flex gap-8 items-start mb-12">
             <form className="p-0 border-0 sm:p-8 sm:border sm:border-[#0000000D] rounded-2xl mb-18 sm:mb-2">
                 <div className='flex flex-wrap justify-between items-center gap-4 mb-10'>
-                    <div className="flex flex-col w-full">
+                    <div className="flex flex-col w-full md:w-[30%]">
                         <label className="text-[#00000094] mb-2.5">First Name <span className="text-orange-700">*</span></label>
                         <input type='text' className="border border-[#CACACA80] rounded-[10px] py-2 px-5" />
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col w-full md:w-[30%]">
                         <label className="text-[#00000094] mb-2.5">Last Name <span className="text-orange-700">*</span></label>
                         <input type='text' className="border border-[#CACACA80] rounded-[10px] py-2 px-5" />
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col w-full md:w-[30%]">
                         <label className="text-[#00000094] mb-2.5">Your Phone <span className="text-orange-700">*</span></label>
                         <input type='number' className="border border-[#CACACA80] rounded-[10px] py-2 px-5" />
                     </div>
@@ -33,7 +33,7 @@ const Contact = () => {
                 <Link to='/orders/confirm' className='text-white bg-black w-full p-3 rounded-full block text-center'>Send Message</Link>
             </form>
 
-            <div>
+            <div className="mt-12 md:mt-5">
                 <p className="font-hanken-grotesk font-medium mb-10">We’re here to help!<br />Our Customer Service Team is available<br />8am - 5pm, seven days a week.</p>
                 <div className="mb-8">
                     <p className="flex gap-3 items-center">

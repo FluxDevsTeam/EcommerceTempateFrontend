@@ -2,7 +2,7 @@ const JWT_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNj
 
 export const fetchData = async () => {
   try {
-    const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/orders/admin/?format=json', {
+    const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/admin/order/?format=json', {
       method: 'GET',
       headers: {
         'Authorization': `JWT ${JWT_TOKEN}`,
@@ -19,5 +19,32 @@ export const fetchData = async () => {
   } catch (error) {
     console.error('Error fetching data:', error);
     throw error;
+  }
+};
+
+
+export const patchOrderStatus = async (orderId: string, newStatus: string) => {
+  try {
+    const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/admin/order/${orderId}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `JWT ${JWT_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status: newStatus }),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      console.error('API Error:', responseData);
+      throw new Error(`Failed to update order status: ${responseData.message || response.statusText}`);
+    }
+
+    console.log('Order updated successfully:', responseData);
+    return responseData;
+  } catch (error) {
+    console.error('Error in patchOrderStatus:', error);
+    throw new Error('Failed to update order status');
   }
 };
