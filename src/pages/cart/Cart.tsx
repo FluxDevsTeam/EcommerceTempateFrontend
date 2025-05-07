@@ -7,12 +7,11 @@ import {
   removeLocalCartItem,
 } from "../../utils/cartStorage";
 
+// Update the interfaces to match API response
 interface Product {
   id: number;
   name: string;
   image1: string;
-  discounted_price: string;
-  price: string;
   sub_category: {
     id: number;
     name: string;
@@ -21,26 +20,39 @@ interface Product {
 
 interface Size {
   id: number;
-  size: string; // e.g., "sm", "md"
-  quantity: number; // Stock quantity for this size
+  size: string;
+  quantity: number;
+  undiscounted_price: number | null;
+  price: string;
 }
 
-// Interface for an individual item in the cart
 interface CartItem {
-  id: number; // This is the Cart Item ID
+  id: number;
   product: Product;
+  cart: {
+    id: string;
+    user: number;
+  };
   size: Size;
-  quantity: number; // Quantity of this item in the cart
+  quantity: number;
 }
 
-// Interface for the main Cart object within the results array
 interface CartData {
-  id: string; // Cart ID (UUID)
+  id: string;
   user: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  state: string;
+  city: string;
+  delivery_address: string;
+  phone_number: string;
+  estimated_delivery: string;
   cart_items: CartItem[];
   total: number;
 }
 
+// Update the CartApiResponse interface
 interface CartApiResponse {
   count: number;
   next: string | null;
@@ -77,7 +89,7 @@ const Cart = () => {
         const localCart = getLocalCart();
 
         const formattedCart = localCart.map((item) => ({
-          id: parseInt(`${item.productId}${item.sizeId}`), // Create a numeric ID instead of string
+          id: parseInt(`${item.productId}${item.sizeId}`),
           product: {
             id: item.productId,
             name: item.productName,
@@ -85,15 +97,20 @@ const Cart = () => {
             price: item.productPrice,
             discounted_price: item.discountedPrice,
             sub_category: {
-              // Add this missing property
-              id: 0, // Default value since it's not stored in local storage
+              id: 0,
               name: "",
             },
+          },
+          cart: {
+            id: "guest-cart",
+            user: 0
           },
           size: {
             id: item.sizeId,
             size: item.sizeName,
             quantity: item.maxQuantity,
+            undiscounted_price: null,
+            price: item.productPrice
           },
           quantity: item.quantity,
         }));
@@ -280,7 +297,7 @@ const Cart = () => {
 
   const subtotal = cartItems.reduce(
     (total: number, item: CartItem) =>
-      total + Number(item.product.price) * item.quantity,
+      total + Number(item.size.price) * item.quantity,
     0
   );
 
@@ -288,11 +305,15 @@ const Cart = () => {
   const discountAmount = Math.round((subtotal * discountPercentage) / 100);
   const total = subtotal - discountAmount;
 
-  // Function to get the most common subcategory IDs
+  // Update the getMostCommonSubcategoryIds function with proper checks
   const getMostCommonSubcategoryIds = (cartItems: CartItem[]) => {
     // Count occurrences of each subcategory ID
     const subcategoryCounts = cartItems.reduce<{ [key: number]: number }>(
       (acc, item) => {
+        // Skip items without valid sub_category
+        if (!item.product?.sub_category?.id) {
+          return acc;
+        }
         const subCategoryId = item.product.sub_category.id;
         acc[subCategoryId] = (acc[subCategoryId] || 0) + 1;
         return acc;
@@ -312,7 +333,7 @@ const Cart = () => {
         return a.id - b.id;
       });
 
-    // Return the top two subcategory IDs
+    // Return the top two subcategory IDs, or empty array if none found
     return sortedSubcategories.slice(0, 2).map((item) => item.id);
   };
 
@@ -409,11 +430,11 @@ const Cart = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold">{item.product.name}</h3>
-                    <p className="text-sm text-gray-500 capitalize">
-                      Size: {item.size.size}
+                    <p className="text-sm text-gray-500">
+                      Size: {item.size.size.toUpperCase()}
                     </p>
                     <p className="font-bold mt-1">
-                      ${Number(item.product.price).toFixed(2)}
+                      ₦{Number(item.size.price || 0).toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -462,10 +483,10 @@ const Cart = () => {
                   <span className="font-semibold">${subtotal.toFixed(2)}</span>
                 </div>
 
-                <div className="flex justify-between text-red-500">
+                {/* <div className="flex justify-between text-red-500">
                   <span>Discount (-{discountPercentage}%)</span>
                   <span>-${discountAmount.toFixed(2)}</span>
-                </div>
+                </div> */}
 
                 <div className="border-t pt-4 mt-4">
                   <div className="flex justify-between">

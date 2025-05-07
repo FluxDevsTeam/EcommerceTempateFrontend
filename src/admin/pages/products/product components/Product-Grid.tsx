@@ -31,8 +31,9 @@ interface Product {
   image1: string;
   image2: string | null;
   image3: string | null;
-  discounted_price: string | null;
-  price: string;
+  undiscounted_price: number | null;
+  price: number;
+  default_size_id: number | null;
   is_available: boolean;
   latest_item: boolean;
   latest_item_position: number | null;
@@ -42,6 +43,15 @@ interface Product {
   top_selling_position: number | null;
   date_created: string;
   date_updated: string;
+  unlimited: boolean;
+  production_days: number | null;
+  sizes: Array<{
+    id: number;
+    size: string;
+    quantity: number;
+    undiscounted_price: number | null;
+    price: string;
+  }>;
 }
 
 interface ApiResponse {
@@ -71,7 +81,7 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
   const [totalProducts, setTotalProducts] = useState<number>(0);
   const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
   const [prevPageUrl, setPrevPageUrl] = useState<string | null>(null);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(16);
   const [categories, setCategories] = useState<{ id: number; name: string }[]>(
     []
   );
@@ -95,7 +105,7 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
 
       try {
         const response = await fetch(
-          `${baseURL}/api/v1/product/sub-category/`,
+          `${baseURL}/api/v1/product/sub-category/?page_size=12`,
           {
             headers: {
               Authorization: `JWT ${accessToken}`,
@@ -140,7 +150,7 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
       }
 
       // Construct the URL with pagination and category filter
-      let url = `${baseURL}/api/v1/product/item/?page=${page}`;
+      let url = `${baseURL}/api/v1/product/item/?page=${page}&page_size=${itemsPerPage}`;
       if (selectedCategory) {
         url += `&sub_category=${selectedCategory}`;
       }
@@ -172,6 +182,8 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
         const data: ApiResponse = await response.json();
         console.log(`Products fetched (Page ${page}):`, data);
         setProducts(data.results || []);
+        console.log(data);
+
         setTotalProducts(data.count || 0);
         setNextPageUrl(data.next);
         setPrevPageUrl(data.previous);
@@ -242,7 +254,7 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
       );
       setProducts(updatedProducts);
       setTotalProducts(totalProducts - 1);
-      
+
       // Close the modal
       setDeleteModalConfig({
         isOpen: false,
@@ -251,7 +263,9 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
       });
     } catch (error) {
       console.error("Error deleting product:", error);
-      setError(error instanceof Error ? error.message : "Failed to delete product");
+      setError(
+        error instanceof Error ? error.message : "Failed to delete product"
+      );
     } finally {
       setLoading(false);
     }
@@ -261,12 +275,11 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
   const totalPages = Math.ceil(totalProducts / itemsPerPage);
 
   // --- Removed hardcoded productsGrid array ---
-
   // Updated getStatusColor based on is_available
   const getStatusColor = (isAvailable: boolean) => {
     return isAvailable
-      ? "text-green-600 bg-green-100" // Adjusted background for visibility
-      : "text-orange-600 bg-orange-100"; // Adjusted background for visibility
+      ? "text-green-600 bg-green-100"
+      : "text-orange-600 bg-orange-100";
   };
 
   const getStockColor = (stock: number) => {
@@ -389,7 +402,7 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
       {/* Product grid display */}
       {!loading && !error && (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
             {products.map((product) => (
               <div
                 key={product.id}
@@ -399,7 +412,10 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
                   <img
                     src={product.image1}
                     alt={product.name}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+                    onClick={() =>
+                      navigate(`/admin/admin-products-details/${product.id}`)
+                    }
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = "/path/to/placeholder-image.png";
@@ -434,34 +450,25 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <span className="text-lg font-bold text-gray-900">
-                        $
-                        {product.discounted_price &&
-                        parseFloat(product.discounted_price) > 0
-                          ? (
-                              parseFloat(product.price) -
-                              parseFloat(product.discounted_price)
-                            ).toFixed(2)
-                          : parseFloat(product.price).toFixed(2)}
+                        ${product.price}
                       </span>
-                      {product.discounted_price &&
-                        parseFloat(product.discounted_price) > 0 && (
+                      {/* {product.undiscounted_price &&
+                        product.undiscounted_price > 0 && (
                           <span className="text-sm text-gray-500 line-through">
-                            ${parseFloat(product.price).toFixed(2)}
+                            ${product.price}
                           </span>
-                        )}
+                        )} */}
                     </div>
-                    {product.discounted_price &&
-                      parseFloat(product.discounted_price) > 0 && (
+                    {/* {product.undiscounted_price &&
+                      product.undiscounted_price > 0 && (
                         <span className="bg-red-50 text-red-600 text-xs font-medium px-2 py-1 rounded">
                           -
                           {Math.round(
-                            (parseFloat(product.discounted_price) /
-                              parseFloat(product.price)) *
-                              100
+                            (product.undiscounted_price / product?.price) * 100
                           )}
                           %
                         </span>
-                      )}
+                      )} */}
                   </div>
 
                   {/* Stock badge */}
@@ -471,7 +478,11 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
                         product.total_quantity
                       )} px-2.5 py-1 rounded-full mb-3`}
                     >
-                      {product.total_quantity} in Stock
+                      {product.unlimited ? (
+                        <span>Unlimited stock</span>
+                      ) : (
+                        <span>{product.total_quantity} in Stock</span>
+                      )}
                     </span>
 
                     {/* Actions */}
@@ -483,14 +494,12 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
                         className="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors text-sm"
                       >
                         <FiEdit className="h-4 w-4" />
-                        <span>Edit</span>
                       </button>
                       <button
                         onClick={() => handleDelete(product.id, product.name)}
                         className="flex items-center gap-1 text-gray-600 hover:text-red-600 transition-colors text-sm"
                       >
                         <FaTrash className="h-3 w-3" />
-                        <span>Delete</span>
                       </button>
                     </div>
                   </div>
@@ -507,15 +516,19 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
                   Confirm Delete
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  Are you sure you want to delete "{deleteModalConfig.productName}"? This action cannot be undone.
+                  Are you sure you want to delete "
+                  {deleteModalConfig.productName}"? This action cannot be
+                  undone.
                 </p>
                 <div className="flex justify-end gap-4">
                   <button
-                    onClick={() => setDeleteModalConfig({
-                      isOpen: false,
-                      productId: 0,
-                      productName: "",
-                    })}
+                    onClick={() =>
+                      setDeleteModalConfig({
+                        isOpen: false,
+                        productId: 0,
+                        productName: "",
+                      })
+                    }
                     className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
                   >
                     Cancel

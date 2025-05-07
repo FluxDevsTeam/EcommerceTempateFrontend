@@ -66,7 +66,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
 }) => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage] = useState<number>(10); // Assuming 10 items per page, adjust as needed
+  const [itemsPerPage] = useState<number>(20);
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
   const [openPopoverId, setOpenPopoverId] = useState<number | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -97,7 +97,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
       }
 
       try {
-        const response = await fetch(`${baseURL}/api/v1/product/item/?page=${page}`, {
+        const response = await fetch(`${baseURL}/api/v1/product/item/?page=${page}&page_size=${itemsPerPage}`, {
           method: "GET",
           headers: {
             Authorization: `JWT ${accessToken}`,
@@ -357,7 +357,8 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                   <td className="px-4 py-3">{formatDate(product.date_created)}</td>
                   <td className="px-4 py-3">{product.name}</td>
                   <td className="px-4 py-3">{product.sub_category?.category?.name || 'N/A'}</td>
-                  <td className="px-4 py-3">${product.price}</td>
+                  <td className="px-4 py-3">$
+                    {product.price}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${getStatusColor(

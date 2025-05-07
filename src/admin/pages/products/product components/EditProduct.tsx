@@ -23,6 +23,9 @@ const EditProduct: React.FC = () => {
   ]);
   const [previewImages, setPreviewImages] = useState<string[]>(["", "", ""]);
   const [categories, setCategories] = useState<SubCategory[]>([]);
+  const [individualProductCategory, setIndividualProductCategory] =
+    useState<string>("");
+
   const [viewProductPreviewModal, setViewProductPreviewModal] = useState(false);
   const [selectedPreviewImage, setSelectedPreviewImage] = useState(0);
   const [modalConfig, setModalConfig] = useState({
@@ -36,13 +39,11 @@ const EditProduct: React.FC = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    sub_category: null as any | null,
+    sub_category: "",
     colour: "",
     image1: null,
     image2: null,
     image3: null,
-    discounted_price: null as number | null,
-    price: null as number | null,
     is_available: false,
     latest_item: false,
     latest_item_position: null as number | null,
@@ -50,6 +51,8 @@ const EditProduct: React.FC = () => {
     weight: null as string | null,
     top_selling_items: false,
     top_selling_position: null as number | null,
+    unlimited: false,
+    production_days: null as number | null,
   });
 
   // Define size and weight options
@@ -142,91 +145,7 @@ const EditProduct: React.FC = () => {
     setFilteredCategories(filtered);
   }, [searchQuery, categories]);
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      setLoading(true);
-      const accessToken = localStorage.getItem("accessToken");
-
-      if (!accessToken) {
-        setModalConfig({
-          isOpen: true,
-          title: "Error",
-          message: "No access token found. Please login again.",
-          type: "error",
-        });
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch(
-          `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${id}/`,
-          {
-            headers: {
-              Authorization: `JWT ${accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch product: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        console.log(data);
-
-        setFormData({
-          name: data.name || "",
-          description: data.description || "",
-          sub_category: data.sub_category,
-          colour: data.colour || "",
-          image1: null,
-          image2: null,
-          image3: null,
-          discounted_price: data.discounted_price,
-          price: data.price,
-          is_available: data.is_available ?? false,
-          latest_item: data.latest_item ?? false,
-          latest_item_position: data.latest_item_position,
-          dimensional_size: data.dimensional_size,
-          weight: data.weight,
-          top_selling_items: data.top_selling_items ?? false,
-          top_selling_position: data.top_selling_position,
-        });
-
-        // Set preview images from API response
-        setPreviewImages([
-          data.image1 || "",
-          data.image2 || "",
-          data.image3 || "",
-        ]);
-      } catch (error) {
-        console.error("Error fetching product:", error);
-        setModalConfig({
-          isOpen: true,
-          title: "Error",
-          message:
-            error instanceof Error ? error.message : "Failed to fetch product",
-          type: "error",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) {
-      fetchProduct();
-    }
-  }, [id]);
-
-  const handleCancel = () => {
-    navigate("/admin/products");
-  };
-
-  const handleSaveChanges = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const fetchProduct = async () => {
     setLoading(true);
     const accessToken = localStorage.getItem("accessToken");
 
@@ -241,32 +160,151 @@ const EditProduct: React.FC = () => {
       return;
     }
 
+    try {
+      const response = await fetch(
+        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${id}/`,
+        {
+          headers: {
+            Authorization: `JWT ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch product: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setIndividualProductCategory(data.sub_category.name);
+      // console.log(data.sub_category.name);
+
+      setFormData({
+        name: data.name || "",
+        description: data.description || "",
+        sub_category: data.sub_category,
+        colour: data.colour || "",
+        image1: null,
+        image2: null,
+        image3: null,
+        is_available: data.is_available ?? false,
+        latest_item: data.latest_item ?? false,
+        latest_item_position: data.latest_item_position,
+        dimensional_size: data.dimensional_size,
+        weight: data.weight,
+        top_selling_items: data.top_selling_items ?? false,
+        top_selling_position: data.top_selling_position,
+        unlimited: data.unlimited ?? false,
+        production_days: data.production_days || 0,
+      });
+
+      // Set preview images from API response
+      setPreviewImages([
+        data.image1 || "",
+        data.image2 || "",
+        data.image3 || "",
+      ]);
+    } catch (error) {
+      console.error("Error fetching product:", error);
+      setModalConfig({
+        isOpen: true,
+        title: "Error",
+        message:
+          error instanceof Error ? error.message : "Failed to fetch product",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    if (id) {
+      fetchProduct();
+    }
+  }, [id]);
+
+  const handleCancel = () => {
+    navigate("/admin/products");
+  };
+
+  const handleSaveChanges = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const accessToken = localStorage.getItem("accessToken");
+    console.log("Starting product update...");
+
+    if (!accessToken) {
+      setModalConfig({
+        isOpen: true,
+        title: "Error",
+        message: "No access token found. Please login again.",
+        type: "error",
+      });
+      setLoading(false);
+      return;
+    }
+
     const formDataToSend = new FormData();
 
-    // Append all non-null form fields
-    Object.entries(formData).forEach(([key, value]) => {
-      // For sub_category, use the existing value if no new selection
-      if (key === "sub_category") {
-        const categoryValue = value?.id || value; // Use id if object, otherwise use value directly
-        if (categoryValue) {
-          formDataToSend.append(key, categoryValue.toString());
-        }
-      }
-      // For other fields
-      else if (
-        value !== null &&
-        !["image1", "image2", "image3"].includes(key)
-      ) {
-        formDataToSend.append(key, value.toString());
-      }
-    });
+    // Required fields
+    formDataToSend.append("name", formData.name);
+    formDataToSend.append("description", formData.description);
 
-    // Append images if they were changed
-    selectedImages.forEach((file, index) => {
-      if (file) {
-        formDataToSend.append(`image${index + 1}`, file);
-      }
-    });
+    // Category - Only append if it's changed, otherwise keep existing
+    if (formData.sub_category) {
+      formDataToSend.append("sub_category", formData.sub_category);
+    }
+
+    // Optional fields
+    if (formData.colour) {
+      formDataToSend.append("colour", formData.colour);
+    }
+
+    // Boolean fields
+    formDataToSend.append("is_available", formData.is_available.toString());
+    formDataToSend.append("latest_item", formData.latest_item.toString());
+    formDataToSend.append(
+      "top_selling_items",
+      formData.top_selling_items.toString()
+    );
+    formDataToSend.append("unlimited", formData.unlimited.toString());
+
+    // Position fields
+    if (formData.latest_item_position !== null) {
+      formDataToSend.append(
+        "latest_item_position",
+        formData.latest_item_position.toString()
+      );
+    }
+
+    if (formData.top_selling_position !== null) {
+      formDataToSend.append(
+        "top_selling_position",
+        formData.top_selling_position.toString()
+      );
+    }
+
+    // Size and weight
+    if (formData.dimensional_size) {
+      formDataToSend.append("dimensional_size", formData.dimensional_size);
+    }
+
+    if (formData.weight) {
+      formDataToSend.append("weight", formData.weight);
+    }
+
+    // Production days
+    if (formData.production_days !== null) {
+      formDataToSend.append(
+        "production_days",
+        formData.production_days.toString()
+      );
+    }
+
+    // Images
+    if (selectedImages[0]) formDataToSend.append("image1", selectedImages[0]);
+    if (selectedImages[1]) formDataToSend.append("image2", selectedImages[1]);
+    if (selectedImages[2]) formDataToSend.append("image3", selectedImages[2]);
 
     try {
       const response = await fetch(
@@ -281,8 +319,16 @@ const EditProduct: React.FC = () => {
       );
 
       if (!response.ok) {
-        throw new Error(`Failed to update product: ${response.statusText}`);
+        const errorData = await response.json();
+        console.error("Server error response:", errorData);
+        throw new Error(
+          errorData.message ||
+            `Failed to update product: ${response.statusText}`
+        );
       }
+
+      const data = await response.json();
+      console.log("Update response:", data);
 
       setModalConfig({
         isOpen: true,
@@ -290,6 +336,9 @@ const EditProduct: React.FC = () => {
         message: "Product updated successfully!",
         type: "success",
       });
+
+      // Refresh the product data
+      await fetchProduct();
     } catch (error) {
       console.error("Error updating product:", error);
       setModalConfig({
@@ -404,7 +453,8 @@ const EditProduct: React.FC = () => {
         <form onSubmit={handleSaveChanges} className="space-y-8">
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {/* Basic Information Section */}
-            <div className="p-6 border-b border-gray-200">
+            {/* <div className="p-6 border-b border-gray-200"> */}
+            <div className="p-6 border-b border-gray-200 bg-gray-50">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Basic Information
               </h2>
@@ -426,12 +476,13 @@ const EditProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category: <strong>{formData.sub_category?.name}</strong>
+                    Current category: <strong>{individualProductCategory}</strong>
                   </label>
                   <div className="relative">
                     {isSearchMode ? (
                       <div className="relative">
                         <input
+                        required
                           type="text"
                           placeholder="Search categories..."
                           value={searchQuery}
@@ -453,11 +504,12 @@ const EditProduct: React.FC = () => {
                       <div className="relative">
                         <select
                           name="sub_category"
+                          required
                           value={formData.sub_category || ""}
                           onChange={handleChange}
                           className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm appearance-none"
                         >
-                          <option value="">Select Category</option>
+                          <option value="">Select current or new category</option>
                           {filteredCategories.map((category) => (
                             <option key={category.id} value={category.id}>
                               {category.name}
@@ -522,59 +574,8 @@ const EditProduct: React.FC = () => {
               </div>
             </div>
 
-            {/* Pricing Section */}
-            <div className="p-6 border-b border-gray-200 bg-gray-50">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                Pricing
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price
-                  </label>
-                  <div className="relative rounded-md shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500 sm:text-sm">$</span>
-                    </div>
-                    <input
-                      type="number"
-                      name="price"
-                      required
-                      value={formData.price || ""}
-                      onChange={handleChange}
-                      className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Discounted Price (Optional)
-                  </label>
-                  <div className="relative rounded-md shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500 sm:text-sm">$</span>
-                    </div>
-                    <input
-                      type="number"
-                      name="discounted_price"
-                      value={formData.discounted_price || ""}
-                      onChange={handleChange}
-                      className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Specifications Section */}
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-6 border-b border-gray-50">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Specifications
               </h2>
@@ -595,7 +596,7 @@ const EditProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Dimensional Size
+                    Transport Size
                   </label>
                   <select
                     name="dimensional_size"
@@ -614,7 +615,7 @@ const EditProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Weight
+                    Transport Weight
                   </label>
                   <select
                     name="weight"
@@ -629,6 +630,26 @@ const EditProduct: React.FC = () => {
                       </option>
                     ))}
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Production Days
+                  </label>
+                  <input
+                    type="number"
+                    name="production_days"
+                    value={formData.production_days || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        production_days: e.target.value
+                          ? Number(e.target.value)
+                          : null,
+                      }))
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                  />
                 </div>
               </div>
             </div>
@@ -749,6 +770,24 @@ const EditProduct: React.FC = () => {
                       />
                     </div>
                   )}
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="unlimited"
+                    checked={formData.unlimited}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        unlimited: e.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 text-blue-600 rounded"
+                  />
+                  <label className="ml-2 text-sm text-gray-900">
+                    Unlimited Stock
+                  </label>
                 </div>
               </div>
             </div>
@@ -1018,16 +1057,17 @@ const EditProduct: React.FC = () => {
                       <h2 className="text-3xl font-bold text-gray-900 mb-2">
                         {formData.name || "Product Name"}
                       </h2>
-                      <div className="flex items-baseline space-x-4">
+                      {/* <div className="flex items-baseline space-x-4">
                         <span className="text-2xl font-bold text-gray-900">
                           ${formData.price || "0.00"}
                         </span>
-                        {formData.discounted_price && (
+                        {formData.undiscounted_price && (
                           <span className="text-lg text-gray-500 line-through">
-                            ${formData.discounted_price}
+                            ${formData.undiscounted_price}
                           </span>
                         )}
                       </div>
+                       */}
                     </div>
 
                     <div className="bg-gray-50 rounded-lg p-4">
