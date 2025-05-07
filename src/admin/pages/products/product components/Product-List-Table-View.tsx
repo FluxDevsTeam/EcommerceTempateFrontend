@@ -52,7 +52,6 @@ interface ApiResponse {
   results: Product[];
 }
 
-
 interface ProductTableProps {
   isVisible: boolean;
   onViewChange: (mode: "grid" | "list") => void;
@@ -97,13 +96,16 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
       }
 
       try {
-        const response = await fetch(`${baseURL}/api/v1/product/item/?page=${page}&page_size=${itemsPerPage}`, {
-          method: "GET",
-          headers: {
-            Authorization: `JWT ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `${baseURL}/api/v1/product/item/?page=${page}&page_size=${itemsPerPage}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `JWT ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
           let errorBody;
@@ -144,14 +146,14 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
     }
   }, [isVisible, currentPage, baseURL]); // Added currentPage as dependency
 
-
   // Filter products based on selected status
-  const filteredProducts = products.filter(product => {
+  const filteredProducts = products.filter((product) => {
     if (selectedStatus === "All") return true;
-    const availabilityStatus = product.is_available ? "Available" : "Out of Stock";
+    const availabilityStatus = product.is_available
+      ? "Available"
+      : "Out of Stock";
     return availabilityStatus === selectedStatus;
   });
-
 
   // Updated getStatusColor based on is_available
   const getStatusColor = (isAvailable: boolean) => {
@@ -165,16 +167,15 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString("en-US", {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
+        year: "numeric",
+        month: "short",
+        day: "numeric",
       });
     } catch (e) {
       console.error("Error formatting date:", e);
       return "Invalid Date";
     }
   };
-
 
   if (!isVisible) return null;
 
@@ -234,7 +235,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
       );
       setProducts(updatedProducts);
       setTotalProducts(totalProducts - 1);
-      
+
       // Close the modal
       setDeleteModalConfig({
         isOpen: false,
@@ -243,7 +244,9 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
       });
     } catch (error) {
       console.error("Error deleting product:", error);
-      setError(error instanceof Error ? error.message : "Failed to delete product");
+      setError(
+        error instanceof Error ? error.message : "Failed to delete product"
+      );
     } finally {
       setLoading(false);
     }
@@ -313,18 +316,21 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
 
       {/* Product Table */}
       <div className="overflow-x-auto">
-        {loading && // loader
-              <div>
-                <div className="relative flex w-64 animate-pulse gap-2 p-4">
-                  <div className="h-12 w-12 rounded-full bg-slate-400"></div>
-                  <div className="flex-1">
-                    <div className="mb-1 h-5 w-3/5 rounded-lg bg-slate-400 text-lg"></div>
-                    <div className="h-5 w-[90%] rounded-lg bg-slate-400 text-sm"></div>
-                  </div>
-                  <div className="absolute bottom-5 right-0 h-4 w-4 rounded-full bg-slate-400"></div>
-                </div>
-              </div>}
-        {error && <div className="text-center p-4 text-red-500">Error: {error}</div>}
+        {loading && ( // loader
+          <div>
+            <div className="relative flex w-64 animate-pulse gap-2 p-4">
+              <div className="h-12 w-12 rounded-full bg-slate-400"></div>
+              <div className="flex-1">
+                <div className="mb-1 h-5 w-3/5 rounded-lg bg-slate-400 text-lg"></div>
+                <div className="h-5 w-[90%] rounded-lg bg-slate-400 text-sm"></div>
+              </div>
+              <div className="absolute bottom-5 right-0 h-4 w-4 rounded-full bg-slate-400"></div>
+            </div>
+          </div>
+        )}
+        {error && (
+          <div className="text-center p-4 text-red-500">Error: {error}</div>
+        )}
         {!loading && !error && (
           <table className="w-full text-sm text-left">
             <thead className="bg-gray-50 text-xs text-gray-600 uppercase">
@@ -352,13 +358,25 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
             <tbody>
               {filteredProducts.map((product, index) => (
                 <tr key={product.id} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-3">{((currentPage - 1) * itemsPerPage) + index + 1}</td>
+                  <td className="px-4 py-3">
+                    {(currentPage - 1) * itemsPerPage + index + 1}
+                  </td>
                   {/* <td className="px-4 py-3">{product.id}</td> */}
-                  <td className="px-4 py-3">{formatDate(product.date_created)}</td>
-                  <td className="px-4 py-3">{product.name}</td>
-                  <td className="px-4 py-3">{product.sub_category?.category?.name || 'N/A'}</td>
-                  <td className="px-4 py-3">$
-                    {product.price}</td>
+                  <td className="px-4 py-3">
+                    {formatDate(product.date_created)}
+                  </td>
+                  <td
+                    className="px-4 py-3 cursor-pointer"
+                    onClick={() =>
+                      navigate(`/admin/admin-products-details/${product.id}`)
+                    }
+                  >
+                    {product.name}
+                  </td>
+                  <td className="px-4 py-3">
+                    {product.sub_category?.category?.name || "N/A"}
+                  </td>
+                  <td className="px-4 py-3">${product.price}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
@@ -374,7 +392,9 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                       onClick={(e) => {
                         e.stopPropagation();
                         // Use product.id for popover state if IDs are unique and stable numbers
-                        setOpenPopoverId(openPopoverId === product.id ? null : product.id);
+                        setOpenPopoverId(
+                          openPopoverId === product.id ? null : product.id
+                        );
                       }}
                     >
                       <HiDotsHorizontal />
@@ -385,13 +405,13 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                         <button
                           className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                           onClick={() => {
-                              navigate(`/admin/products/edit/${product.id}`);
-                              setOpenPopoverId(null); // Close popover on navigate
+                            navigate(`/admin/products/edit/${product.id}`);
+                            setOpenPopoverId(null); // Close popover on navigate
                           }}
                         >
                           <FaEdit className="mr-2" /> Edit
                         </button>
-                        <button 
+                        <button
                           className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center"
                           onClick={() => {
                             handleDelete(product.id, product.name);
@@ -405,11 +425,13 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                   </td>
                 </tr>
               ))}
-               {filteredProducts.length === 0 && !loading && (
-                 <tr>
-                    <td colSpan={8} className="text-center py-4 text-gray-500">No products found matching the criteria.</td>
-                 </tr>
-               )}
+              {filteredProducts.length === 0 && !loading && (
+                <tr>
+                  <td colSpan={8} className="text-center py-4 text-gray-500">
+                    No products found matching the criteria.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         )}
@@ -418,7 +440,9 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
       {/* Update Pagination Section */}
       <div className="flex flex-col sm:flex-row justify-between items-center mt-4 space-y-4 sm:space-y-0">
         <div className="text-sm text-gray-600 text-center sm:text-left w-full sm:w-auto">
-          Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalProducts)} of {totalProducts} entries
+          Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+          {Math.min(currentPage * itemsPerPage, totalProducts)} of{" "}
+          {totalProducts} entries
         </div>
         <div className="flex items-center gap-2 justify-center sm:justify-start">
           <button
@@ -429,22 +453,27 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
             First
           </button>
           <button
-            onClick={() => setCurrentPage(curr => curr - 1)}
+            onClick={() => setCurrentPage((curr) => curr - 1)}
             disabled={currentPage === 1 || !prevPageUrl}
             className="px-3 py-1 rounded border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
           </button>
-          
+
           {/* Page Numbers */}
           <div className="flex gap-1">
-            {Array.from({ length: Math.ceil(totalProducts / itemsPerPage) }, (_, i) => i + 1)
-              .filter(page => {
+            {Array.from(
+              { length: Math.ceil(totalProducts / itemsPerPage) },
+              (_, i) => i + 1
+            )
+              .filter((page) => {
                 const currentPageRange = 2;
-                return page === 1 || 
-                       page === Math.ceil(totalProducts / itemsPerPage) ||
-                       (page >= currentPage - currentPageRange && 
-                        page <= currentPage + currentPageRange);
+                return (
+                  page === 1 ||
+                  page === Math.ceil(totalProducts / itemsPerPage) ||
+                  (page >= currentPage - currentPageRange &&
+                    page <= currentPage + currentPageRange)
+                );
               })
               .map((page, index, array) => (
                 <React.Fragment key={page}>
@@ -455,8 +484,8 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                     onClick={() => setCurrentPage(page)}
                     className={`px-3 py-1 rounded ${
                       currentPage === page
-                        ? 'bg-blue-500 text-white'
-                        : 'border hover:bg-gray-50'
+                        ? "bg-blue-500 text-white"
+                        : "border hover:bg-gray-50"
                     }`}
                   >
                     {page}
@@ -466,14 +495,16 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
           </div>
 
           <button
-            onClick={() => setCurrentPage(curr => curr + 1)}
+            onClick={() => setCurrentPage((curr) => curr + 1)}
             disabled={!nextPageUrl}
             className="px-3 py-1 rounded border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
           </button>
           <button
-            onClick={() => setCurrentPage(Math.ceil(totalProducts / itemsPerPage))}
+            onClick={() =>
+              setCurrentPage(Math.ceil(totalProducts / itemsPerPage))
+            }
             disabled={!nextPageUrl}
             className="px-3 py-1 rounded border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -490,15 +521,18 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
               Confirm Delete
             </h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete "{deleteModalConfig.productName}"? This action cannot be undone.
+              Are you sure you want to delete "{deleteModalConfig.productName}"?
+              This action cannot be undone.
             </p>
             <div className="flex justify-end gap-4">
               <button
-                onClick={() => setDeleteModalConfig({
-                  isOpen: false,
-                  productId: 0,
-                  productName: "",
-                })}
+                onClick={() =>
+                  setDeleteModalConfig({
+                    isOpen: false,
+                    productId: 0,
+                    productName: "",
+                  })
+                }
                 className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
               >
                 Cancel

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FiArrowRight, FiTrash2 } from "react-icons/fi";
 import {
   getLocalCart,
   updateLocalCartItemQuantity,
   removeLocalCartItem,
 } from "../../utils/cartStorage";
-
+import Suggested from "../../components/products/Suggested";
 // Update the interfaces to match API response
 interface Product {
   id: number;
@@ -71,6 +71,7 @@ interface SuggestedProduct {
 }
 
 const Cart = () => {
+  const navigate = useNavigate();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartUid, setCartUid] = useState<string | null>(null);
   const [suggestedProducts, setSuggestedProducts] = useState<
@@ -103,14 +104,14 @@ const Cart = () => {
           },
           cart: {
             id: "guest-cart",
-            user: 0
+            user: 0,
           },
           size: {
             id: item.sizeId,
             size: item.sizeName,
             quantity: item.maxQuantity,
             undiscounted_price: null,
-            price: item.productPrice
+            price: item.productPrice,
           },
           quantity: item.quantity,
         }));
@@ -236,9 +237,6 @@ const Cart = () => {
 
     const currentItem = cartItems[itemIndex];
     const newQuantity = currentItem.quantity + 1;
-
-    // Don't increase if it would exceed total quantity
-    if (currentItem.quantity >= currentItem.size.quantity) return;
 
     const originalItems = [...cartItems];
 
@@ -415,9 +413,14 @@ const Cart = () => {
                 className="border border-gray-200 rounded-lg p-4 mb-4 flex items-center justify-between"
               >
                 <div className="flex items-center">
-                  <div className="w-24 h-24 bg-gray-100 rounded-lg p-2 mr-4 flex-shrink-0 relative">
+                  <div 
+                    className="w-24 h-24 bg-gray-100 rounded-lg p-2 mr-4 flex-shrink-0 relative cursor-pointer"
+                    onClick={() => navigate(`/product/item/${item.product.id}`)}
+                  >
                     <div className="absolute top-0 left-0 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-tl-lg rounded-br-lg z-10">
-                      {item.size.quantity} in stock
+                      {item.size.quantity
+                        ? `${item.size.quantity} in stock`
+                        : "Unlimited"}
                     </div>
                     <img
                       src={item.product.image1}
@@ -447,7 +450,7 @@ const Cart = () => {
                   >
                     <FiTrash2 size={23} />
                   </button>
-                  <div className="flex items-center">
+                  <div className="flex items-center justify-between gap-3">
                     <button
                       onClick={() => decreaseQuantity(item.id)}
                       className="w-8 h-8 border border-gray-300 flex items-center justify-center rounded"
@@ -455,13 +458,16 @@ const Cart = () => {
                     >
                       <span>−</span>
                     </button>
-                    <span className="mx-3 w-4 text-center">
-                      {item.quantity}
-                    </span>
+                    <span className="">{item.quantity}</span>
                     <button
                       onClick={() => increaseQuantity(item.id)}
                       className="w-8 h-8 border border-gray-300 flex items-center justify-center rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={item.quantity >= item.size.quantity}
+                      // Only disable if there's a quantity limit and we've reached it
+                      disabled={
+                        item.size.quantity
+                          ? item.quantity >= item.size.quantity
+                          : false
+                      }
                     >
                       <span>+</span>
                     </button>
@@ -515,7 +521,7 @@ const Cart = () => {
       )}
 
       {/* You might also like section */}
-      <div className="mt-16">
+      {/* <div className="mt-16">
         <h2 className="text-2xl font-bold mb-6">You Might Also Like</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
@@ -595,7 +601,9 @@ const Cart = () => {
                 </div>
               ))}
         </div>
-      </div>
+      </div> */}
+
+      <Suggested />
     </div>
   );
 };
