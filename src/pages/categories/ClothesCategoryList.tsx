@@ -65,9 +65,9 @@ const ClothesCategoryList = ({ selectedOption }: ClothesCategoryListProps) => {
   const sortedResults = [...data.results]; // clone the results
 
   if (selectedOption === 'Highest price') {
-    sortedResults.sort((a, b) => parseFloat(b.discounted_price) - parseFloat(a.discounted_price));
+    sortedResults.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
   } else if (selectedOption === 'Lowest price') {
-    sortedResults.sort((a, b) => parseFloat(a.discounted_price) - parseFloat(b.discounted_price));
+    sortedResults.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
   } else if (selectedOption === 'Latest items') {
     sortedResults.sort((a, b) => b.id - a.id); // assuming latest = highest id
   }

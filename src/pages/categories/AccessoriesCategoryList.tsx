@@ -49,8 +49,8 @@ const AccessoriesCategoryList = ({ sortOption }:AccessoriesListProps)=>{
   });
 
   const sortedProducts = [...(data?.results || [])].sort((a, b) => {
-    const priceA = parseFloat(a.discounted_price);
-    const priceB = parseFloat(b.discounted_price);
+    const priceA = parseFloat(a.price);
+    const priceB = parseFloat(b.price);
 
     if (sortOption === 'Highest price') {
       return priceB - priceA;

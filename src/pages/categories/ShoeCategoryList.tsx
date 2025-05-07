@@ -63,9 +63,9 @@ const ShoeCategoryList = ({ selectedOption }: ShoeCategoryListProps) => {
   let sortedProducts = data?.results || [];
   
   if (selectedOption === 'Highest price') {
-    sortedProducts = [...sortedProducts].sort((a, b) => parseFloat(b.discounted_price) - parseFloat(a.discounted_price));
+    sortedProducts = [...sortedProducts].sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
   } else if (selectedOption === 'Lowest price') {
-    sortedProducts = [...sortedProducts].sort((a, b) => parseFloat(a.discounted_price) - parseFloat(b.discounted_price));
+    sortedProducts = [...sortedProducts].sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
   } else if (selectedOption === 'Latest items') {
     sortedProducts = [...sortedProducts].sort((a, b) => b.id - a.id); // Assuming newer items have higher ID
   }

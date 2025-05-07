@@ -105,9 +105,9 @@ const ProductsPage: React.FC = () => {
       if (sortOption === 'latest') {
         sortedProducts.sort((a, b) => b.id - a.id);
       } else if (sortOption === 'highest') {
-        sortedProducts.sort((a, b) => parseFloat(b.discounted_price) - parseFloat(a.discounted_price));
+        sortedProducts.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
       } else if (sortOption === 'lowest') {
-        sortedProducts.sort((a, b) => parseFloat(a.discounted_price) - parseFloat(b.discounted_price));
+        sortedProducts.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
       }
 
       setDisplayProducts(sortedProducts);
