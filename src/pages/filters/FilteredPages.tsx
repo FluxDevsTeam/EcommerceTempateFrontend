@@ -30,7 +30,8 @@ const ProductsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const [products, setProducts] = useState<Product[]>([]);
+  const [originalProducts, setOriginalProducts] = useState<Product[]>([]);
+  const [displayProducts, setDisplayProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -74,7 +75,6 @@ const ProductsPage: React.FC = () => {
         apiParams.append('max_price', currentFilters.priceRange[1].toString());
         apiParams.append('page', currentPage.toString());
        
-
         const response = await fetch(
           `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?${apiParams.toString()}`
         );
@@ -84,9 +84,8 @@ const ProductsPage: React.FC = () => {
         }
 
         const data: ApiResponse<Product> = await response.json();
-        setProducts(data.results);
+        setOriginalProducts(data.results);
         setTotalCount(data.count);
-
         setLoading(false);
       } catch (err) {
         console.error('Error fetching products:', err);
@@ -96,12 +95,12 @@ const ProductsPage: React.FC = () => {
     };
 
     fetchProducts();
-  }, [currentPage,  searchParams]);
+  }, [currentPage, searchParams]);
 
-  // Sort products client-side when sortOption or products change
+  // Sort products separately when sortOption or originalProducts change
   useEffect(() => {
-    if (products.length > 0) {
-      let sortedProducts = [...products];
+    if (originalProducts.length > 0) {
+      const sortedProducts = [...originalProducts];
 
       if (sortOption === 'latest') {
         sortedProducts.sort((a, b) => b.id - a.id);
@@ -111,11 +110,12 @@ const ProductsPage: React.FC = () => {
         sortedProducts.sort((a, b) => parseFloat(a.discounted_price) - parseFloat(b.discounted_price));
       }
 
-      setProducts(sortedProducts);
+      setDisplayProducts(sortedProducts);
+    } else {
+      setDisplayProducts([]);
     }
-  }, [sortOption]);
+  }, [sortOption, originalProducts]);
 
- 
   return (
     <div className="container mx-auto px-6 md:px-14 py-8 md:py-12 ">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
@@ -158,7 +158,7 @@ const ProductsPage: React.FC = () => {
         </div>
       ) : error ? (
         <div className="text-red-500 text-center py-8">{error}</div>
-      ) : products.length === 0 ? (
+      ) : displayProducts.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-xl text-gray-600">No products found matching your filters.</p>
           <Button
@@ -172,7 +172,7 @@ const ProductsPage: React.FC = () => {
         <>
           {/* Products grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 sm:mb-16">
-            {products.map((item) => 
+            {displayProducts.map((item) => 
             <Card key={item.id} product={item} />
             )}
           </div>

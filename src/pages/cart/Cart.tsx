@@ -356,8 +356,6 @@ const Cart = () => {
 
       {/* You might also like section */}
       <div className="mt-16">
-        <h2 className="text-2xl font-bold mb-6">You might also like</h2>
-
         <Suggested/>
       </div>
     </div>

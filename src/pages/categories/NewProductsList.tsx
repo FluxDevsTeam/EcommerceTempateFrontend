@@ -72,7 +72,7 @@ const NewProductsList = ({ sortOption }: NewProductsListProps) => {
   });
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 my-8 sm:mb-16">
+    <div className="grid grid-cols-2 md:grid-cols-4 md:gap-8 md:my-8 sm:mb-16">
      {sortedProducts.map((item) => (
             <Card key={item.id} product={item} />
           ))}

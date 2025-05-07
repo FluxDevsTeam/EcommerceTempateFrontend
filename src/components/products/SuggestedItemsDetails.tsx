@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
-import SuggestedProductDetails from "./SuggestedProductDetails";
+import SuggestedProductDetails from "./SuggestedProductDetail";
 import DescriptionList from "./DescriptionList";
 
 // Define TypeScript interfaces for the API responses
@@ -283,7 +283,7 @@ const SuggestedItemsDetails = () => {
         />
         
         {/* Conditional rendering for Suggested or SuggestedProductDetails */}
-        <Suggested />
+        <SuggestedProductDetails />
       </div>
     </div>
   );

@@ -32,7 +32,7 @@ export interface Category {
     date_updated: string;
   }
   
-  interface ProductItemsResponse {
+  export interface ProductItemsResponse {
     count: number;
     next: string | null;
     previous: string | null;
