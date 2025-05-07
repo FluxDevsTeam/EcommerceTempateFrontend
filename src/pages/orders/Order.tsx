@@ -54,7 +54,7 @@ const Order = () => {
 
       {orders.map((order: OrderData) => (
         <div key={order.id} className="mb-14">
-          <h4 className="text-[#344054] font-bold text-[18px] sm:text-[30px] mb-6">Order ID: {order.id}</h4>
+          <h4 className="text-[#344054] font-bold text-[16px] sm:text-[25px] mb-6">Order ID: {order.id}</h4>
           <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center mb-6">
             <p className="flex gap-2 items-center">
               <span className="text-[#667085] text-sm leading-5">Order date:</span>

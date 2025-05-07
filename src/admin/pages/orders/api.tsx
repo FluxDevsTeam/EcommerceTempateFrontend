@@ -23,7 +23,7 @@ export const fetchData = async () => {
 };
 
 
-export const patchOrderStatus = async (orderId: string, newStatus: string) => {
+export const PatchOrderStatus = async (orderId: string, newStatus: string) => {
   try {
     const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/admin/order/${orderId}`, {
       method: 'PATCH',
