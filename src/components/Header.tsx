@@ -220,13 +220,13 @@ const Header = () => {
             <div className="relative">
               {isUserAuthenticated ? (
                 <div 
-                  onClick={toggleUserDropdown}
+                
                   className="flex items-center gap-2 cursor-pointer"
                 >
                   <span className="text-sm font-medium bg-blue-200 px-3 py-1 rounded-md">
                     Welcome, {displayName}
                   </span>
-                  <FaUserCheck size={24} />
+                <span  onClick={toggleUserDropdown} ><FaUserCheck size={24} /> </span>  
                 </div>
               ) : (
                 <Link to="/login" className="flex items-center gap-2">
@@ -238,7 +238,7 @@ const Header = () => {
               {/* User dropdown menu */}
               {isUserAuthenticated && isUserDropdownOpen && (
                 <div 
-                  className="absolute right-0 top-10 z-10 w-48 rounded-lg border border-gray-300 bg-white shadow-md"
+                  className="absolute right-0 top-10 z-10 w-auto rounded-lg border border-gray-300 bg-white shadow-md"
                   role="menu"
                 >
                   <Link 
@@ -257,6 +257,14 @@ const Header = () => {
                     onClick={() => setIsUserDropdownOpen(false)}
                   >
                     Wishlists
+                  </Link>
+                  <Link 
+                    to="/general-settings" 
+                    className="block w-full px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900"
+                    role="menuitem"
+                    onClick={() => setIsUserDropdownOpen(false)}
+                  >
+                    Account Settings
                   </Link>
                   <div className="border-t border-gray-200 my-1"></div>
                   <button
@@ -311,6 +319,7 @@ const Header = () => {
           {/* Mobile icons - consistently displayed regardless of auth state */}
           <div className="flex items-center space-x-4">
             {isUserAuthenticated ? (
+              <div className="flex space-x-3">
               <button 
                 onClick={toggleUserDropdown}
                 className="hover:text-gray-600 transition-colors" 
@@ -318,12 +327,18 @@ const Header = () => {
               >
                 <FaUserCheck size={24} />
               </button>
+                   <Link 
+                   to="/wishlist"
+                   className="hover:text-gray-600 transition-colors"
+                         >
+                  <FaRegHeart size={24} />
+                 </Link></div>
             ) : (
               <Link to="/login" className="hover:text-gray-600 transition-colors" aria-label="Sign in">
                 <IoPersonCircleOutline size={28} />
               </Link>
             )}
-
+       
             <Link to="/cart" className="hover:text-gray-600 transition-colors" aria-label="Cart">
               <BsCart size={24} />
             </Link>
@@ -332,25 +347,26 @@ const Header = () => {
 
         {/* Mobile dropdown menu */}
         {isUserAuthenticated && isUserDropdownOpen && (
-          <div className="absolute right-4 top-12 z-50 w-auto rounded-md border border-gray-300 bg-white shadow-lg">
+          <div className="absolute right-6 top-12 z-50 w-auto rounded-md border border-gray-300 bg-white shadow-lg">
+             <Link 
+              to="/general-settings"
+              onClick={() => setIsUserDropdownOpen(false)}
+              className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50"
+            >
+              Account Settings
+            </Link>
             <Link 
               to="/orders"
               onClick={() => setIsUserDropdownOpen(false)}
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50"
             >
               Orders
             </Link>
-            <Link 
-              to="/wishlist"
-              onClick={() => setIsUserDropdownOpen(false)}
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-            >
-              Wishlists
-            </Link>
+          
             <div className="border-t border-gray-200 my-1"></div>
             <button
               onClick={handleLogout}
-              className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+              className="flex w-full items-center px-4 py-2 text-xs text-red-600 hover:bg-red-50"
             >
               <FiLogOut className="mr-2" /> Logout
             </button>

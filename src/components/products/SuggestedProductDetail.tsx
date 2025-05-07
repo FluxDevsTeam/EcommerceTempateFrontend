@@ -24,33 +24,39 @@ const SuggestedProductDetails: React.FC = () => {
     speed: 500,
     slidesToShow: 6,
     slidesToScroll: 4,
-    autoplaySpeed: 3000,
     arrows: true,
     responsive: [
       {
         breakpoint: 1024,
         settings: {
-          slidesToShow: 4,  // Show 4 on tablets
+          slidesToShow: 4,
           slidesToScroll: 3,
         }
       },
       {
         breakpoint: 768,
         settings: {
-          slidesToShow: 3,  // Show 3 on small tablets
+          slidesToShow: 3,
           slidesToScroll: 2,
         }
       },
       {
         breakpoint: 480,
         settings: {
-          slidesToShow: 2,  // Show 2 on mobile (instead of 1)
+          slidesToShow: 2.5, // Show 2.5 items
           slidesToScroll: 1,
-          arrows: false,    // Optional: Hide arrows on mobile
+          arrows: false,
+          infinite: true,
+          centerMode: true, // Enables partial item visibility
+          centerPadding: '5%', // Creates space for partial items
+          swipeToSlide: true, // Allows smooth manual scrolling
+          draggable: true, // Enables touch scrolling
+          touchThreshold: 10, // Makes touch scrolling more sensitive
         }
       }
     ]
   };
+  
   
   return (
     <div className="px-2 md:px-4 py-4 md:py-6">

@@ -124,6 +124,7 @@ const ProductDetail = () => {
   const isInStock = product.unlimited || availableQuantity > 0;
 
   return (
+    <div>
     <div className="w-full min-h-screen md:mt-8 px-6 md:px-12 py-4 lg:px-20">
       {/* Product Main Section */}
       <div className="flex flex-col lg:flex-row justify-center items-start gap-8">
@@ -283,8 +284,12 @@ const ProductDetail = () => {
         />
         
         {/* Conditional rendering for Suggested or SuggestedProductDetails */}
-        <Suggested />
+      
       </div>
+    </div>  
+    <div className="px-0 md:px-12 ">
+    <Suggested />
+    </div>
     </div>
   );
 };

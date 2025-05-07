@@ -247,6 +247,7 @@ const Cart = () => {
   
 
   return (
+    <div>
     <div className="max-w-6xl mx-auto px-4 py-6 font-poppins">
       {/* Breadcrumb */}
       <div className="flex items-center text-sm mb-6">
@@ -355,9 +356,9 @@ const Cart = () => {
       </div>
 
       {/* You might also like section */}
-      <div className="mt-16">
+      <div className="mt-16 px-o md-px-4">
         <Suggested/>
-      </div>
+      </div></div>
     </div>
   );
 };

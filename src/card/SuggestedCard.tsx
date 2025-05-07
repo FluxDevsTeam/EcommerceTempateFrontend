@@ -41,7 +41,7 @@ const SuggestedCard: React.FC<CardProps> = ({
         <img
           src={product.image1}
           alt={product.name}
-          className="rounded-lg h-[200px] md:h-[200px] object-cover"
+          className="rounded-lg w-[150px] h-[200px] md:h-[200px] object-cover"
           onClick={() => navigate(`/suggested/${product.id}`)}
         />
         <Wish
