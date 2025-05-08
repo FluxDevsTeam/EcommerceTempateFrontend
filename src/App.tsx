@@ -36,7 +36,7 @@ import Wishlist from "./pages/orders/Wishlist";
 import Confirm from "./pages/orders/Confirm";
 import Contact from "./pages/orders/Contact";
 
-import Producter from "./pages/orders/Ade";
+import Producter from "./card/Ade";
 
 
 const queryClient = new QueryClient();

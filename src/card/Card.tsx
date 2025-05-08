@@ -16,16 +16,16 @@ const Card: React.FC<CardProps> = ({
   const handleToggle = async () => {
     try {
       if (liked && wishItemId) {
+        setLiked(false);
         await deleteWishItem(wishItemId);
         setWishItemId(null);
-        setLiked(false);
         if (removeOnUnlike) {
           setVisible(false); // Only hide card if it's on wishlist page
         }
       } else {
+        setLiked(true);
         const newItem: WishItem = await addWishItem(product.id);
         setWishItemId(newItem.id);
-        setLiked(true);
       }
     } catch (error) {
       console.error('Error toggling wishlist:', error);
