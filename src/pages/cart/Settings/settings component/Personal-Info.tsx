@@ -7,10 +7,6 @@ const PersonalInfo = () => {
     new_first_name: "",
     new_last_name: "",
     new_phone_number: "",
-    // email: "",
-    // country: "",
-    // cityState: "",
-    // postalCode: "",
   });
 
 	const [passwordFormData, setPasswordFormData] = useState({
@@ -72,7 +68,6 @@ const PersonalInfo = () => {
 
     if (!accessToken) {
       console.error("Access token not found");
-      // Optionally set an error message and show the modal here too
       setInfoSubmitMsg("Authentication error. Please log in again.");
       setIsInfoSubmitMsgOpen(true);
       return;
@@ -125,12 +120,12 @@ const PersonalInfo = () => {
     } catch (error) {
       console.error("Error requesting profile change:", error);
       setInfoSubmitMsg("An error occurred while submitting the request. Please try again.");
-      setIsInfoSubmitMsgOpen(true); // <-- Show modal on error
-      setIsRequestingChange(false); // <-- Stop loading AFTER modal state is set
+      setIsInfoSubmitMsgOpen(true);
+      setIsRequestingChange(false);
     }
   };
 
-	const passwordPost = async (e: React.FormEvent<HTMLFormElement>) => { // <-- Corrected event type
+	const passwordPost = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const accessToken = localStorage.getItem("accessToken");
 
@@ -141,14 +136,13 @@ const PersonalInfo = () => {
       return;
     }
 
-    // Optional: Check if password is empty before submitting
     if (!passwordFormData.password) {
         setPasswordSubmitMsg("Please enter your password to verify.");
         setIsPasswordSubmitMsgOpen(true);
         return;
     }
 
-    setIsSavingPassword(true); // <-- Start loading
+    setIsSavingPassword(true);
 
     try {
       const response = await fetch(
@@ -168,16 +162,14 @@ const PersonalInfo = () => {
       const logData = await response.json();
       console.log(logData);
 
-      // Determine message based on response
       const message = logData?.data || logData?.message || logData?.detail || (response.ok ? "Profile updated successfully!" : "Verification failed.");
       setPasswordSubmitMsg(message);
-      setIsPasswordSubmitMsgOpen(true); // <-- Show modal
-      setIsSavingPassword(false); // <-- Stop loading AFTER modal state is set
+      setIsPasswordSubmitMsgOpen(true);
+      setIsSavingPassword(false);
 
       if (response.ok) {
-        await getUserProfileDeets(); // Refresh user details on success
+        await getUserProfileDeets();
 
-        // Clear forms on success
         setPersonalInfo({
           new_first_name: "",
           new_last_name: "",
@@ -187,242 +179,189 @@ const PersonalInfo = () => {
           password: "",
         });
 
-        // Hide the password form again after success
         const passwordForm = document?.querySelector('.passwordForm');
         passwordForm?.classList.add("hidden");
 
       } else {
         console.error("Failed to verify profile change", logData);
-        // Optionally clear only the password field on failure
-        // setPasswordFormData({ password: "" });
       }
 
     } catch (error) {
       console.error("Error verifying profile change:", error);
       setPasswordSubmitMsg("An error occurred during verification. Please try again.");
-      setIsPasswordSubmitMsgOpen(true); // <-- Show modal on error
-      setIsSavingPassword(false); // <-- Stop loading AFTER modal state is set
+      setIsPasswordSubmitMsgOpen(true);
+      setIsSavingPassword(false);
     }
   };
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-8">Personal Information</h1>
+    <div className="max-w-4xl mx-auto mt-6">
+      <div className="bg-white rounded-2xl p-8 shadow-md">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="h-14 w-14 bg-blue-50 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Personal Information</h1>
+            <p className="text-gray-500 text-sm">Update your personal details</p>
+          </div>
+        </div>
 
-      <div className="mb-16 shadow-2xl px-6 py-10 rounded-3xl md:rounded-md md:shadow-xl">
-
-        {/* Display Current User Info */}
-        <div className="mb-8 p-4 border border-gray-200 rounded-lg bg-gray-50">
-          <h3 className="text-lg font-semibold mb-2 text-gray-700">Current Information</h3>
-          <div className="space-y-2">
-            <div>
-              <span className="text-sm font-medium text-gray-600 w-28">Full Name:{" "}</span>
-              <span className="text-sm text-gray-800">
-                {userProfileDeets?.first_name || " "}{" "}
-                {userProfileDeets?.last_name || " "}
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6 mb-8">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Current Information</h3>
+          <div className="grid gap-4">
+            <div className="flex items-center gap-4">
+              <span className="text-gray-500 min-w-[120px]">Full Name:</span>
+              <span className="font-medium">
+                {userProfileDeets?.first_name || "–"} {userProfileDeets?.last_name || "–"}
               </span>
             </div>
-            <div className="flex items-center">
-              <span className="text-sm font-medium text-gray-600 w-28">Phone Number:</span>
-              <span className="text-sm text-gray-800">
-                {userProfileDeets?.phone_number || " "}
-              </span>
+            <div className="flex items-center md:gap-4">
+              <span className="text-gray-500 min-w-[120px]">Phone Number:</span>
+              <span className="font-medium">{userProfileDeets?.phone_number || "–"}</span>
             </div>
           </div>
         </div>
 
-        {/* Personal Information Section */}
-
-        <form onSubmit={personalInfoPost} className="mb-5">
-          {/* first and last name */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
+        <form onSubmit={personalInfoPost} className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <label className="block mb-2 text-sm">First Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                New First Name
+              </label>
               <input
                 type="text"
                 name="new_first_name"
                 value={personalInfo.new_first_name}
                 onChange={handlePersonalInfoChange}
-                placeholder="e.g John"
-                className="w-full p-3 border border-gray-300 rounded-lg"
+                placeholder="Enter new first name"
+                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               />
             </div>
             <div>
-              <label className="block mb-2 text-sm">Last Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                New Last Name
+              </label>
               <input
                 type="text"
                 name="new_last_name"
                 value={personalInfo.new_last_name}
                 onChange={handlePersonalInfoChange}
-                placeholder="e.g Doe"
-                className="w-full p-3 border border-gray-300 rounded-lg"
+                placeholder="Enter new last name"
+                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               />
             </div>
           </div>
 
-          {/* email and new_phone_number */}
-          <div className="grid md:grid-cols-2 gap-4 mb-4">
-            {/* <div className="mb-3">
-              <label className="block mb-2 text-sm">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={personalInfo.email}
-                onChange={handlePersonalInfoChange} // Add this line
-                placeholder="e.g johndoe@gmail.com"
-                className="w-full p-3 border border-gray-300 rounded-lg"
-              />
-            </div> */}
-            <div>
-              <label className="block mb-2 text-sm">New phone number</label>
-              <input
-                type="tel"
-                minLength={11}
-                name="new_phone_number"
-                value={personalInfo.new_phone_number}
-                onChange={handlePersonalInfoChange}
-                placeholder="Enter new phone number"
-                className="w-full p-3 border border-gray-300 rounded-lg"
-              />
-            </div>
-          </div>
-          <button
-            // Disable if loading OR if inputs are empty
-            disabled={
-              isRequestingChange || // <-- Add loading state check
-              !personalInfo.new_first_name ||
-              !personalInfo.new_last_name ||
-              !personalInfo.new_phone_number
-            }
-            type="submit"
-            className={`w-fit text-xs px-3 py-2 text-white rounded-lg mb-1
-						${
-              // Style as disabled if loading OR inputs are empty
-              isRequestingChange ||
-              !personalInfo.new_first_name ||
-              !personalInfo.new_last_name ||
-              !personalInfo.new_phone_number
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-black hover:bg-blue-600 transition-colors" // Use bg-black for default enabled state
-            }`}
-          >
-            {/* Change text based on loading state */}
-            {isRequestingChange ? "Requesting..." : "Request Change"}
-          </button>
-
-          {/* country, city and state */}
-          {/* <div className="grid grid-cols-2 gap-4 mb-6">
-            <div>
-              <label className="block mb-2 text-sm">Country</label>
-              <input
-                type="text"
-                name="country"
-                value={personalInfo.country}
-                onChange={handlePersonalInfoChange} // Add this line
-                placeholder="Select Country"
-                className="w-full p-3 border border-gray-300 rounded-lg"
-              />
-            </div>
-            <div>
-              <label className="block mb-2 text-sm">City/State</label>
-              <input
-                type="text"
-                name="cityState"
-                value={personalInfo.cityState}
-                onChange={handlePersonalInfoChange} // Add this line
-                placeholder="City/State"
-                className="w-full p-3 border border-gray-300 rounded-lg"
-              />
-            </div>
-          </div> */}
-
-          {/* postal code */}
-          {/* <div>
-            <label className="block mb-2 text-sm">Postal/Zip Code</label>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              New Phone Number
+            </label>
             <input
-              type="text"
-              name="postalCode"
-              value={personalInfo.postalCode}
-              onChange={handlePersonalInfoChange} // Add this line
-              placeholder="e.g John Doe"
-              className="w-fit p-3 border border-gray-300 rounded-lg"
+              type="tel"
+              name="new_phone_number"
+              value={personalInfo.new_phone_number}
+              onChange={handlePersonalInfoChange}
+              placeholder="Enter new phone number"
+              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
-          </div> */}
+          </div>
+
+          <button
+            disabled={isRequestingChange || !personalInfo.new_first_name || !personalInfo.new_last_name || !personalInfo.new_phone_number}
+            type="submit"
+            className={`
+              px-6 py-3 rounded-lg text-white font-medium transition-all
+              ${isRequestingChange || !personalInfo.new_first_name || !personalInfo.new_last_name || !personalInfo.new_phone_number
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-blue-100"
+              }
+            `}
+          >
+            {isRequestingChange ? (
+              <div className="flex items-center gap-2">
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Requesting...
+              </div>
+            ) : (
+              "Request Change"
+            )}
+          </button>
         </form>
 
-        {/* password */}
-        <form onSubmit={passwordPost} className="passwordForm hidden">
-          <div>
-            <label className="block mb-2 text-sm">Verify password</label>
+        <form onSubmit={passwordPost} className="passwordForm hidden mt-8 pt-8 border-t">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Verify Changes</h3>
+          <div className="max-w-md">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Enter Password to Confirm
+            </label>
             <input
               type="password"
-              className="w-fit p-3 border border-gray-300 rounded-lg"
+              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               name="password"
-							onChange={(e)=> setPasswordFormData({...passwordFormData, password: e.target.value})}
+              onChange={(e) => setPasswordFormData({...passwordFormData, password: e.target.value})}
               required
             />
           </div>
 
-          {/* Action Buttons for name, and number change */}
-          <div className="flex justify-end mt-8">
+          <button
+            disabled={isSavingPassword || !passwordFormData.password}
+            type="submit"
+            className={`
+              mt-4 px-6 py-3 rounded-lg text-white font-medium transition-all
+              ${isSavingPassword || !passwordFormData.password
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-green-100"
+              }
+            `}
+          >
+            {isSavingPassword ? "Saving..." : "Confirm Changes"}
+          </button>
+        </form>
+      </div>
+
+      {isInfoSubmitMsgOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">
+              Profile Change Status
+            </h3>
+            <p className={`mb-4 ${infoSubmitResponseStatus !== 200 ? "text-red-500" : ""}`}>{infoSubmitMsg || "Processing..."}</p>
             <button
-              // Disable if saving OR if password input is empty
-              disabled={isSavingPassword || !passwordFormData.password}
-              type="submit"
-              className={`px-6 py-3 text-white rounded-full transition-colors
-                ${
-                  isSavingPassword || !passwordFormData.password
-                    ? "bg-gray-400 cursor-not-allowed" // Disabled style
-                    : "bg-black hover:bg-gray-700" // Default enabled style
-                }
-              `}
+              onClick={() => {
+                setIsInfoSubmitMsgOpen(false);
+              }}
+              className="w-full px-4 py-2 bg-black text-white rounded-md hover:bg-gray-700 transition-colors"
             >
-              {/* Change text based on loading state */}
-              {isSavingPassword ? "Saving..." : "Save"}
+              Close
             </button>
           </div>
-        </form>
+        </div>
+      )}
 
-        {isInfoSubmitMsgOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
-              <h3 className="text-lg font-semibold mb-4">
-                Profile Change Status
-								{/* kkk */}
-              </h3>
-              <p className={`mb-4 ${infoSubmitResponseStatus !== 200 ? "text-red-500" : ""}`}>{infoSubmitMsg || "Processing..."}</p>
-              <button
-                onClick={() => {
-                  setIsInfoSubmitMsgOpen(false);
-                }}
-                className="w-full px-4 py-2 bg-black text-white rounded-md hover:bg-gray-700 transition-colors"
-              >
-                Close
-              </button>
-            </div>
+      {isPasswordSubmitMsgOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">
+              Info Change Status
+            </h3>
+            <p className={`mb-4`}>{passwordSubmitMsg || (passwordSubmitMsg && passwordSubmitMsg.password && passwordSubmitMsg.password[0]) || "No message available"}</p>
+            <button
+              onClick={() => {
+                setIsPasswordSubmitMsgOpen(false);
+              }}
+              className="w-full px-4 py-2 bg-black text-white rounded-md hover:bg-gray-700 transition-colors"
+            >
+              Close
+            </button>
           </div>
-        )}
-
-        {isPasswordSubmitMsgOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
-              <h3 className="text-lg font-semibold mb-4">
-                Info Change Status
-              </h3>
-              {/* Apply conditional text color */}
-              <p className={`mb-4`}>{passwordSubmitMsg || (passwordSubmitMsg && passwordSubmitMsg.password && passwordSubmitMsg.password[0]) || "No message available"}</p>
-              <button
-                onClick={() => {
-                  setIsPasswordSubmitMsgOpen(false);
-                }}
-                className="w-full px-4 py-2 bg-black text-white rounded-md hover:bg-gray-700 transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

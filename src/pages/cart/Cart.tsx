@@ -81,6 +81,10 @@ const Cart = () => {
 
   const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
 
+  const formatPrice = (price: number) => {
+    return price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
   useEffect(() => {
     const fetchCartData = async () => {
       const accessToken = localStorage.getItem("accessToken");
@@ -282,101 +286,135 @@ const Cart = () => {
     }
   };
 
-  // const removeItem = (cartItemId: string | number) => {
-  //   if (!localStorage.getItem("accessToken")) {
-  //     const [productId, sizeId] = cartItemId.toString().split("-").map(Number);
-  //     removeLocalCartItem(productId, sizeId);
-  //     setCartItems((prev) => prev.filter((item) => item.id !== cartItemId));
-  //     return;
-  //   }
-
-  //   setCartItems(cartItems.filter((item: CartItem) => item.id !== cartItemId));
-  // };
-
-  const subtotal = cartItems.reduce(
-    (total: number, item: CartItem) =>
-      total + Number(item.size.price) * item.quantity,
-    0
-  );
-
-  const discountPercentage = 10;
-  const discountAmount = Math.round((subtotal * discountPercentage) / 100);
-  const total = subtotal - discountAmount;
-
-  // Update the getMostCommonSubcategoryIds function with proper checks
-  const getMostCommonSubcategoryIds = (cartItems: CartItem[]) => {
-    // Count occurrences of each subcategory ID
-    const subcategoryCounts = cartItems.reduce<{ [key: number]: number }>(
-      (acc, item) => {
-        // Skip items without valid sub_category
-        if (!item.product?.sub_category?.id) {
-          return acc;
-        }
-        const subCategoryId = item.product.sub_category.id;
-        acc[subCategoryId] = (acc[subCategoryId] || 0) + 1;
-        return acc;
-      },
-      {}
-    );
-
-    // Convert to array of [id, count] pairs and sort by count in descending order
-    const sortedSubcategories = Object.entries(subcategoryCounts)
-      .map(([id, count]) => ({ id: Number(id), count }))
-      .sort((a, b) => {
-        // First sort by count in descending order
-        if (b.count !== a.count) {
-          return b.count - a.count;
-        }
-        // If counts are equal, sort by ID to ensure consistent results
-        return a.id - b.id;
-      });
-
-    // Return the top two subcategory IDs, or empty array if none found
-    return sortedSubcategories.slice(0, 2).map((item) => item.id);
-  };
-
-  // Function to fetch suggested products
-  const fetchSuggestedProducts = async () => {
-    setSuggestionsLoading(true);
+  const removeItem = async (cartItemId: number) => {
     const accessToken = localStorage.getItem("accessToken");
 
+    if (!accessToken) {
+      // Handle local storage deletion
+      const idString = cartItemId.toString();
+      const productId = parseInt(idString.slice(0, -1));
+      const sizeId = parseInt(idString.slice(-1));
+      removeLocalCartItem(productId, sizeId);
+      setCartItems((prev) => prev.filter((item) => item.id !== cartItemId));
+      return;
+    }
+
+    if (!cartUid) {
+      console.error("Cart UID not available for API call.");
+      return;
+    }
+
     try {
-      let url = `${baseURL}/api/v1/product/item/suggestions/`;
-
-      if (cartItems.length > 0) {
-        const topSubcategoryIds = getMostCommonSubcategoryIds(cartItems);
-
-        if (topSubcategoryIds.length === 1) {
-          url += `?sub_category_id=${topSubcategoryIds[0]}`;
-        } else if (topSubcategoryIds.length === 2) {
-          url += `?sub_category_id=${topSubcategoryIds[0]}&second_sub_category_id=${topSubcategoryIds[1]}`;
+      const response = await fetch(
+        `${baseURL}/api/v1/cart/${cartUid}/items/${cartItemId}/`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `JWT ${accessToken}`,
+            "Content-Type": "application/json",
+          },
         }
-      }
-
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `JWT ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      setSuggestedProducts(data.results);
+      setCartItems((prev) => prev.filter((item) => item.id !== cartItemId));
     } catch (error) {
-      console.error("Error fetching suggested products:", error);
-    } finally {
-      setSuggestionsLoading(false);
+      console.error("Failed to delete cart item:", error);
     }
   };
 
+  const subtotal = cartItems.reduce((total: number, item: CartItem) => {
+    const itemPrice = Number(item.size.price);
+    return total + itemPrice * item.quantity;
+  }, 0);
+
+  const undiscountedTotal = cartItems.reduce((total: number, item: CartItem) => {
+    const undiscountedPrice = item.size.undiscounted_price || Number(item.size.price);
+    return total + undiscountedPrice * item.quantity;
+  }, 0);
+
+  // Calculate total savings from product discounts
+  const totalSavings = undiscountedTotal - subtotal;
+  const discountPercentage = Math.round((totalSavings / undiscountedTotal) * 100) || 0;
+  const total = subtotal;
+  
+  // Update the getMostCommonSubcategoryIds function with proper checks
+  // const getMostCommonSubcategoryIds = (cartItems: CartItem[]) => {
+  //   // Count occurrences of each subcategory ID
+  //   const subcategoryCounts = cartItems.reduce<{ [key: number]: number }>(
+  //     (acc, item) => {
+  //       // Skip items without valid sub_category
+  //       if (!item.product?.sub_category?.id) {
+  //         return acc;
+  //       }
+  //       const subCategoryId = item.product.sub_category.id;
+  //       acc[subCategoryId] = (acc[subCategoryId] || 0) + 1;
+  //       return acc;
+  //     },
+  //     {}
+  //   );
+
+  //   // Convert to array of [id, count] pairs and sort by count in descending order
+  //   const sortedSubcategories = Object.entries(subcategoryCounts)
+  //     .map(([id, count]) => ({ id: Number(id), count }))
+  //     .sort((a, b) => {
+  //       // First sort by count in descending order
+  //       if (b.count !== a.count) {
+  //         return b.count - a.count;
+  //       }
+  //       // If counts are equal, sort by ID to ensure consistent results
+  //       return a.id - b.id;
+  //     });
+
+  //   // Return the top two subcategory IDs, or empty array if none found
+  //   return sortedSubcategories.slice(0, 2).map((item) => item.id);
+  // };
+
+  // Function to fetch suggested products
+  // const fetchSuggestedProducts = async () => {
+  //   setSuggestionsLoading(true);
+  //   const accessToken = localStorage.getItem("accessToken");
+
+  //   try {
+  //     let url = `${baseURL}/api/v1/product/item/suggestions/`;
+
+  //     if (cartItems.length > 0) {
+  //       const topSubcategoryIds = getMostCommonSubcategoryIds(cartItems);
+
+  //       if (topSubcategoryIds.length === 1) {
+  //         url += `?sub_category_id=${topSubcategoryIds[0]}`;
+  //       } else if (topSubcategoryIds.length === 2) {
+  //         url += `?sub_category_id=${topSubcategoryIds[0]}&second_sub_category_id=${topSubcategoryIds[1]}`;
+  //       }
+  //     }
+
+  //     const response = await fetch(url, {
+  //       headers: {
+  //         Authorization: `JWT ${accessToken}`,
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
+
+  //     const data = await response.json();
+  //     setSuggestedProducts(data.results);
+  //   } catch (error) {
+  //     console.error("Error fetching suggested products:", error);
+  //   } finally {
+  //     setSuggestionsLoading(false);
+  //   }
+  // };
+
   // Fetch suggested products when cart items change
-  useEffect(() => {
-    fetchSuggestedProducts();
-  }, [cartItems]);
+  // useEffect(() => {
+  //   fetchSuggestedProducts();
+  // }, [cartItems]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 font-poppins">
@@ -432,19 +470,19 @@ const Cart = () => {
                     />
                   </div>
                   <div>
-                    <h3 className="font-semibold">{item.product.name}</h3>
+                    <h3 className="font-semibold line-clamp-2">{item.product.name}</h3>
                     <p className="text-sm text-gray-500">
                       Size: {item.size.size.toUpperCase()}
                     </p>
                     <p className="font-bold mt-1">
-                      ₦{Number(item.size.price || 0).toFixed(2)}
+                      ₦{" "}{formatPrice(Number(item.size.price || 0))}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex flex-col items-end justify-between">
                   <button
-                    // onClick={() => removeItem(item.id)}
+                    onClick={() => removeItem(item.id)}
                     className="text-red-500 mb-12"
                     aria-label={`Remove ${item.product.name}`}
                   >
@@ -453,7 +491,7 @@ const Cart = () => {
                   <div className="flex items-center justify-between gap-3">
                     <button
                       onClick={() => decreaseQuantity(item.id)}
-                      className="w-8 h-8 border border-gray-300 flex items-center justify-center rounded"
+                      className={`w-8 h-8 border border-gray-300 flex items-center justify-center rounded ${item.quantity <= 1 ? "cursor-not-allowed" : " "}`}
                       disabled={item.quantity <= 1}
                     >
                       <span>−</span>
@@ -484,20 +522,23 @@ const Cart = () => {
 
               <div className="space-y-4">
                 <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  {/* Display calculated subtotal */}
-                  <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                  <span>Original Price</span>
+                  <span className="font-semibold line-through text-gray-500">
+                    ₦{" "}{formatPrice(undiscountedTotal)}
+                  </span>
                 </div>
 
-                {/* <div className="flex justify-between text-red-500">
-                  <span>Discount (-{discountPercentage}%)</span>
-                  <span>-${discountAmount.toFixed(2)}</span>
-                </div> */}
+                {totalSavings > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Total Savings ({discountPercentage}% off)</span>
+                    <span>-₦{" "}{formatPrice(totalSavings)}</span>
+                  </div>
+                )}
 
                 <div className="border-t pt-4 mt-4">
                   <div className="flex justify-between">
-                    <span className="font-bold">Total Amount</span>
-                    <span className="font-bold">${total.toFixed(2)}</span>
+                    <span className="font-bold">Final Price</span>
+                    <span className="font-bold">₦{" "}{formatPrice(total)}</span>
                   </div>
                 </div>
 

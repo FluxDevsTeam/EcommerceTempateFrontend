@@ -12,6 +12,7 @@ import ChangePassword from "./pages/auth/ChangePassword";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import { Navigate } from "react-router-dom";
 import Cart from "./pages/cart/Cart";
+import PaymentFailed from "./pages/cart/Payment-Failed";
 import ConfirmOrder from "./pages/cart/ConfirmOrder";
 import FAQs from "./pages/cart/FAQs";
 import GeneralSettings from "./pages/cart/Settings/Settings";
@@ -44,13 +45,15 @@ const queryClient = new QueryClient();
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-    <AuthProvider> {/* Move AuthProvider here */}
-      <Router>
-        <ScrollToTop/>
-        <AppContent />
-      </Router>
-    </AuthProvider>
-  </QueryClientProvider>
+      <AuthProvider>
+        {" "}
+        {/* Move AuthProvider here */}
+        <Router>
+          <ScrollToTop />
+          <AppContent />
+        </Router>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 };
 
@@ -61,11 +64,12 @@ const AppContent: React.FC = () => {
       <Route element={<MainLayout />}>
         <Route path="/" element={<Homepage />} />
         <Route path="/product/item/:id" element={<ProductDetail />} />
-        <Route path="/suggested/:id"  element={<SuggestedItemDetails />} />
+        <Route path="/suggested/:id" element={<SuggestedItemDetails />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/cart/error/" element={<PaymentFailed />} />
         <Route path="/orders" element={<Orders />} />
-        <Route path="//verify-reset-otp" element={<VerifyForgotPassword/>} />
+        <Route path="//verify-reset-otp" element={<VerifyForgotPassword />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/shoe-category" element={<ShoeCategory />} />
         <Route path="/clothes-category" element={<ClothesCategory />} />
@@ -76,12 +80,12 @@ const AppContent: React.FC = () => {
         <Route path="/general-settings" element={<GeneralSettings />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/orders/:id" element={<Confirm />} />
-          <Route path="/wishlist" element={<Wishlist />} />
-          <Route path="/contact-us" element={<Contact />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/contact-us" element={<Contact />} />
       </Route>
 
       {/* AuthLayout Routes */}
-     
+
       <Route element={<AuthLayout />}>
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<SignUp />} />
@@ -89,7 +93,7 @@ const AppContent: React.FC = () => {
         <Route path="verify-email" element={<VerifyEmail />} />
         <Route path="change-password" element={<ChangePassword />} />
       </Route>
-      
+
       {/* Admin routes with AdminLayout */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
@@ -97,7 +101,10 @@ const AppContent: React.FC = () => {
         <Route path="products" element={<Products />} />
         <Route path="add-new-product" element={<AddNewProduct />} />
         <Route path="products/edit/:id" element={<EditProduct />} />
-        <Route path="admin-products-details/:id" element={<AdminProductDetails />} />
+        <Route
+          path="admin-products-details/:id"
+          element={<AdminProductDetails />}
+        />
 
         <Route path="orders" element={<AdminOrders />} />
         <Route path="settings" element={<Settings />} />

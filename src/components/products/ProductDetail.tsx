@@ -180,7 +180,7 @@ const ProductDetail = () => {
         productPrice: product.price,
         discountedPrice: product.discounted_price,
         sizeName: selectedSizeData.size,
-        quantity: quantity,
+        quantity: quantity, // Use the quantity from state
         maxQuantity: selectedSizeData.quantity,
       });
 
@@ -210,7 +210,7 @@ const ProductDetail = () => {
 
       if (!cartUuid) throw new Error("No cart UUID found");
 
-      // Add item to cart
+      // Add item to cart with selected quantity
       const response = await fetch(
         `${baseURL}/api/v1/cart/${cartUuid}/items/`,
         {
@@ -222,7 +222,7 @@ const ProductDetail = () => {
           body: JSON.stringify({
             product: product.id,
             size: selectedSizeData.id,
-            quantity: quantity,
+            quantity: quantity, // Use the quantity from state
           }),
         }
       );
@@ -232,11 +232,11 @@ const ProductDetail = () => {
         console.error("Error adding to cart:", errorData);
         setModalConfig({
           isOpen: true,
-          title: "",
-          message: errorData.error,
+          title: "Error",
+          message: errorData.error || "Failed to add item to cart",
           type: "error",
         });
-        throw new Error("Failed to add to cart");
+        return;
       }
 
       setModalConfig({
@@ -247,6 +247,12 @@ const ProductDetail = () => {
       });
     } catch (error) {
       console.error("Error adding to cart:", error);
+      setModalConfig({
+        isOpen: true,
+        title: "Error",
+        message: "Failed to add item to cart",
+        type: "error",
+      });
     }
   };
 
@@ -460,7 +466,7 @@ const ProductDetail = () => {
             </div>
 
             {/* Quantity Selector */}
-            {/* <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4">
               <button
                 className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleQuantityDecrease}
@@ -476,7 +482,7 @@ const ProductDetail = () => {
               >
                 +
               </button>
-            </div> */}
+            </div>
 
             {/* Add to Cart */}
             <button
