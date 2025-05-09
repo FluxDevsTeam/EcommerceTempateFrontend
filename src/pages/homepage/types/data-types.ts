@@ -19,7 +19,7 @@ export interface Category {
     image1: string;
     image2: string | null;
     image3: string | null;
-    discounted_price: string;
+    undiscounted_price: string;
     price: string;
     is_available: boolean;
     latest_item: boolean;

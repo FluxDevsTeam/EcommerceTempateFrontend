@@ -1,4 +1,5 @@
 import { ProductAPIResponse } from "../types/data-types";
+import { ProductItemsResponse } from "../types/data-types";
 
 
 export const fetchProducts = async () :Promise<ProductAPIResponse>   => {
@@ -7,7 +8,7 @@ export const fetchProducts = async () :Promise<ProductAPIResponse>   => {
     return res.json();
   };
 
-  export const fetchSuggestedProducts = async () :Promise<ProductAPIResponse>   => {
+  export const fetchSuggestedProducts = async () :Promise<ProductItemsResponse>   => {
     const res = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/suggestions/');
     if (!res.ok) throw new Error('Failed to fetch');
     return res.json();

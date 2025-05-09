@@ -1,31 +1,84 @@
 import { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import axios from 'axios';
 
 const OrderAnalytics = () => {
   const [orderPeriod, setOrderPeriod] = useState('Monthly');
   const [chartData, setChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/orders/admin-dashboard/');
-        if (!response.ok) {
-          throw new Error('Failed to fetch data');
+        // Get the JWT token from localStorage
+        const token = localStorage.getItem('accessToken');
+        
+        if (!token) {
+          throw new Error('No authentication token found');
         }
-        const data = await response.json();
-        // Transform monthly data into required format for Recharts
-        const transformedData = data.data.monthly_data.map(monthData => ({
-          month: monthData.month,
-          orders: monthData.total,
-        }));
-        setChartData(transformedData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+
+        const response = await axios.get(
+          'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/dashboard/',
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            }
+          }
+        );
+
+        if (response.data && response.data.data && response.data.data.monthly_data) {
+          // Transform monthly data into required format for Recharts
+          const transformedData = response.data.data.monthly_data.map((monthData: any) => ({
+            month: monthData.month,
+            orders: monthData.total,
+          }));
+          setChartData(transformedData);
+        } else {
+          setChartData([]);
+        }
+      } catch (err: any) {
+        console.error('Error fetching data:', err);
+        setError(err.response?.data?.message || err.message || 'Failed to fetch analytics data.');
+        
+        // Optional: Handle 401 unauthorized errors
+        if (err.response?.status === 401) {
+          // You might want to redirect to login or refresh the token here
+          console.log('Unauthorized - redirecting to login');
+        }
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchData();
-  }, []); // Empty dependency array ensures fetch runs once on component mount
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow px-6 py-8 mb-8 flex justify-center items-center h-64">
+        <p>Loading analytics...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-lg shadow px-6 py-8 mb-8 text-red-500">
+        <p>Error: {error}</p>
+      </div>
+    );
+  }
+
+  if (!chartData.length) {
+    return (
+      <div className="bg-white rounded-lg shadow px-6 py-8 mb-8">
+        <p>No analytics data available</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow px-6 mb-8">
@@ -43,12 +96,6 @@ const OrderAnalytics = () => {
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Assuming you want to display the latest date and total sales */}
-      <div className="mb-2">
-        <div className="text-xs">{/* Insert date here */}</div>
-        <div className="font-bold text-lg">{/* Insert total sales here */}</div>
       </div>
 
       {/* Recharts Bar Chart */}

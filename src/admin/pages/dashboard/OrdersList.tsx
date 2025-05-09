@@ -1,5 +1,3 @@
-// OrdersList.tsx
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { ChevronDown } from "lucide-react";
@@ -83,19 +81,38 @@ const OrdersList: React.FC = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await axios.get(
-          "https://ecommercetemplate.pythonanywhere.com/api/v1/orders/admin/"
-        );
-        const data = response.data;
+        // Get the JWT token from localStorage
+        const token = localStorage.getItem('accessToken');
+        
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
 
-        if (data && data.results) {
-          setOrders(data.results);
+        const response = await axios.get(
+          "https://ecommercetemplate.pythonanywhere.com/api/v1/admin/dashboard/",
+          {
+            headers: {
+              'Authorization': `JWT ${token}`,
+              'Content-Type': 'application/json',
+            }
+          }
+        );
+
+        if (response.data && response.data.results) {
+          setOrders(response.data.results);
+          console.log(response)
         } else {
           setOrders([]);
         }
-      } catch (err) {
-        setError("Failed to fetch orders.");
-        console.error(err);
+      } catch (err: any) {
+        console.error('Error fetching orders:', err);
+        setError(err.response?.data?.message || err.message || 'Failed to fetch orders.');
+        
+        // Optional: Handle 401 unauthorized errors
+        if (err.response?.status === 401) {
+          // You might want to redirect to login or refresh the token here
+          console.log('Unauthorized - redirecting to login');
+        }
       } finally {
         setLoading(false);
       }
@@ -105,15 +122,21 @@ const OrdersList: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <p className="p-6">Loading orders...</p>;
+    return <div className="flex justify-center items-center h-32">
+      <p>Loading orders...</p>
+    </div>;
   }
 
   if (error) {
-    return <p className="p-6 text-red-500">{error}</p>;
+    return <div className="text-red-500 p-4">
+      <p>Error: {error}</p>
+    </div>;
   }
 
   if (!orders.length) {
-    return <p className="p-6">No orders found.</p>;
+    return <div className="p-4">
+      <p>No orders found</p>
+    </div>;
   }
 
   return (

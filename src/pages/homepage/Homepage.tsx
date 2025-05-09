@@ -39,11 +39,11 @@ if (isError) return <div>Error loading data.</div>;
           </Link>
         </div>
         
-        <div className="flex justify-center lg:justify-end lg:mt-[-20px] ">
+        <div className="flex justify-center lg:justify-end lg:mt-[-20px] mt-0">
           <img 
             src={image1} 
             alt="Banner image" 
-            className="w-full md:max-w-lg max-w-sm object-contain"
+            className="w-full max-w-[280px] sm:max-w-xs md:max-w-md lg:max-w-lg object-contain"
           />
         </div>
       </div>

@@ -41,8 +41,15 @@ const DeveloperSettings = () => {
   const fetchDeveloperSettings = async () => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('accessToken');
       const response = await axios.get<DeveloperSettingsResponse>(
         'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/developer-settings/',
+        {
+          headers: {
+            'Authorization': `JWT ${token}`,
+            'Content-Type': 'application/json',
+          }
+        }
 
       );
       
@@ -115,11 +122,17 @@ const DeveloperSettings = () => {
   const handleSave = async () => {
     try {
       setLoading(true);
-      
+      const token = localStorage.getItem('accessToken');
       // Send PATCH request to update developer settings
       await axios.patch<DeveloperSettings>(
         'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/developer-settings/',
         formData,
+        {
+          headers: {
+            'Authorization': `JWT ${token}`,
+            'Content-Type': 'application/json',
+          }
+        }
       );
       
       setSuccessMessage('Developer settings updated successfully');

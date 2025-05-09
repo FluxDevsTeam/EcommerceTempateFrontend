@@ -20,7 +20,7 @@ const ImageGrid: React.FC<LatestItemsProps> = ({ product }) => {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-8 sm:mb-16">
       {product.map((item) => (
-        <Card key={item.id} product={item} />
+        <Card key={item.id} product={item} isInitiallyLiked={false}/>
       ))}
       </div>
 

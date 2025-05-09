@@ -34,9 +34,16 @@ const DeliverySettings = () => {
 
   const fetchDeliverySettings = async () => {
     try {
+      const token = localStorage.getItem('accessToken');
       setLoading(true);
       const response = await axios.get<DeliverySettingsResponse>(
         'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/delivery-settings/',
+        {
+          headers: {
+            'Authorization': `JWT ${token}`,
+            'Content-Type': 'application/json',
+          }
+        }
       );
       
       // Assuming the first result is what we want to display
@@ -71,11 +78,18 @@ const DeliverySettings = () => {
         weigh_fee: formData.weigh_fee,
         size_fee: formData.size_fee
       };
-      
+      const token = localStorage.getItem('accessToken');
+
       // Send PATCH request to update delivery settings
       await axios.patch<DeliverySettings>(
         'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/delivery-settings/',
         apiFormData,
+        {
+          headers: {
+            'Authorization': `JWT ${token}`,
+            'Content-Type': 'application/json',
+          }
+        }
       );
       
       setSuccessMessage('Delivery settings updated successfully');

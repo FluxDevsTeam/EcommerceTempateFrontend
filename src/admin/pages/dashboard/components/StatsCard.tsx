@@ -21,15 +21,37 @@ export default function StatsGrid() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await axios.get('https://ecommercetemplate.pythonanywhere.com/api/v1/orders/admin/');
+        // Get the JWT token from localStorage
+        const token = localStorage.getItem('accessToken');
+        
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        const response = await axios.get(
+          'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/dashboard/',
+          {
+            headers: {
+              'Authorization': `JWT ${token}`,
+              'Content-Type': 'application/json',
+            }
+          }
+        );
+        
         if (response.data && response.data.aggregate) {
           setStats(response.data.aggregate);
         } else {
           setStats(null);
         }
       } catch (err: any) {
-        console.error(err);
-        setError('Failed to fetch statistics.');
+        console.error('Error fetching stats:', err);
+        setError(err.response?.data?.message || err.message || 'Failed to fetch statistics.');
+        
+        // Optional: Handle 401 unauthorized errors
+        if (err.response?.status === 401) {
+          // You might want to redirect to login or refresh the token here
+          console.log('Unauthorized - redirecting to login');
+        }
       } finally {
         setLoading(false);
       }
@@ -39,15 +61,21 @@ export default function StatsGrid() {
   }, []);
 
   if (loading) {
-    return <p>Loading stats...</p>;
+    return <div className="flex justify-center items-center h-32">
+      <p>Loading stats...</p>
+    </div>;
   }
 
   if (error) {
-    return <p>{error}</p>;
+    return <div className="text-red-500 p-4">
+      <p>Error: {error}</p>
+    </div>;
   }
 
   if (!stats) {
-    return <p>No stats found.</p>;
+    return <div className="p-4">
+      <p>No stats available</p>
+    </div>;
   }
 
   return (

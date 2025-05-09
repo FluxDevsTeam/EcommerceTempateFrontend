@@ -372,6 +372,9 @@ const Header = () => {
             </button>
           </div>
         )}
+        <div className=" p-4">
+        <SearchInput onItemSelect={handleSearchItemSelect}/>
+        </div>
 
         {/* Mobile Menu - expanded navigation */}
         {isMobileMenuOpen && (
@@ -396,7 +399,7 @@ const Header = () => {
                   <li>Clothes</li>
                 </Link>
               </ul>
-              <SearchInput onItemSelect={handleSearchItemSelect}/>
+              
               <button 
                 onClick={toggleFilter}
                 className="flex items-center space-x-2 cursor-pointer hover:text-gray-600 transition-colors"

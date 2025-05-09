@@ -1,14 +1,45 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import ProductCard from './ProductsCard';
-import { Product } from '@/types/api-types';
 import search from '/images/Empty-rafiki 1 (1).png';
 import Card from '@/card/Card';
 
 
 // Full search API endpoint
 const SEARCH_API_URL = "https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/search/";
+export interface Category {
+  id: number;
+  name: string;
+}
 
+export interface SubCategory {
+  id: number;
+  name: string;
+  category: Category;
+}
+
+interface Product {
+  id: number;
+          name: string;
+          image1: string;
+          undiscounted_price: string;
+          price: string;
+          description: string;
+          total_quantity: number;
+          sub_category: SubCategory;
+          colour: string;
+          image2: string | null;
+          image3: string | null;
+          is_available: boolean;
+          latest_item: boolean;
+          latest_item_position: number;
+          dimensional_size: string;
+          weight: string;
+          top_selling_items: boolean;
+          top_selling_position: number;
+          date_created: string;
+          date_updated: string;
+      
+}
 
 
 const fetchSearchResults = async (searchQuery?: string, page: number = 1, pageSize: number = 24, ordering?: string): Promise<{

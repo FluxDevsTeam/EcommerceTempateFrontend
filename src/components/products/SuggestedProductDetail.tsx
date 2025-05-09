@@ -1,14 +1,13 @@
 import {Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchSuggestedProducts } from "@/pages/homepage/api/apiService";
-import { ProductAPIResponse } from "@/pages/homepage/types/data-types";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import SuggestedCard from "@/card/SuggestedCard";
 
 const SuggestedProductDetails: React.FC = () => {
-  const { data, isLoading, isError } = useQuery<ProductAPIResponse>({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['Suggested'],
     queryFn: fetchSuggestedProducts
   });
@@ -43,8 +42,7 @@ const SuggestedProductDetails: React.FC = () => {
       {
         breakpoint: 480,
         settings: {
-          slidesToShow: 2.5, // Show 2.5 items
-          slidesToScroll: 1,
+          slidesToShow: 1.5, // Show 2.5 items
           arrows: false,
           infinite: true,
           centerMode: true, // Enables partial item visibility
@@ -67,7 +65,7 @@ const SuggestedProductDetails: React.FC = () => {
       <Slider {...settings} className="mb-6 sm:mb-8">
         {productsToDisplay.map((item) => (
           <div key={item.id} className="px-1"> {/* Add padding between slides */}
-            <div className="transform scale-90 hover:scale-95 transition-transform duration-200"> {/* Scale down the card */}
+            <div className="md:transform scale-90 md:hover:scale-95 md:transition-transform md:duration-200"> {/* Scale down the card */}
               <SuggestedCard product={item} />
             </div>
           </div>

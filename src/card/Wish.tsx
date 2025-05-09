@@ -4,7 +4,7 @@ import { FaHeart } from "react-icons/fa";
 
 interface WishProps {
   color?: string;
-  liked: boolean;
+  liked?: boolean;
   onToggle: () => void;
 }
 

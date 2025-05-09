@@ -47,8 +47,15 @@ const OrganizationalSettings = () => {
   const fetchOrganizationSettings = async () => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('accessToken');
       const response = await axios.get<OrganizationSettingsResponse>(
         'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/organisation-settings/',
+        {
+          headers: {
+            'Authorization': `JWT ${token}`,
+            'Content-Type': 'application/json',
+          }
+        }
       );
       
       // Assuming the first result is what we want to display
@@ -113,7 +120,7 @@ const OrganizationalSettings = () => {
   const handleSave = async () => {
     try {
       setLoading(true);
-      
+      const token = localStorage.getItem('accessToken');
       // Create data object for PATCH request
       const patchData = {
         warehouse_state: formData.warehouse_state,
@@ -131,6 +138,12 @@ const OrganizationalSettings = () => {
       await axios.patch<OrganizationSettings>(
         'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/organisation-settings/',
         patchData,
+        {
+          headers: {
+            'Authorization': `JWT ${token}`,
+            'Content-Type': 'application/json',
+          }
+        }
        
       );
       
