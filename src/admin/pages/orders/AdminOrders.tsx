@@ -24,7 +24,6 @@ const statusColors: { [key: string]: { dot: string; bg: string } } = {
   SHIPPED: { dot: "#2196F3", bg: "#2196F326" },
   DELIVERED: { dot: "#9C27B0", bg: "#9C27B026" },
   CANCELLED: { dot: "#F44336", bg: "#F4433626" },
-  REFUNDED: { dot: "#FF9800", bg: "#FF980026" },
 };
 
 
@@ -72,7 +71,7 @@ const statusColors: { [key: string]: { dot: string; bg: string } } = {
         <div>
           <Dropdown
             label="Sort by"
-            options={["All Categories", "PAID", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"]}
+            options={["All Categories", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"]}
             onSelect={(value) => setStatusFilter(value)}
           />
         </div>

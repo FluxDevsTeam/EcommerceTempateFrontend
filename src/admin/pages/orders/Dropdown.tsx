@@ -76,9 +76,6 @@ const Dropdown = ({
               {option === "CANCELLED" && (
                 <span className="w-2 h-2 rounded-full bg-[#F44336]"></span>
               )}
-              {option === "REFUNDED" && (
-                <span className="w-2 h-2 rounded-full bg-[#FF9800]"></span>
-              )}
               <span>{option}</span>
             </li>
           ))}

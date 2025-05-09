@@ -68,7 +68,7 @@ const Order = () => {
 
           <div className="mb-4 flex flex-col">
             <span className="text-[20px] inline-block leading-[30px] mb-2">Status</span>
-            <span className="bg-[#72D3E940] inline-block rounded-2xl pl-2 py-1 w-[150px]">{order.status}</span>
+            <span className="bg-[#72D3E940] inline-block rounded-2xl pl-2 py-1 w-[150px]">{order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}</span>
           </div>
 
           <ul className="flex flex-col gap-6 sm:gap-3">
@@ -95,7 +95,7 @@ const Order = () => {
               
             ))}
           </ul>
-          <Link to={`/orders/${order.id}`}className="inline-block text-white bg-black px-16 py-4 mt-4 rounded-2xl">Track Order</Link>
+          <Link to={`/orders/${order.id}`}className="inline-block text-white bg-black px-8 sm:px-16 py-2 sm:py-4 mt-4 rounded-2xl">Track Order</Link>
           <hr className="mt-10 border-t border-t-gray-300" />
           <hr className="mt-5 border-t border-t-gray-300" />
         </div>
