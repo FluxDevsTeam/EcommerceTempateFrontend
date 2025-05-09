@@ -67,7 +67,7 @@ const Order = () => {
           </div>
 
           <div className="mb-4 flex flex-col">
-            <span className="text-[20px] inline-block leading-[30px] mb-2">Status</span>
+            {/* <span className="text-[20px] inline-block leading-[30px] mb-2">Status</span> */}
             <span className="bg-[#72D3E940] inline-block rounded-2xl pl-2 py-1 w-[150px]">{order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}</span>
           </div>
 
@@ -78,7 +78,7 @@ const Order = () => {
                   <img src={item.image1} className="w-full" alt={item.name} />
                 </div>
                 <div className="basis-[50%] sm:basis-[20%]">
-                  <p className="text-2xl leading-8 mb-2">{item.name}</p>
+                  <p className="text-2xl leading-8 mb-2 line-clamp-3">{item.name}</p>
                   <p className="leading-6 text-[#667085] capitalize">
                     {item.colour} | {item.size}
                   </p>
@@ -87,10 +87,10 @@ const Order = () => {
                   <p className="font-semibold text-lg leading-[30px] text-right">₦{item.price}</p>
                   <p className="text-[#667085] text-right">Qty: {item.quantity}</p>
                 </div>
-                <div>
+                {/* <div>
                   <p className="text-[20px] leading-[30px] mb-1.5">Expected Delivery</p>
                   <span>{formatEstimatedDelivery(order.estimated_delivery)}</span>
-                </div>
+                </div> */}
               </li>
               
             ))}

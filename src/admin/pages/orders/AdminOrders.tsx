@@ -33,7 +33,7 @@ const statusColors: { [key: string]: { dot: string; bg: string } } = {
   : orders.filter((order) => order.status === statusFilter);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 11;
+  const itemsPerPage = 6;
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
