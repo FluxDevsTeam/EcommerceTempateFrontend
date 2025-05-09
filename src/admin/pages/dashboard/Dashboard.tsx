@@ -15,7 +15,7 @@ export default function Dashboard() {
       <div className=" w-full flex justify-between items-center px-4 mb-6">
         
        
-               <h1 className="md:text-2xl text-lg font-bold">Welcome Back, Marci</h1>
+               <h1 className="md:text-2xl text-lg font-bold">Welcome Back, Admin</h1>
                <div className="flex gap-4">
                  <button className="p-2 rounded-full bg-white shadow">
                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

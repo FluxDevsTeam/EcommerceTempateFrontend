@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 interface OrganizationSettings {
-  available_states: Record<string, string>; // Object with state keys and values
+  available_states: any; // This appears to be an object in the API schema
   warehouse_state: string;
   phone_number: string;
   customer_support_email: string;
@@ -34,11 +34,6 @@ const OrganizationalSettings = () => {
   useEffect(() => {
     fetchOrganizationSettings();
   }, []);
-  
-  // Debug when formData changes
-  useEffect(() => {
-    console.log("Form data updated:", formData);
-  }, [formData]);
 
   const fetchOrganizationSettings = async () => {
     try {
@@ -53,20 +48,10 @@ const OrganizationalSettings = () => {
           }
         }
       );
-      
+
       if (response.data) {
-        // For debugging
-        console.log("API Response:", response.data);
-        console.log("Available States:", response.data.available_states);
-        console.log("Warehouse State:", response.data.warehouse_state);
-        
-        // Ensure available_states is treated as an object
-        const formattedData = {
-          ...response.data,
-          available_states: response.data.available_states || {}
-        };
-        
-        setFormData(formattedData);
+        setFormData(response.data);
+        console.log(response.data);
       }
       setError(null);
     } catch (err) {
@@ -77,30 +62,22 @@ const OrganizationalSettings = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     
-    // For debugging
-    console.log(`Field changed: ${name}, value: ${value}`);
+    // Map UI field names to API field names
+    const apiFieldName = mapFieldNameToApi(name);
     
-    // Handle warehouse_state directly since it's a special case
-    if (name === 'warehouseState') {
-      setFormData(prev => ({
-        ...prev,
-        warehouse_state: value
-      }));
-    } else {
-      // For other fields, map to API field names
-      const apiFieldName = mapFieldNameToApi(name);
-      setFormData(prev => ({
-        ...prev,
-        [apiFieldName]: value
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      [apiFieldName]: value
+    }));
   };
-  
+
   const mapFieldNameToApi = (fieldName: string): string => {
     const mapping: {[key: string]: string} = {
+      'warehouseStates': 'warehouse_state',
+      'availableStates': 'available_states',
       'phoneNumber': 'phone_number',
       'logo': 'brand_logo',
       'customerSupportEmail': 'customer_support_email',
@@ -110,16 +87,36 @@ const OrganizationalSettings = () => {
       'linkedin': 'linkedin',
       'tiktok': 'tiktok'
     };
-    
+
     return mapping[fieldName] || fieldName;
   };
-  
+
+  const getUiFormData = () => {
+    return {
+      warehouseStates: formData.warehouse_state || '',
+      availableStates: typeof formData.available_states === 'object'
+        ? JSON.stringify(formData.available_states)
+        : formData.available_states || '',
+      phoneNumber: formData.phone_number || '+234',
+      logo: formData.brand_logo || '',
+      customerSupportEmail: formData.customer_support_email || '',
+      adminEmail: formData.admin_email || '',
+      facebook: formData.facebook || '',
+      twitter: formData.twitter || '',
+      linkedin: formData.linkedin || '',
+      tiktok: formData.tiktok || '',
+    };
+  };
+
   const handleSave = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
+      
+      // Prepare data to be sent to the API
       const patchData = {
         warehouse_state: formData.warehouse_state,
+        available_states: formData.available_states,
         phone_number: formData.phone_number,
         customer_support_email: formData.customer_support_email,
         admin_email: formData.admin_email,
@@ -128,10 +125,19 @@ const OrganizationalSettings = () => {
         linkedin: formData.linkedin,
         tiktok: formData.tiktok
       };
-      
-      // Log what we're sending
-      console.log("Sending update:", patchData);
-      
+
+      // For available_states, parse it back to an object if it's a string
+      if (typeof formData.available_states === 'string') {
+        try {
+          patchData.available_states = JSON.parse(formData.available_states);
+        } catch (e) {
+          console.error('Error parsing available_states JSON:', e);
+          setError('Invalid JSON format for Available States');
+          setLoading(false);
+          return;
+        }
+      }
+
       await axios.patch<OrganizationSettings>(
         'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/organisation-settings/',
         patchData,
@@ -157,9 +163,18 @@ const OrganizationalSettings = () => {
     }
   };
 
+  const handleDelete = () => {
+    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      console.log('Deleting account');
+      // Implementation for account deletion would go here
+    }
+  };
+
   if (loading && !formData.phone_number) {
     return <div className="p-4">Loading organization settings...</div>;
   }
+
+  const uiFormData = getUiFormData();
 
   return (
     <div className="p-4">
@@ -168,7 +183,7 @@ const OrganizationalSettings = () => {
           {error}
         </div>
       )}
-      
+
       {successMessage && (
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
           {successMessage}
@@ -183,8 +198,8 @@ const OrganizationalSettings = () => {
             <label className="block text-sm font-medium mb-2">Warehouse State</label> 
             <input
               type="text"
-              name="warehouseState"
-              value={formData.warehouse_state || ''}
+              name="warehouseStates"
+              value={uiFormData.warehouseStates}
               onChange={handleChange}
               placeholder="Enter Warehouse State" 
               className="w-full p-3 border border-gray-300 rounded-md"
@@ -193,23 +208,14 @@ const OrganizationalSettings = () => {
           
           <div>
             <label className="block text-sm font-medium mb-2">Available States</label>
-            <select
-              name="warehouseState"
-              value={formData.warehouse_state || ''}
+            <input
+              type="text"
+              name="availableStates"
+              value={uiFormData.availableStates}
               onChange={handleChange}
+              placeholder="Enter Available States"
               className="w-full p-3 border border-gray-300 rounded-md"
-            >
-              <option value="">Select a state</option>
-              {formData.available_states && Object.keys(formData.available_states).length > 0 ? (
-                Object.entries(formData.available_states).map(([key, value]) => (
-                  <option key={key} value={key}>
-                    {String(value)}
-                  </option>
-                ))
-              ) : (
-                <option value="">No states available</option>
-              )}
-            </select>
+            />
           </div>
         </div>
         
@@ -219,7 +225,7 @@ const OrganizationalSettings = () => {
             <input
               type="text"
               name="logo"
-              value={formData.brand_logo || ''}
+              value={uiFormData.logo}
               onChange={handleChange}
               placeholder="Enter Logo"
               className="w-full p-3 border border-gray-300 rounded-md"
@@ -232,7 +238,7 @@ const OrganizationalSettings = () => {
             <input
               type="tel"
               name="phoneNumber"
-              value={formData.phone_number || '+234'}
+              value={uiFormData.phoneNumber}
               onChange={handleChange}
               placeholder="Enter Phone Number" 
               className="w-full p-3 border border-gray-300 rounded-md"
@@ -247,7 +253,7 @@ const OrganizationalSettings = () => {
             <input
               type="text"
               name="twitter"
-              value={formData.twitter || ''}
+              value={uiFormData.twitter}
               onChange={handleChange}
               placeholder="Enter Twitter Username"
               className="w-full p-3 border border-gray-300 rounded-md"
@@ -260,7 +266,7 @@ const OrganizationalSettings = () => {
             <input
               type="email"
               name="customerSupportEmail"
-              value={formData.customer_support_email || ''}
+              value={uiFormData.customerSupportEmail}
               onChange={handleChange}
               placeholder="Enter Email Address"
               className="w-full p-3 border border-gray-300 rounded-md"
@@ -275,7 +281,7 @@ const OrganizationalSettings = () => {
             <input
               type="text"
               name="facebook"
-              value={formData.facebook || ''}
+              value={uiFormData.facebook}
               onChange={handleChange}
               placeholder="Enter Facebook Username" 
               className="w-full p-3 border border-gray-300 rounded-md"
@@ -288,7 +294,7 @@ const OrganizationalSettings = () => {
             <input
               type="email"
               name="adminEmail"
-              value={formData.admin_email || ''}
+              value={uiFormData.adminEmail}
               onChange={handleChange}
               placeholder="Enter Email Address"
               className="w-full p-3 border border-gray-300 rounded-md"
@@ -303,7 +309,7 @@ const OrganizationalSettings = () => {
             <input
               type="text"
               name="linkedin"
-              value={formData.linkedin || ''}
+              value={uiFormData.linkedin}
               onChange={handleChange}
               placeholder="Enter LinkedIn Username" 
               className="w-full p-3 border border-gray-300 rounded-md"
@@ -316,7 +322,7 @@ const OrganizationalSettings = () => {
             <input
               type="text"
               name="tiktok"
-              value={formData.tiktok || ''}
+              value={uiFormData.tiktok}
               onChange={handleChange}
               placeholder="Enter TikTok Username" 
               className="w-full p-3 border border-gray-300 rounded-md"
@@ -325,6 +331,8 @@ const OrganizationalSettings = () => {
           </div>
         </div>
       </div>
+
+   
 
       <div className="mb-6">
         <div className="flex justify-end space-x-4 mb-8">

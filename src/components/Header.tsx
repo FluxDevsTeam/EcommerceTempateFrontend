@@ -221,12 +221,19 @@ const Header = () => {
               {isUserAuthenticated ? (
                 <div 
                 
-                  className="flex items-center gap-2 cursor-pointer"
+                  className="flex items-center gap-3 cursor-pointer"
                 >
                   <span className="text-sm font-medium bg-blue-200 px-3 py-1 rounded-md">
                     Welcome, {displayName}
                   </span>
                 <span  onClick={toggleUserDropdown} ><FaUserCheck size={24} /> </span>  
+                <span>   <Link 
+                   to="/wishlist"
+                   className="hover:text-gray-600 transition-colors"
+                         >
+                  <FaRegHeart size={24} />
+                 </Link>
+                 </span>
                 </div>
               ) : (
                 <Link to="/login" className="flex items-center gap-2">
@@ -248,15 +255,6 @@ const Header = () => {
                     onClick={() => setIsUserDropdownOpen(false)}
                   >
                     Orders
-                  </Link>
-          
-                  <Link 
-                    to="/wishlist" 
-                    className="block w-full px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900"
-                    role="menuitem"
-                    onClick={() => setIsUserDropdownOpen(false)}
-                  >
-                    Wishlists
                   </Link>
                   <Link 
                     to="/general-settings" 
