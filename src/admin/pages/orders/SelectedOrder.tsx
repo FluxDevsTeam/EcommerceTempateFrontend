@@ -2,6 +2,7 @@ import React from "react";
 import { Order } from "./types"; // make sure this path is correct
 import Dropdown from "./Dropdown";
 import formatEstimatedDelivery from "./Date";
+import { useEffect } from "react";
 
 interface SelectedOrderPopupProps {
   selectedOrder: Order;
@@ -10,6 +11,14 @@ interface SelectedOrderPopupProps {
 }
 
 const SelectedOrderPopup: React.FC<SelectedOrderPopupProps> = ({ selectedOrder, onClose, onStatusChange }) => {
+  useEffect(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "Escape") onClose();
+  };
+  document.addEventListener("keydown", handleKeyDown);
+  return () => document.removeEventListener("keydown", handleKeyDown);
+}, [onClose]);
+
   return (
     <div className="absolute -top-3 -left-3 lg:w-[82.5vw] w-[100vw] h-[100%] bg-white/10 backdrop-blur-sm flex justify-center items-start z-50 pt-5 sm:pt-20">
       <div className="bg-white w-[90%] sm:w-[80%] p-2 sm:p-6 rounded-lg shadow-lg overflow-y-auto max-h-[90vh]">
@@ -36,13 +45,11 @@ const SelectedOrderPopup: React.FC<SelectedOrderPopupProps> = ({ selectedOrder, 
         <div className="mt-10 flex justify-between items-center">
           <div>
             <p className="text-[14px] font-medium">Status</p>
-            <Dropdown
-              label="Status"
-              options={["Paid", "Shipped", "Delivered", "Cancelled", "Refunded"]}
-              onSelect={(value) => {
-                onStatusChange(value);
-              }}
-            />
+           <Dropdown
+            label={selectedOrder.status}
+            options={["PAID", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"]}
+            onSelect={(value) => onStatusChange(value)}
+          />
           </div>
           <div className="text-[14px]">
             <p className="font-medium">Total Delivery Fee</p>

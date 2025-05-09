@@ -25,26 +25,34 @@ export const fetchData = async () => {
 
 export const PatchOrderStatus = async (orderId: string, newStatus: string) => {
   try {
-    const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/admin/order/${orderId}`, {
+    const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/admin/order/${orderId}/`, {
       method: 'PATCH',
       headers: {
         'Authorization': `JWT ${JWT_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ status: newStatus }),
+      body: JSON.stringify({ status: newStatus.toUpperCase() })
     });
 
-    const responseData = await response.json();
+    const text = await response.text(); // handle both JSON and HTML
+    console.log("Raw backend response:", text);
 
     if (!response.ok) {
-      console.error('API Error:', responseData);
-      throw new Error(`Failed to update order status: ${responseData.message || response.statusText}`);
+      throw new Error(`Failed to update order status: ${text}`);
     }
 
-    console.log('Order updated successfully:', responseData);
-    return responseData;
-  } catch (error) {
-    console.error('Error in patchOrderStatus:', error);
-    throw new Error('Failed to update order status');
+    try {
+      return JSON.parse(text); // Try parsing if it's actually JSON
+    } catch {
+      return text; // Fallback
+    }
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error in patchOrderStatus:', error);
+      throw new Error(`Failed to update order status: ${error.message}`);
+    } else {
+      console.error('Unknown error in patchOrderStatus:', error);
+      throw new Error('Failed to update order status: Unknown error');
+    }
   }
 };

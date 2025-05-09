@@ -9,6 +9,7 @@ import formatEstimatedDelivery from "./Date";
 import Pagination from './Pagination';
 import SearchInput from './SearchForm';
 import SelectedOrderPopup from './SelectedOrder';
+import { PatchOrderStatus } from './api';
 
 
 const AdminOrders = () => {
@@ -16,15 +17,16 @@ const AdminOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("All Categories");
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);;
 
-  const statusColors: { [key: string]: { dot: string; bg: string } } = {
-    Paid: { dot: "#4CAF50", bg: "#4CAF5026" },
-    Shipped: { dot: "#2196F3", bg: "#2196F326" },
-    Delivered: { dot: "#9C27B0", bg: "#9C27B026" },
-    Cancelled: { dot: "#F44336", bg: "#F4433626" },
-    Refunded: { dot: "#FF9800", bg: "#FF980026" },
-  };
+const statusColors: { [key: string]: { dot: string; bg: string } } = {
+  PAID: { dot: "#4CAF50", bg: "#4CAF5026" },
+  SHIPPED: { dot: "#2196F3", bg: "#2196F326" },
+  DELIVERED: { dot: "#9C27B0", bg: "#9C27B026" },
+  CANCELLED: { dot: "#F44336", bg: "#F4433626" },
+  REFUNDED: { dot: "#FF9800", bg: "#FF980026" },
+};
+
 
 
   const filteredOrders = statusFilter === "All Categories"
@@ -32,7 +34,7 @@ const AdminOrders = () => {
   : orders.filter((order) => order.status === statusFilter);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  const itemsPerPage = 11;
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -48,7 +50,7 @@ const AdminOrders = () => {
         const data = await fetchData();
         const normalizedResults = data.results.map((order: Order) => ({
           ...order,
-          status: order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()
+          status: order.status.toUpperCase()
         }));
         setOrders(normalizedResults);
       } catch (error) {
@@ -70,7 +72,7 @@ const AdminOrders = () => {
         <div>
           <Dropdown
             label="Sort by"
-            options={["All Categories", "Paid", "Shipped", "Delivered", "Cancelled", "Refunded"]}
+            options={["All Categories", "PAID", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"]}
             onSelect={(value) => setStatusFilter(value)}
           />
         </div>
@@ -102,7 +104,10 @@ const AdminOrders = () => {
             <li className="w-[10%] hidden sm:block">Status</li>
           </ul>
           <ul>
-          {displayedOrders.map((order) => (
+          {displayedOrders.map((order) => {
+            const statusData = statusColors[order.status] || { dot: "#000", bg: "#fff" }; // Fallback value
+
+            return (
               <li key={order.id} className="text-[10px] sm:text-[12px] font-medium flex py-5 border-b border-[#E6EDFF] cursor-pointer" onClick={() => setSelectedOrder(order)}>
                 <p className="sm:w-[10%] w-[15%]">{order.id.slice(0, 6)}</p>
                 <p className="sm:w-[10%] w-[30%]">{new Date(order.order_date).toLocaleDateString()}</p>
@@ -111,13 +116,14 @@ const AdminOrders = () => {
                 <p className="sm:w-[10%] w-[15%]">
                   ₦{order.order_items.reduce((acc, item) => acc + item.quantity * parseFloat(item.price), 0) + parseFloat(order.delivery_fee)}
                 </p>
-                <p className='w-[20%] text-[12px] hidden sm:block'>{formatEstimatedDelivery(order.estimated_delivery)}</p>
-                <p className={`items-center gap-4 px-6 py-1 hidden sm:flex rounded-lg`} style={{ backgroundColor: statusColors[order.status].bg }}>
-                  <span className={`w-2 h-2 rounded-full`} style={{ backgroundColor: statusColors[order.status].dot }}></span>
-                  <span className="capitalize">{order.status}</span>
+                <p className="w-[20%] text-[12px] hidden sm:block">{formatEstimatedDelivery(order.estimated_delivery)}</p>
+                <p className={`items-center gap-3 w-[120px] px-4 py-1 hidden sm:flex rounded-lg`} style={{ backgroundColor: statusData.bg }}>
+                  <span className={`w-2 h-2 rounded-full`} style={{ backgroundColor: statusData.dot }}></span>
+                  <span className="">{order.status}</span>
                 </p>
               </li>
-            ))}
+            );
+          })}
           </ul>
         </div>
       )}
@@ -127,12 +133,13 @@ const AdminOrders = () => {
           {filteredOrders.map((order) => {
             const firstItem = order.order_items[0]; // get first item in order
             const imageSrc = firstItem?.product?.image1
+            const statusData = statusColors[order.status] || { dot: "#000", bg: "#fff" }; // Fallback value
 
             return (
               <div key={order.id} className="mb-10" onClick={() => setSelectedOrder(order)}>
                 <div className="relative w-fit mb-4">
-                  <p className={`absolute top-2 right-2 flex items-center gap-2`} style={{ backgroundColor: statusColors[order.status].bg }}>
-                    <span className={`w-2 h-2 rounded-full`} style={{ backgroundColor: statusColors[order.status].dot }}></span>
+                  <p className={`absolute top-2 right-2 flex items-center px-3 rounded-md gap-2`} style={{ backgroundColor: statusData.bg }}>
+                    <span className={`w-2 h-2 rounded-full`} style={{ backgroundColor: statusData.dot }}></span>
                     <span className="text-[12px]">{order.status}</span>
                   </p>
                   <img src={imageSrc} alt={firstItem?.name || 'Product'} className="rounded-3xl w-full" />
@@ -166,13 +173,21 @@ const AdminOrders = () => {
         <SelectedOrderPopup
           selectedOrder={selectedOrder}
           onClose={() => setSelectedOrder(null)}
-          onStatusChange={(newStatus) => {
-            if (selectedOrder) {
-              const updatedOrders = orders.map(order => 
-                order.id === selectedOrder.id ? { ...order, status: newStatus } : order
+          onStatusChange={async (newStatus) => {
+          if (selectedOrder) {
+            const upperStatus = newStatus.toUpperCase();
+            try {
+              await PatchOrderStatus(selectedOrder.id, upperStatus);
+
+              const updatedOrders = orders.map(order =>
+                order.id === selectedOrder.id ? { ...order, status: upperStatus } : order
               );
               setOrders(updatedOrders);
-              setSelectedOrder({ ...selectedOrder, status: newStatus });
+              setSelectedOrder({ ...selectedOrder, status: upperStatus });
+              } catch (error) {
+                console.error("Failed to update order status in backend:", error);
+                alert("Failed to change status")
+              }
             }
           }}
         />
