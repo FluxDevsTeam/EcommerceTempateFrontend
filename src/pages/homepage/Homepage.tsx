@@ -25,21 +25,30 @@ if (isError) return <div>Error loading data.</div>;
   return (
     <div className="w-full min-h-full px-4  md:px-12 py-4 lg:px-20 ">
       {/* Hero Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 ">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+
+      <div className="block md:hidden flex justify-center lg:justify-end">
+          <img 
+            src={image1} 
+            alt="Banner image" 
+            className="w-full max-w-[280px] sm:max-w-xs md:max-w-md lg:max-w-lg object-contain"
+          />
+        </div>
+
         <div className="flex flex-col space-y-2 pt-3 md:pt-6  px-4 md:px-0">
-          <h1 className='text-4xl sm:text-5xl md:text-6xl font-bold leading-tight lg:leading-[63px] text-black'>
+          <h1 className='text-xl  md:text-6xl font-bold leading-tight lg:leading-[63px] text-black'>
             Shop Smarter, Live Better - Find What You Love
           </h1>
           <p className='text-[#000000] font-medium text-base md:text-lg'>
             Access exclusive deals, track orders and enjoy a seamless shopping experience
           </p>
-        <Link to='/shoe-category'>  <button className="bg-black text-white border rounded-full px-6 py-3 w-[210px] hover:bg-gray-800 transition-colors">
+        <Link to='/shoe-category'>  <button className="bg-black text-white border rounded-full px-6 py-3 w-auto md:w-[210px] hover:bg-gray-800 transition-colors">
             Shop Now
           </button>
           </Link>
         </div>
         
-        <div className="flex justify-center lg:justify-end lg:mt-[-20px] mt-0">
+        <div className="hidden md:block flex justify-center lg:justify-end lg:mt-[-20px] mt-0">
           <img 
             src={image1} 
             alt="Banner image" 

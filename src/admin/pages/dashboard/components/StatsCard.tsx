@@ -82,33 +82,25 @@ export default function StatsGrid() {
         title="Total Products Available" 
         value={`₦${stats.total_available_products.toLocaleString()}`} 
         icon={<DollarSign className="text-blue-500" />} 
-        change={10.2} 
-        changeText="+1.01% this week" 
-        changeType="positive" 
+     
       />
       <StatCard 
         title="Total Payments" 
         value={stats.total_payments_this_year} 
         icon={<Package className="text-blue-500" />} 
-        change={3.1} 
-        changeText="+0.49% this week" 
-        changeType="positive" 
+ 
       />
       <StatCard 
         title="Total Sales" 
         value={stats.total_sales_this_year} 
         icon={<Users className="text-blue-500" />} 
-        change={-0.91} 
-        changeText="-0.91% this week" 
-        changeType="negative" 
+   
       />
       <StatCard 
         title="Total Users" 
         value={stats.total_users} 
         icon={<CreditCard className="text-blue-500" />} 
-        change={1.51} 
-        changeText="+1.51% this week" 
-        changeType="positive" 
+    
       />
     </div>
   );

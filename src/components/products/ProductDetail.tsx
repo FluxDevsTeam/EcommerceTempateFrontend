@@ -269,11 +269,14 @@ const ProductDetail = () => {
       </div>
 
       {/* Description Section */}
-      <div className="mt-12 space-y-6">
+      <div className="mt-12 flex flex-col  md:flex-row  space-y-6">
+        <div className='md:w-[60%] w-full gap-5 space-y-3'>
         <h2 className="text-xl sm:text-2xl font-medium">Description</h2>
         <p className="text-gray-700 text-sm sm:text-base">
           {product.description}
         </p>
+        </div>
+        <div className='md:w-[30%] mx-auto w-full flex justify-center items-center'>
         <DescriptionList 
           details={{
             "Category": product.sub_category.category.name,
@@ -282,7 +285,7 @@ const ProductDetail = () => {
             "Color": product.colour
           }}
         />
-        
+        </div>
         {/* Conditional rendering for Suggested or SuggestedProductDetails */}
       
       </div>

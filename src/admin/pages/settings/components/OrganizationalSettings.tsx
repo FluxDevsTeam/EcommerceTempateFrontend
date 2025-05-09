@@ -14,6 +14,14 @@ interface OrganizationSettings {
   tiktok: string | null;
 }
 
+const allNigerianStates = [
+  "Lagos", "Ogun", "Oyo", "Osun", "Ondo", "Ekiti", "Edo", "Delta", "Kwara", 
+  "Kogi", "Niger", "Abuja", "Kaduna", "Kano", "Borno", "Yobe", "Sokoto", 
+  "Zamfara", "Taraba", "Gombe", "Bauchi", "Adamawa", "Katsina", "Jigawa", 
+  "Nasarawa", "Benue", "Kebbi", "Bayelsa", "Rivers", "Akwa Ibom", 
+  "Cross River", "Enugu", "Anambra", "Abia", "Imo", "Ebonyi", "FCT - Abuja"
+];
+
 const OrganizationalSettings = () => {
   const [formData, setFormData] = useState<OrganizationSettings>({
     available_states: {},
@@ -30,6 +38,7 @@ const OrganizationalSettings = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [selectedStates, setSelectedStates] = useState<string[]>([]);
 
   useEffect(() => {
     fetchOrganizationSettings();
@@ -51,7 +60,12 @@ const OrganizationalSettings = () => {
 
       if (response.data) {
         setFormData(response.data);
-        console.log(response.data);
+        // Initialize selected states from the available_states in the response
+        if (response.data.available_states) {
+          const states = Object.keys(response.data.available_states)
+            .filter(key => response.data.available_states[key] === true);
+          setSelectedStates(states);
+        }
       }
       setError(null);
     } catch (err) {
@@ -62,7 +76,17 @@ const OrganizationalSettings = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleStateToggle = (state: string) => {
+    setSelectedStates(prev => {
+      if (prev.includes(state)) {
+        return prev.filter(s => s !== state);
+      } else {
+        return [...prev, state];
+      }
+    });
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
     // Map UI field names to API field names
@@ -113,10 +137,16 @@ const OrganizationalSettings = () => {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
       
+      // Create available_states object from selected states
+      const availableStatesObj: Record<string, boolean> = {};
+      allNigerianStates.forEach(state => {
+        availableStatesObj[state] = selectedStates.includes(state);
+      });
+
       // Prepare data to be sent to the API
       const patchData = {
         warehouse_state: formData.warehouse_state,
-        available_states: formData.available_states,
+        available_states: availableStatesObj,
         phone_number: formData.phone_number,
         customer_support_email: formData.customer_support_email,
         admin_email: formData.admin_email,
@@ -125,18 +155,6 @@ const OrganizationalSettings = () => {
         linkedin: formData.linkedin,
         tiktok: formData.tiktok
       };
-
-      // For available_states, parse it back to an object if it's a string
-      if (typeof formData.available_states === 'string') {
-        try {
-          patchData.available_states = JSON.parse(formData.available_states);
-        } catch (e) {
-          console.error('Error parsing available_states JSON:', e);
-          setError('Invalid JSON format for Available States');
-          setLoading(false);
-          return;
-        }
-      }
 
       await axios.patch<OrganizationSettings>(
         'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/organisation-settings/',
@@ -163,12 +181,7 @@ const OrganizationalSettings = () => {
     }
   };
 
-  const handleDelete = () => {
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      console.log('Deleting account');
-      // Implementation for account deletion would go here
-    }
-  };
+ 
 
   if (loading && !formData.phone_number) {
     return <div className="p-4">Loading organization settings...</div>;
@@ -195,27 +208,42 @@ const OrganizationalSettings = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-sm font-medium mb-2">Warehouse State</label> 
-            <input
-              type="text"
+            <label className="block text-sm font-medium mb-2">Warehouse State</label>
+            <select
               name="warehouseStates"
               value={uiFormData.warehouseStates}
               onChange={handleChange}
-              placeholder="Enter Warehouse State" 
-              className="w-full p-3 border border-gray-300 rounded-md"
-            />
+              className="w-full p-3 text-base border border-gray-300 rounded-md"
+            >
+              <option value="">Select a warehouse state</option>
+              {allNigerianStates.map(state => (
+                <option key={state} value={state}>
+                  {state}
+                </option>
+              ))}
+            </select>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-2">Available States</label>
-            <input
-              type="text"
-              name="availableStates"
-              value={uiFormData.availableStates}
-              onChange={handleChange}
-              placeholder="Enter Available States"
-              className="w-full p-3 border border-gray-300 rounded-md"
-            />
+            <div className="border border-gray-300 rounded-md p-4 h-64 overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                {allNigerianStates.map(state => (
+                  <div key={state} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`state-${state}`}
+                      checked={selectedStates.includes(state)}
+                      onChange={() => handleStateToggle(state)}
+                      className="h-4 w-4 text-blue-600 rounded"
+                    />
+                    <label htmlFor={`state-${state}`} className="ml-2 text-sm">
+                      {state}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
         
@@ -331,8 +359,6 @@ const OrganizationalSettings = () => {
           </div>
         </div>
       </div>
-
-   
 
       <div className="mb-6">
         <div className="flex justify-end space-x-4 mb-8">
