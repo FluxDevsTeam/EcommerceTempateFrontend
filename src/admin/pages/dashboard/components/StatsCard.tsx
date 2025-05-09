@@ -4,13 +4,10 @@ import StatCard from './StatCard';
 import axios from 'axios';
 
 interface StatsData {
-  total_orders: number;
-  delivered_orders: number;
-  pending_orders: number;
-  returned_orders: number;
-  refunded_payment: number;
-  successful_payment: number;
-  total_payment: number;
+  total_available_products:string;
+  total_payments_this_year: number;
+  total_sales_this_year: number;
+  total_users: number;
 }
 
 export default function StatsGrid() {
@@ -38,8 +35,9 @@ export default function StatsGrid() {
           }
         );
         
-        if (response.data && response.data.aggregate) {
-          setStats(response.data.aggregate);
+        if (response.data ) {
+          setStats(response.data.data);
+          console.log('stats:', response.data);
         } else {
           setStats(null);
         }
@@ -81,32 +79,32 @@ export default function StatsGrid() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <StatCard 
-        title="Total Sales" 
-        value={`₦${stats.total_payment.toLocaleString()}`} 
+        title="Total Products Available" 
+        value={`₦${stats.total_available_products.toLocaleString()}`} 
         icon={<DollarSign className="text-blue-500" />} 
         change={10.2} 
         changeText="+1.01% this week" 
         changeType="positive" 
       />
       <StatCard 
-        title="Total Orders" 
-        value={stats.total_orders.toString()} 
+        title="Total Payments" 
+        value={stats.total_payments_this_year} 
         icon={<Package className="text-blue-500" />} 
         change={3.1} 
         changeText="+0.49% this week" 
         changeType="positive" 
       />
       <StatCard 
-        title="Pending Orders" 
-        value={stats.pending_orders.toString()} 
+        title="Total Sales" 
+        value={stats.total_sales_this_year} 
         icon={<Users className="text-blue-500" />} 
         change={-0.91} 
         changeText="-0.91% this week" 
         changeType="negative" 
       />
       <StatCard 
-        title="Delivered Orders" 
-        value={stats.delivered_orders.toString()} 
+        title="Total Users" 
+        value={stats.total_users} 
         icon={<CreditCard className="text-blue-500" />} 
         change={1.51} 
         changeText="+1.51% this week" 

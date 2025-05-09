@@ -1,14 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-
-interface DeliverySettingsResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: DeliverySettings[];
-}
-
 interface DeliverySettings {
   base_fee: string;
   fee_per_km: string;
@@ -36,7 +28,7 @@ const DeliverySettings = () => {
     try {
       const token = localStorage.getItem('accessToken');
       setLoading(true);
-      const response = await axios.get<DeliverySettingsResponse>(
+      const response = await axios.get<DeliverySettings>(
         'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/delivery-settings/',
         {
           headers: {
@@ -46,14 +38,14 @@ const DeliverySettings = () => {
         }
       );
       
-      // Assuming the first result is what we want to display
-      if (response.data.results.length > 0) {
-        setFormData(response.data.results[0]);
+      // Updated to handle direct object response instead of array
+      if (response.data) {
+        setFormData(response.data);
       }
       setError(null);
     } catch (err) {
       setError('Failed to load delivery settings');
-      console.error( err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -71,7 +63,6 @@ const DeliverySettings = () => {
     try {
       setLoading(true);
       
-      // Convert field names to match API schema
       const apiFormData = {
         base_fee: formData.base_fee,
         fee_per_km: formData.fee_per_km,
@@ -80,7 +71,6 @@ const DeliverySettings = () => {
       };
       const token = localStorage.getItem('accessToken');
 
-      // Send PATCH request to update delivery settings
       await axios.patch<DeliverySettings>(
         'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/delivery-settings/',
         apiFormData,
@@ -95,7 +85,6 @@ const DeliverySettings = () => {
       setSuccessMessage('Delivery settings updated successfully');
       setError(null);
       
-      // Hide success message after 3 seconds
       setTimeout(() => {
         setSuccessMessage(null);
       }, 3000);

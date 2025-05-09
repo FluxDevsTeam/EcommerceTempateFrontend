@@ -57,7 +57,7 @@ export interface Product {
           date_updated: string;
       
     };
-    isInitiallyLiked?: boolean;
+    isInitiallyLiked: boolean;
     wishItemId?: number;
     removeOnUnlike?: boolean;
     isSuggested?:boolean

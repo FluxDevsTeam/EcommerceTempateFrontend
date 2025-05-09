@@ -37,11 +37,11 @@ const SuggestedCard: React.FC<CardProps> = ({
  
   return (
     <div className="mb-3 cursor-pointer w-full ">
-      <div className="relative w-full mb-1 ">
+      <div className="relative w-full  ">
         <img
           src={product.image1}
           alt={product.name}
-          className="rounded-lg w-[150px] h-[200px] md:h-[200px] object-cover"
+          className="rounded-lg w-[90px] h-[90px] md:h-[180px] md::h-[300px] object-cover"
           onClick={() => navigate(`/suggested/${product.id}`)}
         />
         <Wish

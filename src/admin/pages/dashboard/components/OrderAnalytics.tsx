@@ -23,7 +23,7 @@ const OrderAnalytics = () => {
           'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/dashboard/',
           {
             headers: {
-              'Authorization': `Bearer ${token}`,
+              'Authorization': `JWT ${token}`,
               'Content-Type': 'application/json',
             }
           }

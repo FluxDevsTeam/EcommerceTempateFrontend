@@ -42,14 +42,13 @@ const Suggested: React.FC = () => {
       {
         breakpoint: 480,
         settings: {
-          slidesToShow: 1.5, // Show 2.5 items
+          slidesToShow: 1.8, 
           arrows: false,
-          infinite: true,
-          centerMode: true, // Enables partial item visibility
-          centerPadding: '5%', // Creates space for partial items
-          swipeToSlide: true, // Allows smooth manual scrolling
-          draggable: true, // Enables touch scrolling
-          touchThreshold: 10, // Makes touch scrolling more sensitive
+          centerMode: true,
+          centerPadding: '10%', 
+          swipeToSlide: true,
+          draggable: true,
+          touchThreshold: 10,
         }
       }
     ]
@@ -63,9 +62,11 @@ const Suggested: React.FC = () => {
       
       <Slider {...settings} className="mb-6 sm:mb-8">
         {productsToDisplay.map((item) => (
-          <div key={item.id} className="px-1"> {/* Add padding between slides */}
-            <div className="md:transform scale-90 md:hover:scale-95 md:transition-transform md:duration-200"> {/* Scale down the card */}
-              <SuggestedCard product={item} />
+          <div key={item.id} className="px-1">
+            <div className="transform scale-90 hover:scale-95 transition-transform duration-200 md:scale-100"> 
+              {/* Scale down on mobile, normal on desktop */}
+              <SuggestedCard product={item} className="text-sm" /> 
+              {/* Pass className to SuggestedCard if it accepts it */}
             </div>
           </div>
         ))}

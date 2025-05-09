@@ -77,7 +77,7 @@ const AppContent: React.FC = () => {
         <Route path="/general-settings" element={<GeneralSettings />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/orders/:id" element={<Confirm />} />
-          <Route path="/wishlist" element={<Wishlist />} />
+         <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/contact-us" element={<Contact />} />
           <Route path="/ade" element={<Producter />} />
       </Route>

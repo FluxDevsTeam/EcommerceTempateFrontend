@@ -42,14 +42,13 @@ const SuggestedProductDetails: React.FC = () => {
       {
         breakpoint: 480,
         settings: {
-          slidesToShow: 1.5, // Show 2.5 items
+          slidesToShow: 1.8, 
           arrows: false,
-          infinite: true,
-          centerMode: true, // Enables partial item visibility
-          centerPadding: '5%', // Creates space for partial items
-          swipeToSlide: true, // Allows smooth manual scrolling
-          draggable: true, // Enables touch scrolling
-          touchThreshold: 10, // Makes touch scrolling more sensitive
+          centerMode: true,
+          centerPadding: '10%', 
+          swipeToSlide: true,
+          draggable: true,
+          touchThreshold: 10,
         }
       }
     ]

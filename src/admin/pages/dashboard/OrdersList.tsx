@@ -44,7 +44,6 @@ interface Order {
   order_items: OrderItem[];
 }
 
-// Simple status badge component
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -63,7 +62,7 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
 
   return (
     <span
-      className={`px-3 py-1 text-xs font-medium rounded-full ${getStatusColor(
+      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
         status
       )}`}
     >
@@ -81,7 +80,6 @@ const OrdersList: React.FC = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        // Get the JWT token from localStorage
         const token = localStorage.getItem('accessToken');
         
         if (!token) {
@@ -89,7 +87,7 @@ const OrdersList: React.FC = () => {
         }
 
         const response = await axios.get(
-          "https://ecommercetemplate.pythonanywhere.com/api/v1/admin/dashboard/",
+          "https://ecommercetemplate.pythonanywhere.com/api/v1/admin/order/",
           {
             headers: {
               'Authorization': `JWT ${token}`,
@@ -100,7 +98,6 @@ const OrdersList: React.FC = () => {
 
         if (response.data && response.data.results) {
           setOrders(response.data.results);
-          console.log(response)
         } else {
           setOrders([]);
         }
@@ -108,9 +105,7 @@ const OrdersList: React.FC = () => {
         console.error('Error fetching orders:', err);
         setError(err.response?.data?.message || err.message || 'Failed to fetch orders.');
         
-        // Optional: Handle 401 unauthorized errors
         if (err.response?.status === 401) {
-          // You might want to redirect to login or refresh the token here
           console.log('Unauthorized - redirecting to login');
         }
       } finally {
@@ -140,12 +135,12 @@ const OrdersList: React.FC = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white rounded-lg shadow p-4 sm:p-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold">Order List</h2>
-        <div className="relative">
-          <button className="flex items-center gap-2 px-4 py-2 bg-white border rounded-lg shadow-sm text-sm">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <h2 className="text-lg sm:text-xl font-bold">Order List</h2>
+        <div className="relative w-full sm:w-auto">
+          <button className="flex items-center justify-between w-full sm:w-auto gap-2 px-4 py-2 bg-white border rounded-lg shadow-sm text-sm">
             {listPeriod}
             <ChevronDown size={16} />
           </button>
@@ -153,53 +148,59 @@ const OrdersList: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="sm:overflow-x-visible overflow-x-auto">
-        <table className="min-w-[800px] w-full text-sm">
-          <thead>
-            <tr className="text-left text-gray-500">
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
               {[
                 "ID",
                 "Date",
-                "Product Name",
+                "Product",
                 "Address",
                 "Price",
-                "Estimated Delivery Date",
-                "Status Order",
+                "Delivery",
+                "Status",
                 "Action",
               ].map((heading) => (
                 <th
                   key={heading}
-                  className="pb-4 px-4 font-medium whitespace-nowrap"
+                  className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  {heading} <span className="text-xs">↕</span>
+                  <div className="flex items-center">
+                    {heading}
+                    <span className="ml-1 text-xs">↕</span>
+                  </div>
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white divide-y divide-gray-200">
             {orders.map((order) => (
               <tr
                 key={order.id}
-                className="border-t border-gray-300 hover:bg-gray-50 transition"
+                className="hover:bg-gray-50 transition"
               >
-                <td className="py-4 px-4 font-medium whitespace-nowrap">
+                <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900 max-w-[80px] truncate">
                   {order.id}
                 </td>
-                <td className="py-4 px-4 whitespace-nowrap">
+                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                   {new Date(order.created_at).toLocaleDateString()}
                 </td>
-                <td className="py-4 px-4 max-w-[150px] truncate">
+                <td className="px-3 py-4 text-sm text-gray-500 max-w-[120px] truncate">
                   {order.order_items.length > 0
                     ? order.order_items[0].name
                     : "N/A"}
                 </td>
-                <td className="py-4 px-4 whitespace-nowrap">
-                  {order.delivery_address}, {order.city}
+                <td className="px-3 py-4 text-sm text-gray-500 max-w-[150px] truncate">
+                  <div className="flex flex-col">
+                    <span>{order.city}</span>
+                    <span className="text-xs text-gray-400 truncate">{order.delivery_address}</span>
+                  </div>
                 </td>
-                <td className="py-4 px-4 whitespace-nowrap">
-                  ${order.total_amount}
+                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                ₦{order.total_amount}
                 </td>
-                <td className="py-4 px-4 text-center whitespace-nowrap">
+                <td className="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">
                   {(() => {
                     try {
                       const dates: string[] = JSON.parse(
@@ -207,14 +208,14 @@ const OrdersList: React.FC = () => {
                       );
                       return dates[0] || "N/A";
                     } catch (err) {
-                      return "Invalid date";
+                      return "N/A";
                     }
                   })()}
                 </td>
-                <td className="py-4 px-4 whitespace-nowrap">
+                <td className="px-3 py-4 whitespace-nowrap">
                   <StatusBadge status={order.status} />
                 </td>
-                <td className="py-4 px-4 whitespace-nowrap">
+                <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
                   <button className="text-blue-600 hover:text-blue-800 transition">
                     View
                   </button>

@@ -2,7 +2,7 @@ import {ArrowUp, ArrowDown } from 'lucide-react';
 
 interface StatCardProps {
   title: string;
-  value: string;
+  value: number;
   icon: React.ReactNode;
   change: number;
   changeText: string;

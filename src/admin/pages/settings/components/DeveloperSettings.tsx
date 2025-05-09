@@ -1,14 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-// Define types based on the API schema
-interface DeveloperSettingsResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: DeveloperSettings[];
-}
-
 interface DeveloperSettings {
   brand_name: string;
   contact_us: string;
@@ -33,7 +25,6 @@ const DeveloperSettings = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Fetch developer settings on component mount
   useEffect(() => {
     fetchDeveloperSettings();
   }, []);
@@ -42,7 +33,7 @@ const DeveloperSettings = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      const response = await axios.get<DeveloperSettingsResponse>(
+      const response = await axios.get<DeveloperSettings>(
         'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/developer-settings/',
         {
           headers: {
@@ -50,12 +41,10 @@ const DeveloperSettings = () => {
             'Content-Type': 'application/json',
           }
         }
-
       );
       
-      // Assuming the first result is what we want to display
-      if (response.data.results.length > 0) {
-        setFormData(response.data.results[0]);
+      if (response.data) {
+        setFormData(response.data);
       }
       setError(null);
     } catch (err) {
@@ -68,7 +57,6 @@ const DeveloperSettings = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    // Map UI field names to API field names
     const apiFieldName = mapFieldNameToApi(name);
     setFormData(prev => ({
       ...prev,
@@ -76,7 +64,6 @@ const DeveloperSettings = () => {
     }));
   };
   
-  // Helper function to map UI field names to API field names
   const mapFieldNameToApi = (fieldName: string): string => {
     const mapping: {[key: string]: string} = {
       'businessName': 'brand_name',
@@ -91,31 +78,15 @@ const DeveloperSettings = () => {
     return mapping[fieldName] || fieldName;
   };
   
-  // Helper function to map API field names to UI field names
-  const mapApiFieldToUi = (apiField: string): string => {
-    const mapping: {[key: string]: string} = {
-      'brand_name': 'businessName',
-      'contact_us': 'contact',
-      'terms_of_service': 'termsOfService',
-      'backend_base_route': 'backendRoute',
-      'frontend_base_route': 'frontendRoute',
-      'order_route_frontend': 'orderRoute',
-      'payment_failed_url': 'paymentFailedUrl'
-    };
-    
-    return mapping[apiField] || apiField;
-  };
-  
-  // Convert API data to UI format for display
   const getUiFormData = () => {
     return {
-      businessName: formData.brand_name,
-      contact: formData.contact_us,
-      termsOfService: formData.terms_of_service,
-      backendRoute: formData.backend_base_route,
-      frontendRoute: formData.frontend_base_route,
-      orderRoute: formData.order_route_frontend,
-      paymentFailedUrl: formData.payment_failed_url
+      businessName: formData.brand_name || '',
+      contact: formData.contact_us || '',
+      termsOfService: formData.terms_of_service || '',
+      backendRoute: formData.backend_base_route || '',
+      frontendRoute: formData.frontend_base_route || '',
+      orderRoute: formData.order_route_frontend || '',
+      paymentFailedUrl: formData.payment_failed_url || ''
     };
   };
   
@@ -123,7 +94,6 @@ const DeveloperSettings = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      // Send PATCH request to update developer settings
       await axios.patch<DeveloperSettings>(
         'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/developer-settings/',
         formData,
@@ -138,7 +108,6 @@ const DeveloperSettings = () => {
       setSuccessMessage('Developer settings updated successfully');
       setError(null);
       
-      // Hide success message after 3 seconds
       setTimeout(() => {
         setSuccessMessage(null);
       }, 3000);
@@ -150,12 +119,7 @@ const DeveloperSettings = () => {
     }
   };
   
-  const handleDelete = () => {
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      console.log('Deleting account');
-      // Implementation for account deletion would go here
-    }
-  };
+ 
   
   if (loading && !formData.brand_name) {
     return <div className="p-4">Loading developer settings...</div>;
@@ -277,14 +241,7 @@ const DeveloperSettings = () => {
         </div>
       </div>
 
-      <div className="mt-12">
-        <button 
-          className="text-red-500 font-medium"
-          onClick={handleDelete}
-        >
-          Delete Account
-        </button>
-      </div>  
+     
 
       <div className="mb-6">
         <div className="flex justify-end space-x-4 mb-8">

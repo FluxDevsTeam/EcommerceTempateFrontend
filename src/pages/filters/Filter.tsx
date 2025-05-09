@@ -22,20 +22,9 @@ interface SubCategory {
   name: string;
 }
 
-interface Product {
-  id: number;
-  name: string;
-  image1: string;
-  discounted_price: string;
-  price: string;
-}
 
-interface Size {
-  id: number;
-  product: Product;
-  size: string;
-  quantity: number;
-}
+
+
 
 interface ApiResponse<T> {
   count: number;
@@ -65,7 +54,6 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
 }) => {
   // State for our fetched data
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
-  const [sizeOptions, setSizeOptions] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -92,26 +80,16 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
           'https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/',
         );
         
-        // Fetch sizes
-        const sizesResponse = await fetch(
-          'https://ecommercetemplate.pythonanywhere.com/api/v1/product/size/',
-        );
 
-        if (!subCategoryResponse.ok || !sizesResponse.ok) {
+      
+        if (!subCategoryResponse.ok ) {
           throw new Error('Failed to fetch data');
         }
 
         const subCategoryData: ApiResponse<SubCategory> = await subCategoryResponse.json();
-        const sizesData: ApiResponse<Size> = await sizesResponse.json();
+ 
 
         setSubCategories(subCategoryData.results);
-        
-        // Extract unique size values
-        const uniqueSizes = Array.from(
-          new Set(sizesData.results.map(sizeItem => sizeItem.size))
-        );
-        setSizeOptions(uniqueSizes);
-        
         setLoading(false);
       } catch (err) {
         setError('Failed to load filter data');
@@ -139,17 +117,8 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
     setPriceRange(value as [number, number]);
   };
   
-  // Handle size selection
-  const handleSizeClick = (size: string) => {
-    setSelectedSizes(prev => {
-      if (prev.includes(size)) {
-        return prev.filter(item => item !== size);
-      } else {
-        return [...prev, size];
-      }
-    });
-  };
 
+  
   // Apply filters
   const handleApplyFilter = () => {
     if (typeof onApplyFilters !== 'function') {
@@ -257,27 +226,6 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
                     <span className="text-gray-600 font-bold"> ₦{priceRange[0]}</span>
                     <span className="text-gray-600 font-bold"> ₦{priceRange[1]}</span>
                   </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-            
-            <AccordionItem value="size" className="border-b border-gray-200">
-              <AccordionTrigger className="py-4 font-semibold cursor-pointer">Size</AccordionTrigger>
-              <AccordionContent>
-                <div className="flex flex-wrap gap-2 pt-2 pb-4">
-                  {sizeOptions.map((size) => (
-                    <button
-                      key={size}
-                      className={`px-3 py-1 rounded-full text-sm ${
-                        selectedSizes.includes(size)
-                          ? 'bg-black text-white'
-                          : 'bg-gray-100 text-gray-600'
-                      }`}
-                      onClick={() => handleSizeClick(size)}
-                    >
-                      {size}
-                    </button>
-                  ))}
                 </div>
               </AccordionContent>
             </AccordionItem>
