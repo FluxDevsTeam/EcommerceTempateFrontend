@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Order } from "./types"; // make sure this path is correct
 import Dropdown from "./Dropdown";
 import formatEstimatedDelivery from "./Date";
-import { useEffect } from "react";
 
 interface SelectedOrderPopupProps {
   selectedOrder: Order;
@@ -11,13 +10,15 @@ interface SelectedOrderPopupProps {
 }
 
 const SelectedOrderPopup: React.FC<SelectedOrderPopupProps> = ({ selectedOrder, onClose, onStatusChange }) => {
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+
   useEffect(() => {
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "Escape") onClose();
-  };
-  document.addEventListener("keydown", handleKeyDown);
-  return () => document.removeEventListener("keydown", handleKeyDown);
-}, [onClose]);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   return (
     <div className="absolute top-0 -left-3 h-full w-[100%]">
@@ -46,11 +47,17 @@ const SelectedOrderPopup: React.FC<SelectedOrderPopupProps> = ({ selectedOrder, 
           <div className="mt-10 flex justify-between items-center">
             <div>
               <p className="text-[14px] font-medium">Status</p>
-            <Dropdown
-              label={selectedOrder.status}
-              options={["PAID", "SHIPPED", "DELIVERED", "CANCELLED"]}
-              onSelect={(value) => onStatusChange(value)}
-            />
+              <Dropdown
+                label={selectedOrder.status}
+                options={["PAID", "SHIPPED", "DELIVERED", "CANCELLED"]}
+                onSelect={(value) => {
+                  if (value === "CANCELLED") {
+                    setShowCancelConfirm(true);
+                  } else {
+                    onStatusChange(value);
+                  }
+                }}
+              />
             </div>
             <div className="text-[14px]">
               <p className="font-medium">Total Delivery Fee</p>
@@ -68,13 +75,13 @@ const SelectedOrderPopup: React.FC<SelectedOrderPopupProps> = ({ selectedOrder, 
 
             {selectedOrder.order_items.map((item, index) => (
               <p key={index} className="flex items-center text-[#333333] font-medium py-2 sm:py-3 rounded-lg mt-2 sm:mt-4">
-              <span className="w-[25%] overflow-hidden text-ellipsis whitespace-nowrap block">
-                {item.name}
-              </span>
-              <span className="w-[25%]">{item.quantity}</span>
-              <span className="w-[25%]">₦{parseFloat(item.price).toLocaleString()}</span>
-              <span className="w-[25%]">₦{(item.quantity * parseFloat(item.price)).toLocaleString()}</span>
-            </p>
+                <span className="w-[25%] overflow-hidden text-ellipsis whitespace-nowrap block">
+                  {item.name}
+                </span>
+                <span className="w-[25%]">{item.quantity}</span>
+                <span className="w-[25%]">₦{parseFloat(item.price).toLocaleString()}</span>
+                <span className="w-[25%]">₦{(item.quantity * parseFloat(item.price)).toLocaleString()}</span>
+              </p>
             ))}
             <p className="flex items-center justify-end text-[#333333] font-semibold py-2 sm:py-3 rounded-lg mt-2 sm:mt-4">
               <span className="w-[25%]">Subtotal</span>
@@ -96,6 +103,32 @@ const SelectedOrderPopup: React.FC<SelectedOrderPopupProps> = ({ selectedOrder, 
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-md p-6 text-center w-[90%] max-w-sm">
+            <p className="text-[14px] mb-4">Are you sure you want to mark this order as <strong>Cancelled</strong>?</p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => {
+                  onStatusChange("CANCELLED");
+                  setShowCancelConfirm(false);
+                }}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
+              >
+                ✔ Confirm
+              </button>
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              >
+                ✖ Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
