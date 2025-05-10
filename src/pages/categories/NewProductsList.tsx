@@ -1,8 +1,10 @@
-// NewProductsList.tsx
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import Card from '@/card/Card';
 import PaginationComponent from '../../components/Pagination';
+import { useState, useEffect } from 'react';
+import { WishData } from '@/card/wishListApi';
+import { WishItem } from '@/card/types';
 
 export interface Category {
   id: number;
@@ -45,6 +47,8 @@ interface ApiResponse {
   results: Product[];
 }
 
+
+
 interface NewProductsListProps {
   sortOption: string;
 }
@@ -60,17 +64,36 @@ const fetchProducts = async (page = 1): Promise<ApiResponse> => {
 const NewProductsList = ({ sortOption }: NewProductsListProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
+  const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
+  const [wishlistLoading, setWishlistLoading] = useState(true);
 
+  // Fetch products
   const { data, isLoading, error } = useQuery<ApiResponse>({
     queryKey: ['products', currentPage],
     queryFn: () => fetchProducts(currentPage),
   });
 
+  // Fetch wishlist data
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const wishlistRes = await WishData();
+        setWishlistItems(wishlistRes);
+      } catch (err) {
+        console.error('Error loading wishlist:', err);
+      } finally {
+        setWishlistLoading(false);
+      }
+    };
+
+    fetchWishlist();
+  }, []);
+
   const handlePageChange = (newPage: number) => {
     setSearchParams({ page: newPage.toString() });
   };
 
-  if (isLoading) return (
+  if (isLoading || wishlistLoading) return (
     <div className="flex justify-center items-center py-10 text-lg">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mr-3"></div>
       Loading results...
@@ -78,6 +101,15 @@ const NewProductsList = ({ sortOption }: NewProductsListProps) => {
   );
 
   if (error) return <div>Error: {(error as Error).message}</div>;
+
+  // Helper function to check if a product is in wishlist
+  const getWishlistInfo = (productId: number) => {
+    const matchedWish = wishlistItems.find(item => item.product.id === productId);
+    return {
+      isInitiallyLiked: !!matchedWish,
+      wishItemId: matchedWish?.id
+    };
+  };
 
   // Copy and sort the products
   const sortedProducts = [...(data?.results || [])].sort((a, b) => {
@@ -105,9 +137,17 @@ const NewProductsList = ({ sortOption }: NewProductsListProps) => {
   return (
     <div>
       <div className="grid grid-cols-2 md:grid-cols-4 md:gap-8 md:my-8 sm:mb-16">
-        {sortedProducts.map((item) => (
-          <Card key={item.id} product={item} />
-        ))}
+        {sortedProducts.map((item) => {
+          const wishlistInfo = getWishlistInfo(item.id);
+          return (
+            <Card
+              key={item.id}
+              product={item}
+              isInitiallyLiked={wishlistInfo.isInitiallyLiked}
+              wishItemId={wishlistInfo.wishItemId}
+            />
+          );
+        })}
       </div>
 
       {/* Pagination controls */}

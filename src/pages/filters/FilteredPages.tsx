@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import Card from "@/card/Card"
+import Card from "@/card/Card";
 import SortDropdown from './FilterDropDown';
-
+import { WishData } from '@/card/wishListApi';
+import { WishItem } from '@/card/types';
 
 export interface Category {
   id: number;
@@ -18,27 +19,27 @@ export interface SubCategory {
 
 interface Product {
   id: number;
-          name: string;
-          image1: string;
-          undiscounted_price: string;
-          price: string;
-          description: string;
-          total_quantity: number;
-          sub_category: SubCategory;
-          colour: string;
-          image2: string | null;
-          image3: string | null;
-          is_available: boolean;
-          latest_item: boolean;
-          latest_item_position: number;
-          dimensional_size: string;
-          weight: string;
-          top_selling_items: boolean;
-          top_selling_position: number;
-          date_created: string;
-          date_updated: string;
-      
+  name: string;
+  image1: string;
+  undiscounted_price: string;
+  price: string;
+  description: string;
+  total_quantity: number;
+  sub_category: SubCategory;
+  colour: string;
+  image2: string | null;
+  image3: string | null;
+  is_available: boolean;
+  latest_item: boolean;
+  latest_item_position: number;
+  dimensional_size: string;
+  weight: string;
+  top_selling_items: boolean;
+  top_selling_position: number;
+  date_created: string;
+  date_updated: string;
 }
+
 
 interface ApiResponse<T> {
   count: number;
@@ -59,7 +60,9 @@ const ProductsPage: React.FC = () => {
 
   const [originalProducts, setOriginalProducts] = useState<Product[]>([]);
   const [displayProducts, setDisplayProducts] = useState<Product[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [wishlistLoading, setWishlistLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -84,6 +87,22 @@ const ProductsPage: React.FC = () => {
   };
 
   const currentFilters = getFiltersFromURL();
+
+  // Fetch wishlist data
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const wishlistRes = await WishData();
+        setWishlistItems(wishlistRes);
+      } catch (err) {
+        console.error('Error loading wishlist:', err);
+      } finally {
+        setWishlistLoading(false);
+      }
+    };
+
+    fetchWishlist();
+  }, []);
 
   // Fetch products
   useEffect(() => {
@@ -143,6 +162,15 @@ const ProductsPage: React.FC = () => {
     }
   }, [sortOption, originalProducts]);
 
+  // Helper function to check if a product is in wishlist
+  const getWishlistInfo = (productId: number) => {
+    const matchedWish = wishlistItems.find(item => item.product.id === productId);
+    return {
+      isInitiallyLiked: !!matchedWish,
+      wishItemId: matchedWish?.id
+    };
+  };
+
   return (
     <div className="container mx-auto px-6 md:px-14 py-8 md:py-12 ">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
@@ -179,7 +207,7 @@ const ProductsPage: React.FC = () => {
       </div>
 
       {/* Loading / Error / Empty states */}
-      {loading ? (
+      {loading || wishlistLoading ? (
         <div className="flex justify-center items-center py-16">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
         </div>
@@ -199,9 +227,17 @@ const ProductsPage: React.FC = () => {
         <>
           {/* Products grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 sm:mb-16">
-            {displayProducts.map((item) => 
-            <Card key={item.id} product={item} />
-            )}
+            {displayProducts.map((item) => {
+              const wishlistInfo = getWishlistInfo(item.id);
+              return (
+                <Card 
+                  key={item.id} 
+                  product={item}
+                  isInitiallyLiked={wishlistInfo.isInitiallyLiked}
+                  wishItemId={wishlistInfo.wishItemId}
+                />
+              );
+            })}
           </div>
 
           {/* Pagination (optional) */}

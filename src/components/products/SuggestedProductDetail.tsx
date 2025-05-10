@@ -1,21 +1,53 @@
-import {Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { fetchSuggestedProducts } from "@/pages/homepage/api/apiService";
+import { fetchSuggestedProducts} from "@/pages/homepage/api/apiService";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import SuggestedCard from "@/card/SuggestedCard";
+import { useState, useEffect } from "react";
+import { WishItem } from "@/card/types";
+import { WishData } from "@/card/wishListApi";
 
 const SuggestedProductDetails: React.FC = () => {
+  const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
+  const [wishlistLoading, setWishlistLoading] = useState(true);
+
+  // Fetch suggested products
   const { data, isLoading, isError } = useQuery({
     queryKey: ['Suggested'],
     queryFn: fetchSuggestedProducts
   });
 
-  if (isLoading) return <div>Loading...</div>;
+  // Fetch wishlist data
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const wishlistRes = await WishData();
+        setWishlistItems(wishlistRes);
+      } catch (err) {
+        console.error('Error loading wishlist:', err);
+      } finally {
+        setWishlistLoading(false);
+      }
+    };
+
+    fetchWishlist();
+  }, []);
+
+  if (isLoading || wishlistLoading) return <div>Loading...</div>;
   if (isError) return <div>Error loading data.</div>;
 
   const productsToDisplay = data?.results || [];
+
+  // Helper function to check if a product is in wishlist
+  const getWishlistInfo = (productId: number) => {
+    const matchedWish = wishlistItems.find(item => item.product.id === productId);
+    return {
+      isInitiallyLiked: !!matchedWish,
+      wishItemId: matchedWish?.id
+    };
+  };
 
   const settings = {
     dots: false,
@@ -54,7 +86,6 @@ const SuggestedProductDetails: React.FC = () => {
     ]
   };
   
-  
   return (
     <div className="px-2 md:px-4 py-4 md:py-6">
       <h2 className="text-2xl md:text-3xl font-medium text-center mb-4 md:mb-6">
@@ -62,13 +93,20 @@ const SuggestedProductDetails: React.FC = () => {
       </h2>
       
       <Slider {...settings} className="mb-6 sm:mb-8">
-        {productsToDisplay.map((item) => (
-          <div key={item.id} className="px-1"> {/* Add padding between slides */}
-            <div className="md:transform scale-90 md:hover:scale-95 md:transition-transform md:duration-200"> {/* Scale down the card */}
-              <SuggestedCard product={item} />
+        {productsToDisplay.map((item) => {
+          const wishlistInfo = getWishlistInfo(item.id);
+          return (
+            <div key={item.id} className="px-1">
+              <div className="md:transform scale-90 md:hover:scale-95 md:transition-transform md:duration-200">
+                <SuggestedCard 
+                  product={item}
+                  isInitiallyLiked={wishlistInfo.isInitiallyLiked}
+                  wishItemId={wishlistInfo.wishItemId}
+                />
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </Slider>
 
       <div className="flex justify-center items-center mt-4 sm:mt-6">

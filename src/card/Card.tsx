@@ -15,28 +15,33 @@ const Card: React.FC<CardProps> = ({
   const [liked, setLiked] = useState(isInitiallyLiked);
   const [wishItemId, setWishItemId] = useState<number | null>(initialWishItemId ?? null);
   const [visible, setVisible] = useState(true);
+const navigate = useNavigate();
+const handleToggle = async () => {
+  try {
+    const storedWishList = JSON.parse(localStorage.getItem('wishlist') || '[]');
 
-   const navigate = useNavigate();
+    if (liked && wishItemId) {
+      setLiked(false);
+      localStorage.setItem(
+        'wishlist',
+        JSON.stringify(storedWishList.filter((id: number) => id !== product.id))
+      );
 
+      await deleteWishItem(wishItemId);
+      setWishItemId(null);
 
-  const handleToggle = async () => {
-    try {
-      if (liked && wishItemId) {
-        await deleteWishItem(wishItemId);
-        setWishItemId(null);
-        setLiked(false);
-        if (removeOnUnlike) {
-          setVisible(false); // Only hide card if it's on wishlist page
-        }
-      } else {
-        const newItem: WishItem = await addWishItem(product.id);
-        setWishItemId(newItem.id);
-        setLiked(true);
-      }
-    } catch (error) {
-      console.error('Error toggling wishlist:', error);
+      if (removeOnUnlike) setVisible(false);
+    } else {
+      setLiked(true);
+      localStorage.setItem('wishlist', JSON.stringify([...storedWishList, product.id]));
+
+      const newItem: WishItem = await addWishItem(product.id);
+      setWishItemId(newItem.id);
     }
-  };
+  } catch (error) {
+    console.error('Error toggling wishlist:', error);
+  }
+};
 
   if (!visible) return null;
 
@@ -69,15 +74,22 @@ const Card: React.FC<CardProps> = ({
         {product.name}
       </p>
       <div className="flex items-center gap-2 sm:gap-4">
-        <span className="text-[14px] sm:text-[20px]">₦{product.price}</span>
-        <span className="text-[10px] sm:text-[20px] text-[#00000066] line-through">
-          ₦{product.undiscounted_price}
-        </span>
-        {parseFloat(product.undiscounted_price) > 0 && product.undiscounted_price > product.price && (
+        {typeof product.price === "number" && product.price > 0 && (
+          <span className="text-[14px] sm:text-[20px]">
+            ₦{product.price}
+          </span>
+        )}
+        {typeof product.undiscounted_price === "number" && product.undiscounted_price > 0 && (
+          <span className="text-[10px] sm:text-[20px] text-[#00000066] line-through">
+            ₦{product.undiscounted_price}
+          </span>
+        )}
+
+        {product.undiscounted_price > 0 && product.undiscounted_price > product.price && (
           <span className="text-red-600 bg-red-100 font-semibold text-xs sm:text-sm flex items-center justify-center rounded-full px-2 py-1">
             -
             {Math.round(
-              ((parseFloat(product.undiscounted_price) - parseFloat(product.price)) / parseFloat(product.undiscounted_price)) * 100
+              (product.undiscounted_price - product.price) / product.undiscounted_price * 100
             )}
             %
           </span>

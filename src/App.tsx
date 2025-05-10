@@ -34,7 +34,7 @@ import Confirm from "./pages/orders/Confirm";
 import Contact from "./pages/orders/Contact";
 import SuggestedItemDetails from "./components/products/SuggestedItemsDetails";
 import ScrollToTop from "./components/ScrollToTop";
-import Producter from "./pages/orders/Ade";
+import Producter from "./card/Ade";
 import ProductCategory from "./pages/categories/ProductCategory"
 
 

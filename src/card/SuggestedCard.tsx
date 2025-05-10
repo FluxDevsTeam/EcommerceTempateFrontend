@@ -56,14 +56,14 @@ const SuggestedCard: React.FC<CardProps> = ({
         </p>
         <div className="flex items-center gap-1 flex-wrap">
           <span className="text-md font-medium">₦{product.price}</span>
-          {parseFloat(product.undiscounted_price) > 0 && product.undiscounted_price > product.price && (
+          {product.undiscounted_price > 0 && product.undiscounted_price > product.price && (
             <>
               <span className="text-md text-gray-400 line-through">
                 ₦{product.undiscounted_price}
               </span>
               <span className="text-red-600 bg-red-100 text-xs px-1 rounded">
                 -{Math.round(
-                  ((parseFloat(product.undiscounted_price) - parseFloat(product.price)) / parseFloat(product.undiscounted_price)) * 100
+                  (product.undiscounted_price - product.price) / product.undiscounted_price * 100
                 )}%
               </span>
             </>

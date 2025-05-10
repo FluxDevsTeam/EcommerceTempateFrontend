@@ -40,6 +40,10 @@ const Dropdown = ({
     };
   }, []);
 
+  useEffect(() => {
+  setSelected(label); // Keeps it in sync when label prop changes
+}, [label]);
+
   return (
     <div ref={dropdownRef} className="relative inline-block text-sm px-2 py-1 sm:px-4 sm:py-2.5">
       <button
@@ -60,20 +64,17 @@ const Dropdown = ({
               className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
               onClick={() => handleOptionClick(option)}
             >
-              {option === "Paid" && (
+              {option === "PAID" && (
                 <span className="w-2 h-2 rounded-full bg-[#4CAF50]"></span>
               )}
-              {option === "Shipped" && (
+              {option === "SHIPPED" && (
                 <span className="w-2 h-2 rounded-full bg-[#2196F3]"></span>
               )}
-              {option === "Delivered" && (
+              {option === "DELIVERED" && (
                 <span className="w-2 h-2 rounded-full bg-[#9C27B0]"></span>
               )}
-              {option === "Cancelled" && (
+              {option === "CANCELLED" && (
                 <span className="w-2 h-2 rounded-full bg-[#F44336]"></span>
-              )}
-              {option === "Refunded" && (
-                <span className="w-2 h-2 rounded-full bg-[#FF9800]"></span>
               )}
               <span>{option}</span>
             </li>
