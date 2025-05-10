@@ -81,11 +81,15 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
   });
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("");
-  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>(
+    []
+  );
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [showPriceFilter, setShowPriceFilter] = useState(false);
   const [dbPriceRange, setDbPriceRange] = useState<[number, number]>([0, 0]);
-  const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([0, 0]);
+  const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([
+    0, 0,
+  ]);
 
   const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
 
@@ -104,15 +108,17 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
 
       try {
         // Build base URL with filters
-        let baseQueryParams = '';
+        let baseQueryParams = "";
+        if (selectedCategory) {
+          baseQueryParams += `&sub_category=${selectedCategory}`;
+        }
         if (sortBy) {
-          if (selectedCategory) {
-            baseQueryParams += `&sub_category=${selectedCategory}`;
-          }
-          if (sortBy === 'price_range') {
+          if (sortBy === "price_range") {
             baseQueryParams += `&min_price=${priceRange[0]}&max_price=${priceRange[1]}`;
+          } else if (sortBy === "out_of_stock") {
+            // Don't add any params here - we'll filter after fetching
           } else {
-            const [param, value] = sortBy.split('=');
+            const [param, value] = sortBy.split("=");
             baseQueryParams += `&${param}=${value}`;
           }
         }
@@ -128,15 +134,17 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
           }
         );
 
-        if (!priceRangeResponse.ok) throw new Error('Failed to fetch products');
-        
+        if (!priceRangeResponse.ok) throw new Error("Failed to fetch products");
+
         const priceRangeData: ApiResponse = await priceRangeResponse.json();
-        
+
         // Calculate price range from all filtered products
-        const prices = priceRangeData.results.map(product => Number(product.price));
+        const prices = priceRangeData.results.map((product) =>
+          Number(product.price)
+        );
         const minPrice = Math.min(...prices);
         const maxPrice = Math.max(...prices);
-        
+
         setDbPriceRange([minPrice, maxPrice]);
         if (priceRange[0] === 0 && priceRange[1] === 0) {
           setPriceRange([minPrice, maxPrice]);
@@ -169,9 +177,20 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
         }
 
         const paginatedData: ApiResponse = await paginatedResponse.json();
-        console.log(`Products fetched (Page ${page}):`, paginatedData);
-        setProducts(paginatedData.results || []);
-        setTotalProducts(paginatedData.count || 0);
+
+        // Filter for out of stock items if that option is selected
+        let filteredResults = paginatedData.results;
+        if (sortBy === "out_of_stock") {
+          filteredResults = paginatedData.results.filter(
+            (product) =>
+              !product.unlimited &&
+              (!product.total_quantity || product.total_quantity === 0) &&
+              product.is_available // Only include available items that have 0 quantity
+          );
+        }
+
+        setProducts(filteredResults || []);
+        setTotalProducts(filteredResults.length || 0);
         setNextPageUrl(paginatedData.next);
         setPrevPageUrl(paginatedData.previous);
       } catch (err) {
@@ -246,17 +265,29 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
   // Filter products based on selected status
   const filteredProducts = products.filter((product) => {
     if (selectedStatus === "All") return true;
-    const availabilityStatus = product.is_available
-      ? "Available"
-      : "Out of Stock";
-    return availabilityStatus === selectedStatus;
+    return getStatusText(product) === selectedStatus;
   });
 
-  // Updated getStatusColor based on is_available
-  const getStatusColor = (isAvailable: boolean) => {
-    return isAvailable
-      ? "text-green-600 bg-green-50"
-      : "text-orange-600 bg-orange-50";
+  // Updated getStatusColor function
+  const getStatusColor = (product: Product) => {
+    if (!product.is_available) {
+      return "text-gray-600 bg-gray-50"; // Unavailable items are gray
+    }
+    if (product.unlimited || product.total_quantity > 0) {
+      return "text-green-600 bg-green-50"; // Available items are green
+    }
+    return "text-orange-600 bg-orange-50"; // Out of stock items are orange
+  };
+
+  // New getStatusText function
+  const getStatusText = (product: Product) => {
+    if (!product.is_available) {
+      return "Unavailable";
+    }
+    if (product.unlimited || product.total_quantity > 0) {
+      return "Available";
+    }
+    return "Out of Stock";
   };
 
   // Format date string
@@ -437,6 +468,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
               <option value="price_range">Price Range</option>
               <option value="is_available=true">Available Items</option>
               <option value="is_available=false">Unavailable Items</option>
+              <option value="out_of_stock">Out of Stock Items</option>
               <option value="latest_item=true">Latest Items</option>
               <option value="latest_item=false">Non-Latest Items</option>
               <option value="top_selling_items=true">Top Selling</option>
@@ -449,21 +481,30 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
               <div className="absolute z-50 mt-2 p-6 bg-white border rounded-lg shadow-lg w-80">
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-4">
-                    Price Range: ₦{tempPriceRange[0].toLocaleString()} - ₦{tempPriceRange[1].toLocaleString()}
+                    Price Range: ₦{tempPriceRange[0].toLocaleString()} - ₦
+                    {tempPriceRange[1].toLocaleString()}
                   </label>
                   <div className="relative h-8">
                     {/* Base track */}
                     <div className="absolute w-full top-3 h-2 bg-gray-200 rounded-full"></div>
-                    
+
                     {/* Active track */}
-                    <div 
+                    <div
                       className="absolute top-3 h-2 bg-blue-500 rounded-full"
                       style={{
-                        left: `${((tempPriceRange[0] - dbPriceRange[0]) / (dbPriceRange[1] - dbPriceRange[0])) * 100}%`,
-                        width: `${((tempPriceRange[1] - tempPriceRange[0]) / (dbPriceRange[1] - dbPriceRange[0])) * 100}%`
+                        left: `${
+                          ((tempPriceRange[0] - dbPriceRange[0]) /
+                            (dbPriceRange[1] - dbPriceRange[0])) *
+                          100
+                        }%`,
+                        width: `${
+                          ((tempPriceRange[1] - tempPriceRange[0]) /
+                            (dbPriceRange[1] - dbPriceRange[0])) *
+                          100
+                        }%`,
                       }}
                     ></div>
-                    
+
                     {/* Range inputs */}
                     <div className="relative">
                       <input
@@ -472,7 +513,10 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                         max={dbPriceRange[1]}
                         value={tempPriceRange[0]}
                         onChange={(e) => {
-                          const value = Math.min(Number(e.target.value), tempPriceRange[1] - 1);
+                          const value = Math.min(
+                            Number(e.target.value),
+                            tempPriceRange[1] - 1
+                          );
                           setTempPriceRange([value, tempPriceRange[1]]);
                         }}
                         className="absolute w-full h-8 appearance-none bg-transparent [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-30 hover:[&::-webkit-slider-thumb]:border-blue-600"
@@ -483,7 +527,10 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                         max={dbPriceRange[1]}
                         value={tempPriceRange[1]}
                         onChange={(e) => {
-                          const value = Math.max(Number(e.target.value), tempPriceRange[0] + 1);
+                          const value = Math.max(
+                            Number(e.target.value),
+                            tempPriceRange[0] + 1
+                          );
                           setTempPriceRange([tempPriceRange[0], value]);
                         }}
                         className="absolute w-full h-8 appearance-none bg-transparent [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-30 hover:[&::-webkit-slider-thumb]:border-blue-600"
@@ -493,13 +540,18 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                   {/* Number inputs */}
                   <div className="flex justify-between mt-8">
                     <div className="relative w-32">
-                      <span className="absolute -top-5 left-0 text-xs text-gray-500">Min Price</span>
+                      <span className="absolute -top-5 left-0 text-xs text-gray-500">
+                        Min Price
+                      </span>
                       <input
                         type="number"
                         value={tempPriceRange[0]}
                         onChange={(e) => {
                           const value = Number(e.target.value);
-                          if (value >= dbPriceRange[0] && value < tempPriceRange[1]) {
+                          if (
+                            value >= dbPriceRange[0] &&
+                            value < tempPriceRange[1]
+                          ) {
                             setTempPriceRange([value, tempPriceRange[1]]);
                           }
                         }}
@@ -507,13 +559,18 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                       />
                     </div>
                     <div className="relative w-32">
-                      <span className="absolute -top-5 left-0 text-xs text-gray-500">Max Price</span>
+                      <span className="absolute -top-5 left-0 text-xs text-gray-500">
+                        Max Price
+                      </span>
                       <input
                         type="number"
                         value={tempPriceRange[1]}
                         onChange={(e) => {
                           const value = Number(e.target.value);
-                          if (value <= dbPriceRange[1] && value > tempPriceRange[0]) {
+                          if (
+                            value <= dbPriceRange[1] &&
+                            value > tempPriceRange[0]
+                          ) {
                             setTempPriceRange([tempPriceRange[0], value]);
                           }
                         }}
@@ -583,7 +640,10 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                 <th className="px-4 py-3">Date Created</th>
                 <th className="px-4 py-3">Product Name</th>
                 <th className="px-4 py-3">Category</th>
-                <th className="px-4 py-3 min-w-[120px] whitespace-nowrap">Price</th>
+                <th className="px-4 py-3">Total Quantity</th>
+                <th className="px-4 py-3 min-w-[120px] whitespace-nowrap">
+                  Price
+                </th>
                 <th className="px-4 py-3">
                   <select
                     value={selectedStatus}
@@ -592,6 +652,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                   >
                     <option value="All">All Status</option>
                     <option value="Available">Available</option>
+                    <option value="Unavailable">Unavailable</option>
                     <option value="Out of Stock">Out of Stock</option>
                   </select>
                 </th>
@@ -619,16 +680,23 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                   <td className="px-4 py-3">
                     {product.sub_category?.category?.name || "N/A"}
                   </td>
+                  <td className="px-4 py-3">
+                    {product.unlimited ? (
+                      <span className="text-blue-600">Unlimited</span>
+                    ) : (
+                      <span>{product.total_quantity || "0"}</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 min-w-[120px] whitespace-nowrap">
                     ₦ {product.price}
                   </td>
                   <td className="px-4 py-3">
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
-                        product.is_available
+                        product
                       )}`}
                     >
-                      {product.is_available ? "Available" : "Out of Stock"}
+                      {getStatusText(product)}
                     </span>
                   </td>
                   <td className="px-4 py-3 relative">
