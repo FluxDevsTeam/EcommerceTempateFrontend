@@ -73,13 +73,13 @@ const Order = () => {
 
           <ul className="flex flex-col gap-6 sm:gap-3">
             {order.order_items.map((item: OrderItem) => (
-              <li key={item.id} className="flex flex-wrap justify-between items-center gap-4 p-4 rounded-xl">
-                <div className="basis-[50%] sm:basis-[30%] bg-[#F0EEED] max-w-[124px] rounded-2xl overflow-hidden">
-                  <img src={item.image1} className="w-full" alt={item.name} />
+              <li key={item.id} className="flex flex-wrap items-center gap-5 sm:gap-20 p-4 rounded-xl">
+                <div className="bg-[#F0EEED] max-w-[120px] sm:max-w-[200px] rounded-2xl overflow-hidden">
+                  <img src={item.image1} className="w-[400px]" alt={item.name} />
                 </div>
-                <div className="basis-[50%] sm:basis-[20%]">
-                  <p className="text-2xl leading-8 mb-2 line-clamp-3">{item.name}</p>
-                  <p className="leading-6 text-[#667085] capitalize">
+                <div className="basis-[40%] sm:basis-[30%]">
+                  <p className="text-base sm:text-2xl leading-8 mb-2 line-clamp-2">{item.name}</p>
+                  <p className="leading-4 text-[#667085] capitalize">
                     {item.colour} | {item.size}
                   </p>
                 </div>
@@ -87,6 +87,7 @@ const Order = () => {
                   <p className="font-semibold text-lg leading-[30px] text-right">₦{item.price}</p>
                   <p className="text-[#667085] text-right">Qty: {item.quantity}</p>
                 </div>
+                <Link to={`/orders/${order.id}`}className="basis-[50%] sm:basis-auto inline-block text-white bg-black px-4 sm:px-16 py-2 ml-5 sm:py-4 rounded-2xl">Track Order</Link>
                 {/* <div>
                   <p className="text-[20px] leading-[30px] mb-1.5">Expected Delivery</p>
                   <span>{formatEstimatedDelivery(order.estimated_delivery)}</span>
@@ -95,7 +96,6 @@ const Order = () => {
               
             ))}
           </ul>
-          <Link to={`/orders/${order.id}`}className="inline-block text-white bg-black px-8 sm:px-16 py-2 sm:py-4 mt-4 rounded-2xl">Track Order</Link>
           <hr className="mt-10 border-t border-t-gray-300" />
           <hr className="mt-5 border-t border-t-gray-300" />
         </div>
