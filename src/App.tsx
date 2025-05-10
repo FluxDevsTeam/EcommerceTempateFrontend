@@ -21,6 +21,7 @@ import AddNewProduct from "./admin/pages/products/product components/AddNewProdu
 import EditProduct from "./admin/pages/products/product components/EditProduct";
 import AdminProductDetails from "./admin/pages/products/product components/AdminProductDetails";
 import AdminCategories from "./admin/pages/products/product components/AdminCategories";
+import AdminSubCategories from "./admin/pages/products/product components/AdminSubCategories";
 import Orders from "./pages/orders/Order";
 import ProductDetail from "./components/products/ProductDetail";
 import Categories from "./pages/categories/Categories";
@@ -98,16 +99,12 @@ const AppContent: React.FC = () => {
       {/* Admin routes with AdminLayout */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
-
         <Route path="products" element={<Products />} />
         <Route path="add-new-product" element={<AddNewProduct />} />
         <Route path="products/edit/:id" element={<EditProduct />} />
-        <Route
-          path="admin-products-details/:id"
-          element={<AdminProductDetails />}
-        />
+        <Route path="admin-products-details/:id" element={<AdminProductDetails />} />
         <Route path="admin-categories" element={<AdminCategories />} />
-
+        <Route path="admin-categories/subcategories" element={<AdminSubCategories />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="settings" element={<Settings />} />
       </Route>
