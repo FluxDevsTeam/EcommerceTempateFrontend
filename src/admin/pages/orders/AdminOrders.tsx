@@ -16,6 +16,10 @@ const AdminOrders = () => {
   const [layout, setLayout] = useState("menu");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1)
+  const [nextUrl, setNextUrl] = useState<string | null>(null);
+  const [prevUrl, setPrevUrl] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("All Categories");
   const [isOpen, setIsOpen] = useState(false);;
 
@@ -32,16 +36,40 @@ const statusColors: { [key: string]: { dot: string; bg: string } } = {
   ? orders
   : orders.filter((order) => order.status === statusFilter);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
-
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const displayedOrders = filteredOrders.slice(startIndex, endIndex);
-
   const handleSearchItemSelect = (): void => {
     setIsOpen(false);
   };
+
+  const getPageUrl = (page: number) => `https://ecommercetemplate.pythonanywhere.com/api/v1/admin/order/?page=${page}`;
+
+const loadOrders = async (url?: string) => {
+  try {
+    const data = await fetchData(url);
+    const urlParams = new URLSearchParams(url?.split('?')[1]);
+    const page = parseInt(urlParams.get("page") || "1", 10);
+
+    // 👇 Update the URL in the browser
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set("page", page.toString());
+    window.history.pushState({}, "", newUrl.toString());
+
+    setOrders(data.results);
+    setNextUrl(data.next);
+    setPrevUrl(data.previous);
+    setCurrentPage(page);
+    setTotalPages(Math.ceil(data.count / 10));
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const page = parseInt(urlParams.get("page") || "1", 10);
+    loadOrders(getPageUrl(page));
+  }, []);
+
 
   useEffect(() => {
     const getOrders = async () => {
@@ -103,14 +131,14 @@ const statusColors: { [key: string]: { dot: string; bg: string } } = {
             <li className="w-[10%] hidden sm:block">Status</li>
           </ul>
           <ul>
-          {displayedOrders.map((order) => {
+          {filteredOrders.map((order) => {
             const statusData = statusColors[order.status] || { dot: "#000", bg: "#fff" }; // Fallback value
 
             return (
               <li key={order.id} className="text-[10px] sm:text-[12px] font-medium flex py-5 border-b border-[#E6EDFF] cursor-pointer" onClick={() => setSelectedOrder(order)}>
-                <p className="sm:w-[10%] w-[15%]">{order.id.slice(0, 6)}</p>
+                <p className="sm:w-[10%] w-[15%]">{order.id.slice(1, 6)}</p>
                 <p className="sm:w-[10%] w-[30%]">{new Date(order.order_date).toLocaleDateString()}</p>
-                <p className="sm:w-[20%] w-[40%]">{order.order_items.map(item => item.name).join(', ')}</p>
+                <p className="sm:w-[20%] w-[40%] line-clamp-1 overflow-hidden text-ellipsis">{order.order_items.map(item => item.name).join(', ')}</p>
                 <p className="w-[20%] hidden sm:block">{order.delivery_address}</p>
                 <p className="sm:w-[10%] w-[15%]">
                   ₦{order.order_items.reduce((acc, item) => acc + item.quantity * parseFloat(item.price), 0) + parseFloat(order.delivery_fee)}
@@ -163,8 +191,11 @@ const statusColors: { [key: string]: { dot: string; bg: string } } = {
 
       <Pagination
         currentPage={currentPage}
-        totalPages={Math.ceil(filteredOrders.length / itemsPerPage)}
-        onPageChange={(page) => setCurrentPage(page)}
+        totalPages={totalPages}
+        nextPageUrl={nextUrl}
+        prevPageUrl={prevUrl}
+        onPageChange={loadOrders}
+        getPageUrl={getPageUrl}
       />
 
 

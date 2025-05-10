@@ -1,12 +1,13 @@
 //localStorage.setItem('accessToken', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MDYwMjU4LCJpYXQiOjE3NDU0MjAyNTgsImp0aSI6IjliN2ZkYTA5NjM4YjQ1Y2NhY2MxN2MzNTg0YjY4NzBlIiwidXNlcl9pZCI6MX0.tAcgF3eEibG9JFTUx_BrN5g28W_jajvc10JO3z3uz0g');
 const JWT_TOKEN = localStorage.getItem('accessToken')
+const BASE_URL = 'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/order/';
 
-export const fetchData = async () => {
+export const fetchData = async (url = `${BASE_URL}?page=1`) => {
   try {
-    const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/admin/order/?format=json', {
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
-        'Authorization': `JWT ${JWT_TOKEN}`,
+        'Authorization': `JWT ${JWT_TOKEN}`, // make sure JWT_TOKEN is defined
         'Content-Type': 'application/json',
       },
     });
@@ -16,6 +17,7 @@ export const fetchData = async () => {
     }
 
     const data = await response.json();
+    console.log(data);
     return data;
   } catch (error) {
     console.error('Error fetching data:', error);
