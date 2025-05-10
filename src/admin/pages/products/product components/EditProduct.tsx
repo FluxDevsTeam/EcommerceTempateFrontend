@@ -44,6 +44,7 @@ const EditProduct: React.FC = () => {
     image1: null,
     image2: null,
     image3: null,
+    undiscounted_price: null as number | null,
     is_available: false,
     latest_item: false,
     latest_item_position: null as number | null,
@@ -54,6 +55,24 @@ const EditProduct: React.FC = () => {
     unlimited: false,
     production_days: null as number | null,
   });
+
+  const [initialFormData, setInitialFormData] = useState({
+    name: "",
+    description: "",
+    sub_category: "",
+    colour: "",
+    is_available: false,
+    latest_item: false,
+    latest_item_position: null as number | null,
+    dimensional_size: null as string | null,
+    weight: null as string | null,
+    top_selling_items: false,
+    top_selling_position: null as number | null,
+    unlimited: false,
+    production_days: null as number | null,
+  });
+
+  const [hasChanges, setHasChanges] = useState(false);
 
   // Define size and weight options
   const sizeOptions = [
@@ -176,17 +195,11 @@ const EditProduct: React.FC = () => {
       }
 
       const data = await response.json();
-      setIndividualProductCategory(data.sub_category.name);
-      // console.log(data.sub_category.name);
-
-      setFormData({
+      const formattedData = {
         name: data.name || "",
         description: data.description || "",
-        sub_category: data.sub_category,
+        sub_category: data.sub_category.id,
         colour: data.colour || "",
-        image1: null,
-        image2: null,
-        image3: null,
         is_available: data.is_available ?? false,
         latest_item: data.latest_item ?? false,
         latest_item_position: data.latest_item_position,
@@ -196,14 +209,12 @@ const EditProduct: React.FC = () => {
         top_selling_position: data.top_selling_position,
         unlimited: data.unlimited ?? false,
         production_days: data.production_days || 0,
-      });
+      };
 
-      // Set preview images from API response
-      setPreviewImages([
-        data.image1 || "",
-        data.image2 || "",
-        data.image3 || "",
-      ]);
+      setInitialFormData(formattedData);
+      setFormData(formattedData);
+      setIndividualProductCategory(data.sub_category.name);
+      setPreviewImages([data.image1 || "", data.image2 || "", data.image3 || ""]);
     } catch (error) {
       console.error("Error fetching product:", error);
       setModalConfig({
@@ -222,6 +233,13 @@ const EditProduct: React.FC = () => {
       fetchProduct();
     }
   }, [id]);
+
+  // Add effect to check for changes
+  useEffect(() => {
+    const hasFormChanges = JSON.stringify(formData) !== JSON.stringify(initialFormData);
+    const hasImageChanges = selectedImages.some(img => img !== null);
+    setHasChanges(hasFormChanges || hasImageChanges);
+  }, [formData, selectedImages, initialFormData]);
 
   const handleCancel = () => {
     navigate("/admin/products");
@@ -244,67 +262,26 @@ const EditProduct: React.FC = () => {
       return;
     }
 
-    const formDataToSend = new FormData();
+    const changedFields = new FormData();
+  
+    // Compare and only add changed fields
+    Object.keys(formData).forEach(key => {
+      const typedKey = key as keyof typeof formData;
+      if (JSON.stringify(formData[typedKey]) !== JSON.stringify(initialFormData[typedKey])) {
+        changedFields.append(key, String(formData[typedKey]));
+      }
+    });
 
-    // Required fields
-    formDataToSend.append("name", formData.name);
-    formDataToSend.append("description", formData.description);
+    // Add changed images
+    selectedImages.forEach((img, index) => {
+      if (img) {
+        changedFields.append(`image${index + 1}`, img);
+      }
+    });
 
-    // Category - Only append if it's changed, otherwise keep existing
-    if (formData.sub_category) {
-      formDataToSend.append("sub_category", formData.sub_category);
+    if ([...changedFields.entries()].length === 0) {
+      return;
     }
-
-    // Optional fields
-    if (formData.colour) {
-      formDataToSend.append("colour", formData.colour);
-    }
-
-    // Boolean fields
-    formDataToSend.append("is_available", formData.is_available.toString());
-    formDataToSend.append("latest_item", formData.latest_item.toString());
-    formDataToSend.append(
-      "top_selling_items",
-      formData.top_selling_items.toString()
-    );
-    formDataToSend.append("unlimited", formData.unlimited.toString());
-
-    // Position fields
-    if (formData.latest_item_position !== null) {
-      formDataToSend.append(
-        "latest_item_position",
-        formData.latest_item_position.toString()
-      );
-    }
-
-    if (formData.top_selling_position !== null) {
-      formDataToSend.append(
-        "top_selling_position",
-        formData.top_selling_position.toString()
-      );
-    }
-
-    // Size and weight
-    if (formData.dimensional_size) {
-      formDataToSend.append("dimensional_size", formData.dimensional_size);
-    }
-
-    if (formData.weight) {
-      formDataToSend.append("weight", formData.weight);
-    }
-
-    // Production days
-    if (formData.production_days !== null) {
-      formDataToSend.append(
-        "production_days",
-        formData.production_days.toString()
-      );
-    }
-
-    // Images
-    if (selectedImages[0]) formDataToSend.append("image1", selectedImages[0]);
-    if (selectedImages[1]) formDataToSend.append("image2", selectedImages[1]);
-    if (selectedImages[2]) formDataToSend.append("image3", selectedImages[2]);
 
     try {
       const response = await fetch(
@@ -314,7 +291,7 @@ const EditProduct: React.FC = () => {
           headers: {
             Authorization: `JWT ${accessToken}`,
           },
-          body: formDataToSend,
+          body: changedFields,
         }
       );
 
@@ -509,11 +486,13 @@ const EditProduct: React.FC = () => {
                           onChange={handleChange}
                           className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm appearance-none"
                         >
-                          <option value="">Select current or new category</option>
+                          <option value={formData.sub_category}>{individualProductCategory}</option>
                           {filteredCategories.map((category) => (
-                            <option key={category.id} value={category.id}>
-                              {category.name}
-                            </option>
+                            category.id !== formData.sub_category && (
+                              <option key={category.id} value={category.id}>
+                                {category.name}
+                              </option>
+                            )
                           ))}
                         </select>
                         <button
@@ -925,8 +904,10 @@ const EditProduct: React.FC = () => {
             </button>
             <button
               type="submit"
-              disabled={loading}
-              className="px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              disabled={!hasChanges || loading}
+              className={`px-6 py-3 border border-transparent text-base font-medium rounded-md text-white ${
+                hasChanges ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50`}
             >
               {loading ? (
                 <div className="flex items-center">
@@ -1059,11 +1040,11 @@ const EditProduct: React.FC = () => {
                       </h2>
                       {/* <div className="flex items-baseline space-x-4">
                         <span className="text-2xl font-bold text-gray-900">
-                          ${formData.price || "0.00"}
+                          ₦{formData.price || "0.00"}
                         </span>
                         {formData.undiscounted_price && (
                           <span className="text-lg text-gray-500 line-through">
-                            ${formData.undiscounted_price}
+                            ₦{formData.undiscounted_price}
                           </span>
                         )}
                       </div>

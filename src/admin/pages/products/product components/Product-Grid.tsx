@@ -74,14 +74,14 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
 }) => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortBy, setSortBy] = useState("");
+  const ITEMS_PER_PAGE = 18;
+  const [sortBy, setSortBy] = useState<string>("");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [totalProducts, setTotalProducts] = useState<number>(0);
   const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
   const [prevPageUrl, setPrevPageUrl] = useState<string | null>(null);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(16);
   const [categories, setCategories] = useState<{ id: number; name: string }[]>(
     []
   );
@@ -91,6 +91,10 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
     productId: 0,
     productName: "",
   });
+  const [showPriceFilter, setShowPriceFilter] = useState(false);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
+  const [dbPriceRange, setDbPriceRange] = useState<[number, number]>([0, 0]);
+  const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([0, 0]);
 
   const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
 
@@ -149,49 +153,66 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
         return;
       }
 
-      // Construct the URL with pagination and category filter
-      let url = `${baseURL}/api/v1/product/item/?page=${page}&page_size=${itemsPerPage}`;
-      if (selectedCategory) {
-        url += `&sub_category=${selectedCategory}`;
-      }
-
       try {
-        const response = await fetch(url, {
-          method: "GET",
-          headers: {
-            Authorization: `JWT ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          let errorBody;
-          try {
-            errorBody = await response.json();
-          } catch (e) {
-            errorBody = await response.text();
+        // Build base URL with filters
+        let baseQueryParams = '';
+        if (sortBy) {
+          if (selectedCategory) {
+            baseQueryParams += `&sub_category=${selectedCategory}`;
           }
-          console.error(
-            `HTTP error fetching products! status: ${response.status}, body:`,
-            errorBody
-          );
-          setError(`Failed to load products: ${response.statusText}`);
-          throw new Error(`HTTP error! status: ${response.status}`);
+          if (sortBy === 'price_range') {
+            baseQueryParams += `&min_price=${priceRange[0]}&max_price=${priceRange[1]}`;
+          } else {
+            const [param, value] = sortBy.split('=');
+            baseQueryParams += `&${param}=${value}`;
+          }
         }
 
+        // First fetch for price range calculation
+        const response = await fetch(
+          `${baseURL}/api/v1/product/item/?page_size=1000${baseQueryParams}`,
+          {
+            headers: {
+              Authorization: `JWT ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) throw new Error('Failed to fetch products');
+        
         const data: ApiResponse = await response.json();
-        console.log(`Products fetched (Page ${page}):`, data);
-        setProducts(data.results || []);
-        console.log(data);
-
-        setTotalProducts(data.count || 0);
-        setNextPageUrl(data.next);
-        setPrevPageUrl(data.previous);
-        // Infer items per page from the first fetch if possible
-        if (page === 1 && data.results.length > 0) {
-          // This is an approximation, might need adjustment if API behavior varies
-          setItemsPerPage(data.results.length);
+        
+        // Calculate price range from filtered products
+        const prices = data.results.map(product => Number(product.price));
+        const minPrice = Math.min(...prices);
+        const maxPrice = Math.max(...prices);
+        
+        setDbPriceRange([minPrice, maxPrice]);
+        if (priceRange[0] === 0 && priceRange[1] === 0) {
+          setPriceRange([minPrice, maxPrice]);
         }
+
+        // Fetch paginated results with fixed page size
+        const paginatedResponse = await fetch(
+          `${baseURL}/api/v1/product/item/?page=${page}&page_size=${ITEMS_PER_PAGE}${baseQueryParams}`,
+          {
+            headers: {
+              Authorization: `JWT ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!paginatedResponse.ok) {
+          throw new Error(`HTTP error! status: ${paginatedResponse.status}`);
+        }
+
+        const paginatedData: ApiResponse = await paginatedResponse.json();
+        setProducts(paginatedData.results || []);
+        setTotalProducts(paginatedData.count || 0);
+        setNextPageUrl(paginatedData.next);
+        setPrevPageUrl(paginatedData.previous);
       } catch (err) {
         console.error("Failed to fetch products:", err);
         setError(
@@ -208,7 +229,24 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
     if (isVisible) {
       fetchProducts(currentPage);
     }
-  }, [isVisible, currentPage, selectedCategory, baseURL]); // Added selectedCategory as dependency
+  }, [isVisible, currentPage, selectedCategory, sortBy, priceRange, baseURL]);
+
+  useEffect(() => {
+    if (priceRange[0] === 0 && priceRange[1] === 0) {
+      setTempPriceRange([dbPriceRange[0], dbPriceRange[1]]);
+    }
+  }, [dbPriceRange]);
+
+  // Update useEffect to properly set the initial tempPriceRange and priceRange
+  useEffect(() => {
+    if (dbPriceRange[0] !== 0 || dbPriceRange[1] !== 0) {
+      setTempPriceRange([dbPriceRange[0], dbPriceRange[1]]);
+      // Only set priceRange if it hasn't been set yet
+      if (priceRange[0] === 0 && priceRange[1] === 0) {
+        setPriceRange([dbPriceRange[0], dbPriceRange[1]]);
+      }
+    }
+  }, [dbPriceRange]);
 
   const handlePageChange = (page: number) => {
     // Add checks to ensure page is within valid range if needed
@@ -272,7 +310,7 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
   };
 
   // Calculate total pages
-  const totalPages = Math.ceil(totalProducts / itemsPerPage);
+  const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
 
   // --- Removed hardcoded productsGrid array ---
   // Updated getStatusColor based on is_available
@@ -352,16 +390,134 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
 
           {/* Right Controls */}
           <div className="flex justify-between items-center w-full sm:w-auto">
-            {/* Sort Dropdown */}
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-fit sm:w-auto px-3 py-2 border rounded-lg text-sm focus:outline-none sm:mb-0 mr-4"
-            >
-              <option value="">Sort by</option>
-              <option value="name">Name</option>
-              <option value="price">Price</option>
-            </select>
+            {/* Order By Dropdown */}
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={(e) => {
+                  if (e.target.value === "") {
+                    // Reset everything to default when selecting "Order By"
+                    setSortBy("");
+                    setShowPriceFilter(false);
+                    setPriceRange([dbPriceRange[0], dbPriceRange[1]]);
+                    setTempPriceRange([dbPriceRange[0], dbPriceRange[1]]);
+                    setCurrentPage(1);
+                  } else {
+                    setSortBy(e.target.value);
+                    if (e.target.value === "price_range") {
+                      setShowPriceFilter(true);
+                      setTempPriceRange([dbPriceRange[0], dbPriceRange[1]]); // Reset to current DB range
+                    } else {
+                      setShowPriceFilter(false);
+                    }
+                  }
+                }}
+                className="w-fit sm:w-auto px-3 py-2 border rounded-lg text-sm focus:outline-none sm:mb-0 mr-4"
+              >
+                <option value="">Order By</option>
+                <option value="price_range">Price Range</option>
+                <option value="is_available=true">Available Items</option>
+                <option value="is_available=false">Unavailable Items</option>
+                <option value="latest_item=true">Latest Items</option>
+                <option value="latest_item=false">Non-Latest Items</option>
+                <option value="top_selling_items=true">Top Selling</option>
+                <option value="top_selling_items=false">Non-Top Selling</option>
+                <option value="discount=true">Discounted Items</option>
+                <option value="discount=false">Non-Discounted Items</option>
+              </select>
+
+              {showPriceFilter && (
+                <div className="absolute z-50 mt-2 p-6 bg-white border rounded-lg shadow-lg w-80">
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-4">
+                      Price Range: ₦{tempPriceRange[0].toLocaleString()} - ₦{tempPriceRange[1].toLocaleString()}
+                    </label>
+                    <div className="relative h-8">
+                      {/* Base track */}
+                      <div className="absolute w-full top-3 h-2 bg-gray-200 rounded-full"></div>
+                      
+                      {/* Active track */}
+                      <div 
+                        className="absolute top-3 h-2 bg-blue-500 rounded-full"
+                        style={{
+                          left: `${((tempPriceRange[0] - dbPriceRange[0]) / (dbPriceRange[1] - dbPriceRange[0])) * 100}%`,
+                          width: `${((tempPriceRange[1] - tempPriceRange[0]) / (dbPriceRange[1] - dbPriceRange[0])) * 100}%`
+                        }}
+                      ></div>
+                      
+                      {/* Range inputs */}
+                      <div className="relative">
+                        <input
+                          type="range"
+                          min={dbPriceRange[0]}
+                          max={dbPriceRange[1]}
+                          value={tempPriceRange[0]}
+                          onChange={(e) => {
+                            const value = Math.min(Number(e.target.value), tempPriceRange[1] - 1);
+                            setTempPriceRange([value, tempPriceRange[1]]);
+                          }}
+                          className="absolute w-full h-8 appearance-none bg-transparent [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-30 hover:[&::-webkit-slider-thumb]:border-blue-600"
+                        />
+                        <input
+                          type="range"
+                          min={dbPriceRange[0]}
+                          max={dbPriceRange[1]}
+                          value={tempPriceRange[1]}
+                          onChange={(e) => {
+                            const value = Math.max(Number(e.target.value), tempPriceRange[0] + 1);
+                            setTempPriceRange([tempPriceRange[0], value]);
+                          }}
+                          className="absolute w-full h-8 appearance-none bg-transparent [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-30 hover:[&::-webkit-slider-thumb]:border-blue-600"
+                        />
+                      </div>
+                    </div>
+                    {/* Number inputs */}
+                    <div className="flex justify-between mt-8">
+                      <div className="relative w-32">
+                        <span className="absolute -top-5 left-0 text-xs text-gray-500">Min Price</span>
+                        <input
+                          type="number"
+                          value={tempPriceRange[0]}
+                          onChange={(e) => {
+                            const value = Number(e.target.value);
+                            if (value >= dbPriceRange[0] && value < tempPriceRange[1]) {
+                              setTempPriceRange([value, tempPriceRange[1]]);
+                            }
+                          }}
+                          className="w-full px-3 py-1.5 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div className="relative w-32">
+                        <span className="absolute -top-5 left-0 text-xs text-gray-500">Max Price</span>
+                        <input
+                          type="number"
+                          value={tempPriceRange[1]}
+                          onChange={(e) => {
+                            const value = Number(e.target.value);
+                            if (value <= dbPriceRange[1] && value > tempPriceRange[0]) {
+                              setTempPriceRange([tempPriceRange[0], value]);
+                            }
+                          }}
+                          className="w-full px-3 py-1.5 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-6 flex justify-end">
+                      <button
+                        onClick={() => {
+                          setPriceRange(tempPriceRange);
+                          setCurrentPage(1);
+                          setShowPriceFilter(false); // Add this line to close the dropdown
+                        }}
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                      >
+                        Apply Filter
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* View Mode Toggles */}
             <div className="flex border rounded-lg">
@@ -430,8 +586,7 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
                       }`}
                     ></span>
                     <span
-                      style={{ fontSize: "clamp(10px, 2vw, 12px)" }}
-                      className={`px-2 py-0.5 rounded-full ${getStatusColor(
+                      className={`px-2 py-1 rounded-full text-sm font-medium ${getStatusColor(
                         product.is_available
                       )}`}
                     >
@@ -450,12 +605,12 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <span className="text-lg font-bold text-gray-900">
-                        ${product.price}
+                        ₦ {product.price}
                       </span>
                       {/* {product.undiscounted_price &&
                         product.undiscounted_price > 0 && (
                           <span className="text-sm text-gray-500 line-through">
-                            ${product.price}
+                            ₦{product.undiscounted_price}
                           </span>
                         )} */}
                     </div>
@@ -547,8 +702,8 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
           {/* Pagination */}
           <div className="flex flex-col sm:flex-row justify-between items-center mt-6 space-y-4 sm:space-y-0">
             <div className="text-sm text-gray-600 text-center sm:text-left w-full sm:w-auto">
-              Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-              {Math.min(currentPage * itemsPerPage, totalProducts)} of{" "}
+              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
+              {Math.min(currentPage * ITEMS_PER_PAGE, totalProducts)} of{" "}
               {totalProducts} entries
             </div>
             <div className="flex border rounded justify-center sm:justify-start">

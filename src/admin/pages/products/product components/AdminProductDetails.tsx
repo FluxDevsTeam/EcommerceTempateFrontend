@@ -404,11 +404,11 @@ const AdminProductDetails: React.FC = () => {
                 </h2>
                 <div className="mt-2 flex items-baseline gap-2">
                   <span className="text-3xl font-bold text-gray-900">
-                    ${product.price}
+                    ₦ {product.price}
                   </span>
                   {product.undiscounted_price > product.price && (
                     <span className="text-lg text-gray-500 line-through">
-                      ${product.undiscounted_price}
+                      ₦{product.undiscounted_price}
                     </span>
                   )}
                 </div>
@@ -515,11 +515,11 @@ const AdminProductDetails: React.FC = () => {
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-600">Price</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">${size.price}</span>
+                        <span className="font-medium">₦ {size.price}</span>
                         {Number(size.undiscounted_price) >
                           Number(size.price) && (
                           <span className="text-gray-400 line-through">
-                            ${size.undiscounted_price}
+                            ₦ {size.undiscounted_price}
                           </span>
                         )}
                       </div>

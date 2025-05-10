@@ -35,7 +35,6 @@ const AddNewProduct: React.FC = () => {
     description: "",
     sub_category: null as number | null,
     colour: "",
-    price: "",
     is_available: false,
     dimensional_size: null as string | null,
     weight: null as string | null,
@@ -454,37 +453,6 @@ const AddNewProduct: React.FC = () => {
                     placeholder="Describe your product..."
                   />
                 </div>
-              </div>
-            </div>
-
-            {/* Pricing Section */}
-            <div className="p-6 border-b border-gray-200 bg-gray-50">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                Pricing
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price
-                  </label>
-                  <div className="relative rounded-md shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500 sm:text-sm">$</span>
-                    </div>
-                    <input
-                      type="number"
-                      name="price"
-                      required
-                      value={formData.price}
-                      onChange={handleChange}
-                      className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
-
               </div>
             </div>
 
@@ -989,7 +957,7 @@ const AddNewProduct: React.FC = () => {
                       </h2>
                       <div className="flex items-baseline space-x-4">
                         <span className="text-2xl font-bold text-gray-900">
-                          ${formData.price || "0.00"}
+                          ₦{formData.price || "0.00"}
                         </span>
                         
                       </div>
