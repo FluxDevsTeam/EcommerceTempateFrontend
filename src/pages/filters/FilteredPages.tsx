@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Card from "@/card/Card";
+import PaginationComponent from '@/components/Pagination';
 import SortDropdown from './FilterDropDown';
 import { WishData } from '@/card/wishListApi';
 import { WishItem } from '@/card/types';
@@ -40,7 +41,6 @@ interface Product {
   date_updated: string;
 }
 
-
 interface ApiResponse<T> {
   count: number;
   next: string | null;
@@ -55,19 +55,24 @@ interface FilterState {
 }
 
 const ProductsPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const [originalProducts, setOriginalProducts] = useState<Product[]>([]);
+  const [productsData, setProductsData] = useState<ApiResponse<Product>>({
+    count: 0,
+    next: null,
+    previous: null,
+    results: []
+  });
   const [displayProducts, setDisplayProducts] = useState<Product[]>([]);
   const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [wishlistLoading, setWishlistLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [totalCount, setTotalCount] = useState<number>(0);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  
   const [sortOption, setSortOption] = useState<'latest' | 'highest' | 'lowest'>('latest');
+
+  // Get current page from URL or default to 1
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
   // URL filter parsing
   const getFiltersFromURL = (): FilterState => {
@@ -130,8 +135,7 @@ const ProductsPage: React.FC = () => {
         }
 
         const data: ApiResponse<Product> = await response.json();
-        setOriginalProducts(data.results);
-        setTotalCount(data.count);
+        setProductsData(data);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching products:', err);
@@ -143,10 +147,10 @@ const ProductsPage: React.FC = () => {
     fetchProducts();
   }, [currentPage, searchParams]);
 
-  // Sort products separately when sortOption or originalProducts change
+  // Sort products when sortOption or products change
   useEffect(() => {
-    if (originalProducts.length > 0) {
-      const sortedProducts = [...originalProducts];
+    if (productsData.results.length > 0) {
+      const sortedProducts = [...productsData.results];
 
       if (sortOption === 'latest') {
         sortedProducts.sort((a, b) => b.id - a.id);
@@ -160,7 +164,7 @@ const ProductsPage: React.FC = () => {
     } else {
       setDisplayProducts([]);
     }
-  }, [sortOption, originalProducts]);
+  }, [sortOption, productsData.results]);
 
   // Helper function to check if a product is in wishlist
   const getWishlistInfo = (productId: number) => {
@@ -171,17 +175,34 @@ const ProductsPage: React.FC = () => {
     };
   };
 
+  const handlePageChange = (newPage: number) => {
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('page', newPage.toString());
+      return newParams;
+    });
+  };
+
+  // Calculate total pages
+  const itemsPerPage = 10;
+  const totalPages = productsData.count ? Math.ceil(productsData.count / itemsPerPage) : 1;
+
   return (
     <div className="container mx-auto px-6 md:px-14 py-8 md:py-12 ">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
         <h1 className="text-3xl md:text-4xl font-medium">Filtered Products</h1>
 
         <div className="flex items-center gap-4 pt-3 md:pt-0">
-          <p className="text-gray-600">{totalCount} products found</p>
+          <p className="text-gray-600">{productsData.count} products found</p>
           <SortDropdown
             onSortChange={(sortValue) => {
               setSortOption(sortValue);
-              setCurrentPage(1); // Reset page to 1 when sort changes
+              // Reset to first page when sort changes
+              setSearchParams(prev => {
+                const newParams = new URLSearchParams(prev);
+                newParams.set('page', '1');
+                return newParams;
+              });
             }}
           />
         </div>
@@ -240,8 +261,16 @@ const ProductsPage: React.FC = () => {
             })}
           </div>
 
-          {/* Pagination (optional) */}
-          {/* Add pagination buttons if needed */}
+          {/* Pagination */}
+          <div className="mt-6">
+            <PaginationComponent
+              currentPage={currentPage}
+              totalPages={totalPages}
+              hasNextPage={Boolean(productsData.next)}
+              hasPreviousPage={Boolean(productsData.previous)}
+              handlePageChange={handlePageChange}
+            />
+          </div>
         </>
       )}
     </div>
