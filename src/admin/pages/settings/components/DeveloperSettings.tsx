@@ -124,6 +124,8 @@ const DeveloperSettings = () => {
         </div>
       )}
 
+      
+
       <div className="mb-4">
         <div
           className="flex justify-between items-center cursor-pointer p-2 hover:bg-gray-50 rounded"
@@ -147,9 +149,58 @@ const DeveloperSettings = () => {
             />
           </svg>
         </div>
+        
 
         {isCollapsed && (
+
+          
           <div className="mt-4 transition-all duration-300 ease-in-out">
+
+<div className="mb-6 bg-gray-100 p-4 rounded-lg shadow border border-gray-200">
+  <h3 className="font-medium text-lg mb-3">Current Developer Settings</h3>
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div>
+      <p className="text-sm text-gray-500">Business Name</p>
+      <p className="font-medium truncate">{formData.brand_name || 'Not set'}</p>
+    </div>
+    <div>
+      <p className="text-sm text-gray-500">Contact Email</p>
+      <p className="font-medium truncate">
+        {formData.contact_us ? (
+          <a href={`mailto:${formData.contact_us}`} className="text-blue-600 hover:underline">
+            {formData.contact_us}
+          </a>
+        ) : (
+          'Not set'
+        )}
+      </p>
+    </div>
+    <div>
+      <p className="text-sm text-gray-500">Terms of Service</p>
+      <p className="font-medium truncate">
+        {formData.terms_of_service ? (
+          <a href={formData.terms_of_service} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+            View Terms
+          </a>
+        ) : (
+          'Not set'
+        )}
+      </p>
+    </div>
+    <div>
+      <p className="text-sm text-gray-500">Backend Base URL</p>
+      <p className="font-medium truncate">{formData.backend_base_route || 'Not set'}</p>
+    </div>
+    <div>
+      <p className="text-sm text-gray-500">Frontend Base URL</p>
+      <p className="font-medium truncate">{formData.frontend_base_route || 'Not set'}</p>
+    </div>
+    <div>
+      <p className="text-sm text-gray-500">Payment Failed URL</p>
+      <p className="font-medium truncate">{formData.payment_failed_url || 'Not set'}</p>
+    </div>
+  </div>
+</div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
                 <label className="block text-sm font-medium mb-2">

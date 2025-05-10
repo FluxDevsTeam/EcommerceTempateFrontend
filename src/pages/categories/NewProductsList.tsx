@@ -1,6 +1,8 @@
 // NewProductsList.tsx
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import Card from '@/card/Card';
+import PaginationComponent from '../../components/Pagination';
 
 export interface Category {
   id: number;
@@ -15,26 +17,25 @@ export interface SubCategory {
 
 interface Product {
   id: number;
-          name: string;
-          image1: string;
-          undiscounted_price: string;
-          price: string;
-          description: string;
-          total_quantity: number;
-          sub_category: SubCategory;
-          colour: string;
-          image2: string | null;
-          image3: string | null;
-          is_available: boolean;
-          latest_item: boolean;
-          latest_item_position: number;
-          dimensional_size: string;
-          weight: string;
-          top_selling_items: boolean;
-          top_selling_position: number;
-          date_created: string;
-          date_updated: string;
-      
+  name: string;
+  image1: string;
+  undiscounted_price: string;
+  price: string;
+  description: string;
+  total_quantity: number;
+  sub_category: SubCategory;
+  colour: string;
+  image2: string | null;
+  image3: string | null;
+  is_available: boolean;
+  latest_item: boolean;
+  latest_item_position: number;
+  dimensional_size: string;
+  weight: string;
+  top_selling_items: boolean;
+  top_selling_position: number;
+  date_created: string;
+  date_updated: string;
 }
 
 interface ApiResponse {
@@ -48,8 +49,8 @@ interface NewProductsListProps {
   sortOption: string;
 }
 
-const fetchProducts = async (): Promise<ApiResponse> => {
-  const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/');
+const fetchProducts = async (page = 1): Promise<ApiResponse> => {
+  const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?page=${page}`);
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
@@ -57,17 +58,26 @@ const fetchProducts = async (): Promise<ApiResponse> => {
 };
 
 const NewProductsList = ({ sortOption }: NewProductsListProps) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+
   const { data, isLoading, error } = useQuery<ApiResponse>({
-    queryKey: ['products'],
-    queryFn: fetchProducts
+    queryKey: ['products', currentPage],
+    queryFn: () => fetchProducts(currentPage),
   });
 
-  if (isLoading) return <div className="flex justify-center items-center py-10 text-lg">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mr-3"></div>
-    Loading results...
-  </div>;
+  const handlePageChange = (newPage: number) => {
+    setSearchParams({ page: newPage.toString() });
+  };
 
-  if (error) return <div>Error: {error.message}</div>;
+  if (isLoading) return (
+    <div className="flex justify-center items-center py-10 text-lg">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mr-3"></div>
+      Loading results...
+    </div>
+  );
+
+  if (error) return <div>Error: {(error as Error).message}</div>;
 
   // Copy and sort the products
   const sortedProducts = [...(data?.results || [])].sort((a, b) => {
@@ -84,11 +94,32 @@ const NewProductsList = ({ sortOption }: NewProductsListProps) => {
     }
   });
 
+  // Calculate total pages
+  const itemsPerPage = 10; // Adjust this based on your API's default page size
+  const totalPages = data?.count ? Math.ceil(data.count / itemsPerPage) : 1;
+
+  // Determine if there are next and previous pages
+  const hasNextPage = Boolean(data?.next);
+  const hasPreviousPage = Boolean(data?.previous);
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 md:gap-8 md:my-8 sm:mb-16">
-     {sortedProducts.map((item) => (
-            <Card key={item.id} product={item} />
-          ))}
+    <div>
+      <div className="grid grid-cols-2 md:grid-cols-4 md:gap-8 md:my-8 sm:mb-16">
+        {sortedProducts.map((item) => (
+          <Card key={item.id} product={item} />
+        ))}
+      </div>
+
+      {/* Pagination controls */}
+      <div className="mt-6">
+        <PaginationComponent
+          currentPage={currentPage}
+          totalPages={totalPages}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
+          handlePageChange={handlePageChange}
+        />
+      </div>
     </div>
   );
 };

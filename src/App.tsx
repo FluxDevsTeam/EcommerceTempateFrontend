@@ -20,7 +20,7 @@ import AddNewProduct from "./admin/pages/products/product components/AddNewProdu
 import EditProduct from "./admin/pages/products/product components/EditProduct";
 import Orders from "./pages/orders/Order";
 import ProductDetail from "./components/products/ProductDetail";
-import Categories from "./pages/categories/Categories";
+import NewArrivals from "./pages/categories/NewArrivals";
 import AuthLayout from "./pages/auth/AuthLayout";
 import AdminLayout from "./pages/auth/AdminLayout";
 import Dashboard from "./admin/pages/dashboard/Dashboard";
@@ -28,9 +28,6 @@ import Products from "./admin/pages/products/Products";
 import Settings from "./admin/pages/settings/Settings";
 import AdminOrders from "./admin/pages/orders/AdminOrders";
 import SearchResults from "./components/products/SearchResults";
-import ShoeCategory from "./pages/categories/ShoeCategory";
-import ClothesCategory from "./pages/categories/ClothesCategory";
-import AccessoriesCategory from "./pages/categories/AccessoriesCategory";
 import ProductsPage from "./pages/filters/FilteredPages";
 import Wishlist from "./pages/orders/Wishlist";
 import Confirm from "./pages/orders/Confirm";
@@ -38,6 +35,7 @@ import Contact from "./pages/orders/Contact";
 import SuggestedItemDetails from "./components/products/SuggestedItemsDetails";
 import ScrollToTop from "./components/ScrollToTop";
 import Producter from "./pages/orders/Ade";
+import ProductCategory from "./pages/categories/ProductCategory"
 
 
 const queryClient = new QueryClient();
@@ -60,6 +58,7 @@ const AppContent: React.FC = () => {
     <Routes>
       {/* Public routes with MainLayout */}
       <Route element={<MainLayout />}>
+      <Route path="/category/:id" element={<ProductCategory  />} />
         <Route path="/" element={<Homepage />} />
         <Route path="/product/item/:id" element={<ProductDetail />} />
         <Route path="/suggested/:id"  element={<SuggestedItemDetails />} />
@@ -67,10 +66,7 @@ const AppContent: React.FC = () => {
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="//verify-reset-otp" element={<VerifyForgotPassword/>} />
-        <Route path="/categories" element={<Categories />} />
-        <Route path="/shoe-category" element={<ShoeCategory />} />
-        <Route path="/clothes-category" element={<ClothesCategory />} />
-        <Route path="/accessories-category" element={<AccessoriesCategory />} />
+        <Route path="/new-arrivals" element={<NewArrivals />} />
         <Route path="/filtered-products" element={<ProductsPage />} />
         <Route path="/confirm-order" element={<ConfirmOrder />} />
         <Route path="/faqs" element={<FAQs />} />

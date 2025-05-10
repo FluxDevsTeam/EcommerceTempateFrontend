@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 interface OrganizationSettings {
-  available_states: any; // This appears to be an object in the API schema
+  available_states: any;
   warehouse_state: string;
   phone_number: string;
   customer_support_email: string;
@@ -39,6 +39,9 @@ const OrganizationalSettings = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [selectedStates, setSelectedStates] = useState<string[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [initialData, setInitialData] = useState<OrganizationSettings | null>(null);
+  const [initialSelectedStates, setInitialSelectedStates] = useState<string[]>([]);
 
   useEffect(() => {
     fetchOrganizationSettings();
@@ -60,11 +63,14 @@ const OrganizationalSettings = () => {
 
       if (response.data) {
         setFormData(response.data);
+        setInitialData(response.data);
+        
         // Initialize selected states from the available_states in the response
         if (response.data.available_states) {
           const states = Object.keys(response.data.available_states)
             .filter(key => response.data.available_states[key] === true);
           setSelectedStates(states);
+          setInitialSelectedStates(states);
         }
       }
       setError(null);
@@ -132,6 +138,11 @@ const OrganizationalSettings = () => {
     };
   };
 
+  const handleSaveConfirm = () => {
+    setShowModal(false);
+    handleSave();
+  };
+
   const handleSave = async () => {
     try {
       setLoading(true);
@@ -169,6 +180,8 @@ const OrganizationalSettings = () => {
       
       setSuccessMessage('Organization settings updated successfully');
       setError(null);
+      setInitialData(formData);
+      setInitialSelectedStates(selectedStates);
       
       setTimeout(() => {
         setSuccessMessage(null);
@@ -181,7 +194,34 @@ const OrganizationalSettings = () => {
     }
   };
 
- 
+  const hasChanges = () => {
+    if (!initialData) return false;
+    
+    // Check form fields
+    const formChanged = 
+      formData.warehouse_state !== initialData.warehouse_state ||
+      formData.phone_number !== initialData.phone_number ||
+      formData.customer_support_email !== initialData.customer_support_email ||
+      formData.admin_email !== initialData.admin_email ||
+      formData.facebook !== initialData.facebook ||
+      formData.twitter !== initialData.twitter ||
+      formData.linkedin !== initialData.linkedin ||
+      formData.tiktok !== initialData.tiktok;
+
+    // Check if selected states have changed
+    const statesChanged = 
+      selectedStates.length !== initialSelectedStates.length ||
+      !selectedStates.every(state => initialSelectedStates.includes(state));
+
+    return formChanged || statesChanged;
+  };
+
+  const handleCancel = () => {
+    if (initialData) {
+      setFormData(initialData);
+      setSelectedStates(initialSelectedStates);
+    }
+  };
 
   if (loading && !formData.phone_number) {
     return <div className="p-4">Loading organization settings...</div>;
@@ -202,6 +242,64 @@ const OrganizationalSettings = () => {
           {successMessage}
         </div>
       )}
+
+      <div className="mb-8 bg-gray-100 p-4 rounded-lg shadow border border-gray-200">
+        <h3 className="font-medium text-lg mb-3">Current Settings</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <p className="text-sm text-gray-500">Warehouse State</p>
+            <p className="font-medium">{formData.warehouse_state || 'Not set'}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Phone Number</p>
+            <p className="font-medium">{formData.phone_number || 'Not set'}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Customer Support Email</p>
+            <p className="font-medium">{formData.customer_support_email || 'Not set'}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Admin Email</p>
+            <p className="font-medium">{formData.admin_email || 'Not set'}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Available States</p>
+            <p className="font-medium">
+              {selectedStates.length > 0 
+                ? `${selectedStates.length} states selected` 
+                : 'No states selected'}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Social Media</p>
+            <div className="flex space-x-2 mt-1">
+              {formData.facebook && (
+                <a href={`https://facebook.com/${formData.facebook}`} target="_blank" rel="noopener noreferrer">
+                  <span className="text-blue-600">FB</span>
+                </a>
+              )}
+              {formData.twitter && (
+                <a href={`https://twitter.com/${formData.twitter}`} target="_blank" rel="noopener noreferrer">
+                  <span className="text-blue-400">TW</span>
+                </a>
+              )}
+              {formData.linkedin && (
+                <a href={`https://linkedin.com/${formData.linkedin}`} target="_blank" rel="noopener noreferrer">
+                  <span className="text-blue-700">LI</span>
+                </a>
+              )}
+              {formData.tiktok && (
+                <a href={`https://tiktok.com/@${formData.tiktok}`} target="_blank" rel="noopener noreferrer">
+                  <span className="text-black">TT</span>
+                </a>
+              )}
+              {!formData.facebook && !formData.twitter && !formData.linkedin && !formData.tiktok && (
+                <span className="text-gray-400">None</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
       
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-6">Organizational Settings</h2>
@@ -363,21 +461,47 @@ const OrganizationalSettings = () => {
       <div className="mb-6">
         <div className="flex justify-end space-x-4 mb-8">
           <button 
-            className="px-6 py-2 border border-gray-300 rounded-md"
-            onClick={fetchOrganizationSettings}
-            disabled={loading}
+            className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+            onClick={handleCancel}
+            disabled={loading || !hasChanges()}
           >
             Cancel
           </button>
           <button 
-            className="px-6 py-2 bg-gray-800 text-white rounded-md"
-            onClick={handleSave}
-            disabled={loading}
+            className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+            onClick={() => setShowModal(true)}
+            disabled={loading || !hasChanges()}
           >
             {loading ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-lg font-medium mb-4">Confirm Changes</h3>
+            <p className="mb-6">
+              Are you sure you want to save these changes to organization settings?
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+                onClick={handleSaveConfirm}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

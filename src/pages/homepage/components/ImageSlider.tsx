@@ -23,9 +23,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
 
   // Flatten all image1, image2, image3 into a single list
   const allImages = data.flatMap((item) => [
-    { id: `${item.id}-1`, src: item.image1, alt: item.name ,name: item.name,},
-    { id: `${item.id}-2`, src: item.image2, alt: item.name , name: item.name },
-    { id: `${item.id}-3`, src: item.image3, alt: item.name , name: item.name },
+    { id: `${item.id}-1`, src: item.image1, alt: item.name ,name: item.name,}
   ]);
 
   return (

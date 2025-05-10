@@ -18,6 +18,8 @@ const DeliverySettings = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [initialData, setInitialData] = useState<DeliverySettings | null>(null);
 
   // Fetch delivery settings on component mount
   useEffect(() => {
@@ -38,9 +40,9 @@ const DeliverySettings = () => {
         }
       );
       
-      // Updated to handle direct object response instead of array
       if (response.data) {
         setFormData(response.data);
+        setInitialData(response.data);
       }
       setError(null);
     } catch (err) {
@@ -59,6 +61,11 @@ const DeliverySettings = () => {
     }));
   };
   
+  const handleSaveConfirm = () => {
+    setShowModal(false);
+    handleSave();
+  };
+
   const handleSave = async () => {
     try {
       setLoading(true);
@@ -84,6 +91,7 @@ const DeliverySettings = () => {
       
       setSuccessMessage('Delivery settings updated successfully');
       setError(null);
+      setInitialData(formData);
       
       setTimeout(() => {
         setSuccessMessage(null);
@@ -93,6 +101,22 @@ const DeliverySettings = () => {
       console.error('Error updating delivery settings:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const hasChanges = () => {
+    if (!initialData) return false;
+    return (
+      formData.base_fee !== initialData.base_fee ||
+      formData.fee_per_km !== initialData.fee_per_km ||
+      formData.weigh_fee !== initialData.weigh_fee ||
+      formData.size_fee !== initialData.size_fee
+    );
+  };
+
+  const handleCancel = () => {
+    if (initialData) {
+      setFormData(initialData);
     }
   };
   
@@ -113,6 +137,36 @@ const DeliverySettings = () => {
           {successMessage}
         </div>
       )}
+
+      <div className="mb-8 bg-gray-100 p-4 rounded-lg shadow border border-gray-200">
+        <h3 className="font-medium text-lg mb-3">Current Delivery Fees</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="border-r border-gray-200 pr-4">
+            <p className="text-sm text-gray-500">Base Fee</p>
+            <p className="font-medium text-lg">
+              {formData.base_fee ? `₦${parseFloat(formData.base_fee).toFixed(2)}` : 'Not set'}
+            </p>
+          </div>
+          <div className="border-r border-gray-200 pr-4">
+            <p className="text-sm text-gray-500">Per Kilometer</p>
+            <p className="font-medium text-lg">
+              {formData.fee_per_km ? `₦${parseFloat(formData.fee_per_km).toFixed(2)}/km` : 'Not set'}
+            </p>
+          </div>
+          <div className="border-r border-gray-200 pr-4">
+            <p className="text-sm text-gray-500">Weight Fee</p>
+            <p className="font-medium text-lg">
+              {formData.weigh_fee ? `₦${parseFloat(formData.weigh_fee).toFixed(2)}/kg` : 'Not set'}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Size Fee</p>
+            <p className="font-medium text-lg">
+              {formData.size_fee ? `₦${parseFloat(formData.size_fee).toFixed(2)}/m³` : 'Not set'}
+            </p>
+          </div>
+        </div>
+      </div>
       
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-6">Delivery Settings</h2>
@@ -173,21 +227,47 @@ const DeliverySettings = () => {
       <div className="mb-6">
         <div className="flex justify-end space-x-4 mb-8">
           <button 
-            className="px-6 py-2 border border-gray-300 rounded-md"
-            onClick={fetchDeliverySettings}
-            disabled={loading}
+            className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+            onClick={handleCancel}
+            disabled={loading || !hasChanges()}
           >
             Cancel
           </button>
           <button 
-            className="px-6 py-2 bg-gray-800 text-white rounded-md"
-            onClick={handleSave}
-            disabled={loading}
+            className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+            onClick={() => setShowModal(true)}
+            disabled={loading || !hasChanges()}
           >
             {loading ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-lg font-medium mb-4">Confirm Changes</h3>
+            <p className="mb-6">
+              Are you sure you want to save these changes to delivery settings?
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+                onClick={handleSaveConfirm}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
