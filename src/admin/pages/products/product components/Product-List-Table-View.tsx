@@ -90,6 +90,16 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
   const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([
     0, 0,
   ]);
+  const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [showEditCategoryModal, setShowEditCategoryModal] = useState(false);
+  const [selectedCategoryForEdit, setSelectedCategoryForEdit] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
+  const [editCategoryName, setEditCategoryName] = useState("");
+  const [editingCategory, setEditingCategory] = useState(false);
 
   const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
 
@@ -211,43 +221,42 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
   }, [isVisible, currentPage, selectedCategory, sortBy, priceRange, baseURL]); // Remove priceRange from dependencies
 
   // Fetch categories from the API
-  useEffect(() => {
-    const fetchCategories = async () => {
-      const accessToken = localStorage.getItem("accessToken");
-      if (!accessToken) {
-        setError("Authentication error: No access token found.");
-        return;
-      }
+  const fetchCategories = async () => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (!accessToken) {
+      setError("Authentication error: No access token found.");
+      return;
+    }
 
-      try {
-        const response = await fetch(
-          `${baseURL}/api/v1/product/sub-category/?page_size=12`,
-          {
-            headers: {
-              Authorization: `JWT ${accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+    try {
+      const response = await fetch(
+        `${baseURL}/api/v1/product/sub-category/?page_size=12`,
+        {
+          headers: {
+            Authorization: `JWT ${accessToken}`,
+            "Content-Type": "application/json",
+          },
         }
+      );
 
-        const data = await response.json();
-        const subcategories = data.results.map((item: any) => ({
-          id: item.id,
-          name: item.name,
-        }));
-        setCategories(subcategories);
-      } catch (err) {
-        console.error("Failed to fetch categories:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to fetch categories"
-        );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    };
 
+      const data = await response.json();
+      const subcategories = data.results.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+      }));
+      setCategories(subcategories);
+    } catch (err) {
+      console.error("Failed to fetch categories:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch categories"
+      );
+    }
+  };
+  useEffect(() => {
     fetchCategories();
   }, [baseURL]);
 
@@ -380,6 +389,71 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
     }
   };
 
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    setAddingCategory(true);
+    const accessToken = localStorage.getItem("accessToken");
+
+    try {
+      const response = await fetch(
+        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/category/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `JWT ${accessToken}`,
+          },
+          body: JSON.stringify({ name: newCategoryName }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to add category");
+
+      // Refresh categories
+      await fetchCategories();
+      setNewCategoryName("");
+      setShowAddCategoryModal(false);
+    } catch (error) {
+      console.error("Error adding category:", error);
+      setError("Failed to add category");
+    } finally {
+      setAddingCategory(false);
+    }
+  };
+
+  const handleEditCategory = async () => {
+    if (!editCategoryName.trim() || !selectedCategoryForEdit) return;
+    setEditingCategory(true);
+    const accessToken = localStorage.getItem("accessToken");
+
+    try {
+      const response = await fetch(
+        `${baseURL}/api/v1/product/category/${selectedCategoryForEdit.id}/`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `JWT ${accessToken}`,
+          },
+          body: JSON.stringify({ name: editCategoryName }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to edit category");
+
+      // Refresh categories
+      await fetchCategories();
+      setEditCategoryName("");
+      setShowEditCategoryModal(false);
+      setSelectedCategoryForEdit(null);
+    } catch (error) {
+      console.error("Error editing category:", error);
+      setError("Failed to edit category");
+    } finally {
+      setEditingCategory(false);
+    }
+  };
+
   return (
     <div className="bg-white p-3 rounded-lg shadow-sm">
       {/* Page Header with Add Product Button */}
@@ -391,19 +465,78 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
           My Products List
         </h2>
 
-        <button
-          className="flex items-center justify-center space-x-2 bg-gray-700 text-white px-2 py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit"
-          onClick={() => navigate("/admin/add-new-product")}
-        >
-          <FaPlus style={{ fontSize: "clamp(1px, 3vw, 15px)" }} />
-          <span
-            style={{ fontSize: "clamp(11px, 3vw, 14px)" }}
-            className="hidden md:inline-block"
+        <div className="flex gap-2">
+          <button
+            className="flex items-center justify-center space-x-2 bg-gray-700 text-white px-2 py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit"
+            onClick={() => setShowAddCategoryModal(true)}
           >
-            Add New Product
-          </span>
-        </button>
+            <FaPlus style={{ fontSize: "clamp(1px, 3vw, 15px)" }} />
+            <span
+              style={{ fontSize: "clamp(11px, 3vw, 14px)" }}
+              className="hidden md:inline-block"
+            >
+              Add Category
+            </span>
+          </button>
+          <button
+            className="flex items-center justify-center space-x-2 bg-gray-700 text-white px-2 py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit"
+            onClick={() => navigate("/admin/admin-categories")}
+          >
+            <span
+              style={{ fontSize: "clamp(11px, 3vw, 14px)" }}
+              className="hidden md:inline-block"
+            >
+              Category
+            </span>
+          </button>
+          <button
+            className="flex items-center justify-center space-x-2 bg-gray-700 text-white px-2 py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit"
+            onClick={() => navigate("/admin/add-new-product")}
+          >
+            <FaPlus style={{ fontSize: "clamp(1px, 3vw, 15px)" }} />
+            <span
+              style={{ fontSize: "clamp(11px, 3vw, 14px)" }}
+              className="hidden md:inline-block"
+            >
+              Add New Product
+            </span>
+          </button>
+        </div>
       </div>
+
+      {/* Add Category Modal */}
+      {showAddCategoryModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-md rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Add New Category
+            </h3>
+            <input
+              type="text"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              placeholder="Enter category name"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+            />
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowAddCategoryModal(false)}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                disabled={addingCategory}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddCategory}
+                className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+                disabled={addingCategory}
+              >
+                {addingCategory ? "Adding..." : "Add Category"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Top Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0">
@@ -418,24 +551,20 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setSelectedCategoryForEdit(category);
+                    setEditCategoryName(category.name);
+                    setShowEditCategoryModal(true);
+                  }}
+                  className="ml-2 text-blue-500 hover:text-blue-700"
+                >
+                  Edit
+                </button>
               </option>
             ))}
           </select>
-          <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-            <svg
-              className="w-4 h-4 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
         </div>
 
         {/* Right Controls */}
@@ -855,6 +984,44 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                 className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Category Modal */}
+      {showEditCategoryModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-md rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Edit Category
+            </h3>
+            <input
+              type="text"
+              value={editCategoryName}
+              onChange={(e) => setEditCategoryName(e.target.value)}
+              placeholder="Enter new category name"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+            />
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => {
+                  setShowEditCategoryModal(false);
+                  setSelectedCategoryForEdit(null);
+                  setEditCategoryName("");
+                }}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                disabled={editingCategory}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEditCategory}
+                className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+                disabled={editingCategory}
+              >
+                {editingCategory ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </div>

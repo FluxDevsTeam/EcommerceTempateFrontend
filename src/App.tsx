@@ -20,6 +20,7 @@ import TermsOfService from "./pages/cart/TermsOfService";
 import AddNewProduct from "./admin/pages/products/product components/AddNewProduct";
 import EditProduct from "./admin/pages/products/product components/EditProduct";
 import AdminProductDetails from "./admin/pages/products/product components/AdminProductDetails";
+import AdminCategories from "./admin/pages/products/product components/AdminCategories";
 import Orders from "./pages/orders/Order";
 import ProductDetail from "./components/products/ProductDetail";
 import Categories from "./pages/categories/Categories";
@@ -105,6 +106,7 @@ const AppContent: React.FC = () => {
           path="admin-products-details/:id"
           element={<AdminProductDetails />}
         />
+        <Route path="admin-categories" element={<AdminCategories />} />
 
         <Route path="orders" element={<AdminOrders />} />
         <Route path="settings" element={<Settings />} />
