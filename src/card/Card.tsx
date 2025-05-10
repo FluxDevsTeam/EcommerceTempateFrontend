@@ -13,24 +13,32 @@ const Card: React.FC<CardProps> = ({
   const [wishItemId, setWishItemId] = useState<number | null>(initialWishItemId ?? null);
   const [visible, setVisible] = useState(true);
 
-  const handleToggle = async () => {
-    try {
-      if (liked && wishItemId) {
-        setLiked(false);
-        await deleteWishItem(wishItemId);
-        setWishItemId(null);
-        if (removeOnUnlike) {
-          setVisible(false); // Only hide card if it's on wishlist page
-        }
-      } else {
-        setLiked(true);
-        const newItem: WishItem = await addWishItem(product.id);
-        setWishItemId(newItem.id);
-      }
-    } catch (error) {
-      console.error('Error toggling wishlist:', error);
+const handleToggle = async () => {
+  try {
+    const storedWishList = JSON.parse(localStorage.getItem('wishlist') || '[]');
+
+    if (liked && wishItemId) {
+      setLiked(false);
+      localStorage.setItem(
+        'wishlist',
+        JSON.stringify(storedWishList.filter((id: number) => id !== product.id))
+      );
+
+      await deleteWishItem(wishItemId);
+      setWishItemId(null);
+
+      if (removeOnUnlike) setVisible(false);
+    } else {
+      setLiked(true);
+      localStorage.setItem('wishlist', JSON.stringify([...storedWishList, product.id]));
+
+      const newItem: WishItem = await addWishItem(product.id);
+      setWishItemId(newItem.id);
     }
-  };
+  } catch (error) {
+    console.error('Error toggling wishlist:', error);
+  }
+};
 
   if (!visible) return null;
 
