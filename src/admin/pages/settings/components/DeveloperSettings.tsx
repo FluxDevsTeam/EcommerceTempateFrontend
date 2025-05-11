@@ -1,7 +1,28 @@
 import { useState, useEffect } from "react";
 
-const DeveloperSettings = () => {
-  const [formData, setFormData] = useState({
+// Define interfaces for our data structures
+interface DeveloperSettingsData {
+  brand_name: string;
+  contact_us: string;
+  terms_of_service: string;
+  backend_base_route: string;
+  frontend_base_route: string;
+  order_route_frontend: string;
+  payment_failed_url: string;
+}
+
+interface UiFormData {
+  businessName: string;
+  contact: string;
+  termsOfService: string;
+  backendRoute: string;
+  frontendRoute: string;
+  orderRoute: string;
+  paymentFailedUrl: string;
+}
+
+const DeveloperSettings: React.FC = () => {
+  const [formData, setFormData] = useState<DeveloperSettingsData>({
     brand_name: "",
     contact_us: "",
     terms_of_service: "",
@@ -10,23 +31,24 @@ const DeveloperSettings = () => {
     order_route_frontend: "",
     payment_failed_url: "",
   });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [initialData, setInitialData] = useState<DeveloperSettingsData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [showModal, setShowModal] = useState<boolean>(false);
 
   useEffect(() => {
     fetchDeveloperSettings();
   }, []);
 
-  const fetchDeveloperSettings = async () => {
+  const fetchDeveloperSettings = async (): Promise<void> => {
     try {
       setLoading(true);
       const token = localStorage.getItem("accessToken");
       // Simulating API call for demo purposes
       setTimeout(() => {
-        setFormData({
+        const data: DeveloperSettingsData = {
           brand_name: "Demo Company",
           contact_us: "contact@demo.com",
           terms_of_service: "https://demo.com/terms",
@@ -34,7 +56,9 @@ const DeveloperSettings = () => {
           frontend_base_route: "https://demo.com",
           order_route_frontend: "/orders",
           payment_failed_url: "/payment/failed",
-        });
+        };
+        setFormData(data);
+        setInitialData(data);
         setLoading(false);
       }, 1000);
     } catch (err) {
@@ -44,7 +68,7 @@ const DeveloperSettings = () => {
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     const apiFieldName = mapFieldNameToApi(name);
     setFormData((prev) => ({
@@ -53,8 +77,8 @@ const DeveloperSettings = () => {
     }));
   };
 
-  const mapFieldNameToApi = (fieldName) => {
-    const mapping = {
+  const mapFieldNameToApi = (fieldName: string): string => {
+    const mapping: Record<string, keyof DeveloperSettingsData> = {
       businessName: "brand_name",
       contact: "contact_us",
       termsOfService: "terms_of_service",
@@ -67,7 +91,7 @@ const DeveloperSettings = () => {
     return mapping[fieldName] || fieldName;
   };
 
-  const getUiFormData = () => {
+  const getUiFormData = (): UiFormData => {
     return {
       businessName: formData.brand_name || "",
       contact: formData.contact_us || "",
@@ -79,18 +103,19 @@ const DeveloperSettings = () => {
     };
   };
 
-  const handleSaveConfirm = () => {
+  const handleSaveConfirm = (): void => {
     setShowModal(false);
     handleSave();
   };
 
-  const handleSave = async () => {
+  const handleSave = async (): Promise<void> => {
     try {
       setLoading(true);
       // Simulating API call for demo purposes
       setTimeout(() => {
         setSuccessMessage("Developer settings updated successfully");
         setError(null);
+        setInitialData({...formData});
         setLoading(false);
         
         setTimeout(() => {
@@ -104,7 +129,26 @@ const DeveloperSettings = () => {
     }
   };
 
-  if (loading && !formData.brand_name) {
+  const hasChanges = (): boolean => {
+    if (!initialData) return false;
+    return (
+      formData.brand_name !== initialData.brand_name ||
+      formData.contact_us !== initialData.contact_us ||
+      formData.terms_of_service !== initialData.terms_of_service ||
+      formData.backend_base_route !== initialData.backend_base_route ||
+      formData.frontend_base_route !== initialData.frontend_base_route ||
+      formData.order_route_frontend !== initialData.order_route_frontend ||
+      formData.payment_failed_url !== initialData.payment_failed_url
+    );
+  };
+
+  const handleCancel = (): void => {
+    if (initialData) {
+      setFormData({...initialData});
+    }
+  };
+
+  if (loading && !initialData) {
     return <div className="p-4">Loading developer settings...</div>;
   }
 
@@ -123,8 +167,6 @@ const DeveloperSettings = () => {
           {successMessage}
         </div>
       )}
-
-      
 
       <div className="mb-4">
         <div
@@ -149,65 +191,59 @@ const DeveloperSettings = () => {
             />
           </svg>
         </div>
-        
 
         {isCollapsed && (
-
-          
           <div className="mt-4 transition-all duration-300 ease-in-out">
+            <div className="mb-6 bg-gray-100 p-4 rounded-lg shadow border border-gray-200">
+              <h3 className="font-medium text-lg mb-3">Current Developer Settings</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Business Name</p>
+                  <p className="font-medium truncate">{initialData?.brand_name || 'Not set'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Contact Email</p>
+                  <p className="font-medium truncate">
+                    {initialData?.contact_us ? (
+                      <a href={`mailto:${initialData.contact_us}`} className="text-blue-600 hover:underline">
+                        {initialData.contact_us}
+                      </a>
+                    ) : (
+                      'Not set'
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Terms of Service</p>
+                  <p className="font-medium truncate">{initialData?.terms_of_service|| 'Not set'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Backend Base URL</p>
+                  <p className="font-medium truncate">{initialData?.backend_base_route || 'Not set'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Frontend Base URL</p>
+                  <p className="font-medium truncate">{initialData?.frontend_base_route || 'Not set'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Payment Failed URL</p>
+                  <p className="font-medium truncate">{initialData?.payment_failed_url || 'Not set'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Order Route</p>
+                  <p className="font-medium truncate">{initialData?.order_route_frontend|| 'Not set'}</p>
+                </div>
+              </div>
+            </div>
 
-<div className="mb-6 bg-gray-100 p-4 rounded-lg shadow border border-gray-200">
-  <h3 className="font-medium text-lg mb-3">Current Developer Settings</h3>
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <div>
-      <p className="text-sm text-gray-500">Business Name</p>
-      <p className="font-medium truncate">{formData.brand_name || 'Not set'}</p>
-    </div>
-    <div>
-      <p className="text-sm text-gray-500">Contact Email</p>
-      <p className="font-medium truncate">
-        {formData.contact_us ? (
-          <a href={`mailto:${formData.contact_us}`} className="text-blue-600 hover:underline">
-            {formData.contact_us}
-          </a>
-        ) : (
-          'Not set'
-        )}
-      </p>
-    </div>
-    <div>
-      <p className="text-sm text-gray-500">Terms of Service</p>
-      <p className="font-medium truncate">
-        {formData.terms_of_service ? (
-          <a href={formData.terms_of_service} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-            View Terms
-          </a>
-        ) : (
-          'Not set'
-        )}
-      </p>
-    </div>
-    <div>
-      <p className="text-sm text-gray-500">Backend Base URL</p>
-      <p className="font-medium truncate">{formData.backend_base_route || 'Not set'}</p>
-    </div>
-    <div>
-      <p className="text-sm text-gray-500">Frontend Base URL</p>
-      <p className="font-medium truncate">{formData.frontend_base_route || 'Not set'}</p>
-    </div>
-    <div>
-      <p className="text-sm text-gray-500">Payment Failed URL</p>
-      <p className="font-medium truncate">{formData.payment_failed_url || 'Not set'}</p>
-    </div>
-  </div>
-</div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2" htmlFor="businessName">
                   Business Name
                 </label>
                 <input
                   type="text"
+                  id="businessName"
                   name="businessName"
                   value={uiFormData.businessName}
                   onChange={handleChange}
@@ -218,9 +254,12 @@ const DeveloperSettings = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Contact</label>
+                <label className="block text-sm font-medium mb-2" htmlFor="contact">
+                  Contact
+                </label>
                 <input
                   type="text"
+                  id="contact"
                   name="contact"
                   value={uiFormData.contact}
                   onChange={handleChange}
@@ -233,11 +272,12 @@ const DeveloperSettings = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2" htmlFor="termsOfService">
                   Terms of Service
                 </label>
                 <input
                   type="text"
+                  id="termsOfService"
                   name="termsOfService"
                   value={uiFormData.termsOfService}
                   onChange={handleChange}
@@ -248,11 +288,12 @@ const DeveloperSettings = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2" htmlFor="backendRoute">
                   Backend Route
                 </label>
                 <input
                   type="text"
+                  id="backendRoute"
                   name="backendRoute"
                   value={uiFormData.backendRoute}
                   onChange={handleChange}
@@ -265,11 +306,12 @@ const DeveloperSettings = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2" htmlFor="frontendRoute">
                   Frontend Route
                 </label>
                 <input
                   type="text"
+                  id="frontendRoute"
                   name="frontendRoute"
                   value={uiFormData.frontendRoute}
                   onChange={handleChange}
@@ -280,11 +322,12 @@ const DeveloperSettings = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2" htmlFor="orderRoute">
                   Order Route
                 </label>
                 <input
                   type="text"
+                  id="orderRoute"
                   name="orderRoute"
                   value={uiFormData.orderRoute}
                   onChange={handleChange}
@@ -295,11 +338,12 @@ const DeveloperSettings = () => {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2" htmlFor="paymentFailedUrl">
                 Payment Failed URL
               </label>
               <input
                 type="text"
+                id="paymentFailedUrl"
                 name="paymentFailedUrl"
                 value={uiFormData.paymentFailedUrl}
                 onChange={handleChange}
@@ -312,15 +356,17 @@ const DeveloperSettings = () => {
             <div className="flex justify-end space-x-4 mt-8">
               <button
                 className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-                onClick={fetchDeveloperSettings}
-                disabled={loading}
+                onClick={handleCancel}
+                disabled={loading || !hasChanges()}
+                type="button"
               >
                 Cancel
               </button>
               <button
                 className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
                 onClick={() => setShowModal(true)}
-                disabled={loading}
+                disabled={loading || !hasChanges()}
+                type="button"
               >
                 {loading ? "Saving..." : "Save Changes"}
               </button>
@@ -341,12 +387,14 @@ const DeveloperSettings = () => {
               <button
                 className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
                 onClick={() => setShowModal(false)}
+                type="button"
               >
                 Cancel
               </button>
               <button
                 className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
                 onClick={handleSaveConfirm}
+                type="button"
               >
                 Confirm
               </button>

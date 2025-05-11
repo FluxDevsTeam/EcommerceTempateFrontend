@@ -138,35 +138,35 @@ const DeliverySettings = () => {
         </div>
       )}
 
-      <div className="mb-8 bg-gray-100 p-4 rounded-lg shadow border border-gray-200">
-        <h3 className="font-medium text-lg mb-3">Current Delivery Fees</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="border-r border-gray-200 pr-4">
-            <p className="text-sm text-gray-500">Base Fee</p>
-            <p className="font-medium text-lg">
-              {formData.base_fee ? `₦${parseFloat(formData.base_fee).toFixed(2)}` : 'Not set'}
-            </p>
-          </div>
-          <div className="border-r border-gray-200 pr-4">
-            <p className="text-sm text-gray-500">Per Kilometer</p>
-            <p className="font-medium text-lg">
-              {formData.fee_per_km ? `₦${parseFloat(formData.fee_per_km).toFixed(2)}/km` : 'Not set'}
-            </p>
-          </div>
-          <div className="border-r border-gray-200 pr-4">
-            <p className="text-sm text-gray-500">Weight Fee</p>
-            <p className="font-medium text-lg">
-              {formData.weigh_fee ? `₦${parseFloat(formData.weigh_fee).toFixed(2)}/kg` : 'Not set'}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Size Fee</p>
-            <p className="font-medium text-lg">
-              {formData.size_fee ? `₦${parseFloat(formData.size_fee).toFixed(2)}/m³` : 'Not set'}
-            </p>
-          </div>
-        </div>
-      </div>
+<div className="mb-8 bg-gray-100 p-4 rounded-lg shadow border border-gray-200">
+  <h3 className="font-medium text-lg mb-3">Current Delivery Fees</h3>
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="border-r border-gray-200 pr-4">
+      <p className="text-sm text-gray-500">Base Fee</p>
+      <p className="font-medium text-lg">
+        {initialData?.base_fee ? `₦${parseFloat(initialData.base_fee).toFixed(2)}` : 'Not set'}
+      </p>
+    </div>
+    <div className="border-r border-gray-200 pr-4">
+      <p className="text-sm text-gray-500">Per Kilometer</p>
+      <p className="font-medium text-lg">
+        {initialData?.fee_per_km ? `₦${parseFloat(initialData.fee_per_km).toFixed(2)}/km` : 'Not set'}
+      </p>
+    </div>
+    <div className="border-r border-gray-200 pr-4">
+      <p className="text-sm text-gray-500">Weight Fee</p>
+      <p className="font-medium text-lg">
+        {initialData?.weigh_fee ? `₦${parseFloat(initialData.weigh_fee).toFixed(2)}/kg` : 'Not set'}
+      </p>
+    </div>
+    <div>
+      <p className="text-sm text-gray-500">Size Fee</p>
+      <p className="font-medium text-lg">
+        {initialData?.size_fee ? `₦${parseFloat(initialData.size_fee).toFixed(2)}/m³` : 'Not set'}
+      </p>
+    </div>
+  </div>
+</div>
       
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-6">Delivery Settings</h2>

@@ -243,64 +243,63 @@ const OrganizationalSettings = () => {
         </div>
       )}
 
-      <div className="mb-8 bg-gray-100 p-4 rounded-lg shadow border border-gray-200">
-        <h3 className="font-medium text-lg mb-3">Current Settings</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div>
-            <p className="text-sm text-gray-500">Warehouse State</p>
-            <p className="font-medium">{formData.warehouse_state || 'Not set'}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Phone Number</p>
-            <p className="font-medium">{formData.phone_number || 'Not set'}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Customer Support Email</p>
-            <p className="font-medium">{formData.customer_support_email || 'Not set'}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Admin Email</p>
-            <p className="font-medium">{formData.admin_email || 'Not set'}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Available States</p>
-            <p className="font-medium">
-              {selectedStates.length > 0 
-                ? `${selectedStates.length} states selected` 
-                : 'No states selected'}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Social Media</p>
-            <div className="flex space-x-2 mt-1">
-              {formData.facebook && (
-                <a href={`https://facebook.com/${formData.facebook}`} target="_blank" rel="noopener noreferrer">
-                  <span className="text-blue-600">FB</span>
-                </a>
-              )}
-              {formData.twitter && (
-                <a href={`https://twitter.com/${formData.twitter}`} target="_blank" rel="noopener noreferrer">
-                  <span className="text-blue-400">TW</span>
-                </a>
-              )}
-              {formData.linkedin && (
-                <a href={`https://linkedin.com/${formData.linkedin}`} target="_blank" rel="noopener noreferrer">
-                  <span className="text-blue-700">LI</span>
-                </a>
-              )}
-              {formData.tiktok && (
-                <a href={`https://tiktok.com/@${formData.tiktok}`} target="_blank" rel="noopener noreferrer">
-                  <span className="text-black">TT</span>
-                </a>
-              )}
-              {!formData.facebook && !formData.twitter && !formData.linkedin && !formData.tiktok && (
-                <span className="text-gray-400">None</span>
-              )}
-            </div>
-          </div>
-        </div>
+<div className="mb-8 bg-gray-100 p-4 rounded-lg shadow border border-gray-200">
+  <h3 className="font-medium text-lg mb-3">Current Settings</h3>
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div>
+      <p className="text-sm text-gray-500">Warehouse State</p>
+      <p className="font-medium">{initialData?.warehouse_state || 'Not set'}</p>
+    </div>
+    <div>
+      <p className="text-sm text-gray-500">Phone Number</p>
+      <p className="font-medium">{initialData?.phone_number || 'Not set'}</p>
+    </div>
+    <div>
+      <p className="text-sm text-gray-500">Customer Support Email</p>
+      <p className="font-medium">{initialData?.customer_support_email || 'Not set'}</p>
+    </div>
+    <div>
+      <p className="text-sm text-gray-500">Admin Email</p>
+      <p className="font-medium">{initialData?.admin_email || 'Not set'}</p>
+    </div>
+    <div>
+      <p className="text-sm text-gray-500">Available States</p>
+      <p className="font-medium">
+        {initialSelectedStates.length > 0 
+          ? `${initialSelectedStates.length} states selected` 
+          : 'No states selected'}
+      </p>
+    </div>
+    <div>
+      <p className="text-sm text-gray-500">Social Media</p>
+      <div className="flex space-x-2 mt-1">
+        {initialData?.facebook && (
+          <a href={`https://facebook.com/${initialData.facebook}`} target="_blank" rel="noopener noreferrer">
+            <span className="text-blue-600">FB</span>
+          </a>
+        )}
+        {initialData?.twitter && (
+          <a href={`https://twitter.com/${initialData.twitter}`} target="_blank" rel="noopener noreferrer">
+            <span className="text-blue-400">TW</span>
+          </a>
+        )}
+        {initialData?.linkedin && (
+          <a href={`https://linkedin.com/${initialData.linkedin}`} target="_blank" rel="noopener noreferrer">
+            <span className="text-blue-700">LI</span>
+          </a>
+        )}
+        {initialData?.tiktok && (
+          <a href={`https://tiktok.com/@${initialData.tiktok}`} target="_blank" rel="noopener noreferrer">
+            <span className="text-black">TT</span>
+          </a>
+        )}
+        {!initialData?.facebook && !initialData?.twitter && !initialData?.linkedin && !initialData?.tiktok && (
+          <span className="text-gray-400">None</span>
+        )}
       </div>
-      
+    </div>
+  </div>
+</div>
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-6">Organizational Settings</h2>
         
