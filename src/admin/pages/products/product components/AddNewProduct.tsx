@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Modal from "../../../../components/ui/Modal";
 import { IoChevronBack, IoSearch, IoClose } from "react-icons/io5";
+import PaginatedDropdown from '../components/PaginatedDropdown';
 
 interface SubCategory {
   id: number;
@@ -210,7 +211,8 @@ const AddNewProduct: React.FC = () => {
     }
   };
 
-  const handleSaveChanges = async (e: React.FormEvent) => {
+  // Update handleSaveChanges to use click event
+  const handleSaveChanges = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setLoading(true);
     setViewProductPreviewModal(false); // Close preview modal if open
@@ -317,7 +319,7 @@ const AddNewProduct: React.FC = () => {
         </div>
 
         {/* Main Form */}
-        <form onSubmit={handleSaveChanges} className="space-y-8">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {/* Basic Information Section */}
             <div className="p-6 border-b border-gray-200">
@@ -353,84 +355,13 @@ const AddNewProduct: React.FC = () => {
                       Manage Categories
                     </button>
                   </div>
-                  <div className="relative">
-                    {isSearchMode ? (
-                      <div className="relative">
-                        <input
-                          type="text"
-                          placeholder="Search categories..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                          autoFocus
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsSearchMode(false);
-                            setSearchQuery("");
-                          }}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        >
-                          <IoClose size={20} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="relative">
-                        <select
-                          name="sub_category"
-                          required
-                          value={formData.sub_category || ""}
-                          onChange={handleChange}
-                          className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm appearance-none"
-                        >
-                          <option value="">Select Category</option>
-                          {filteredCategories.map((category) => (
-                            <option key={category.id} value={category.id}>
-                              {category.name}
-                            </option>
-                          ))}
-                        </select>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setIsSearchMode(true);
-                          }}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        >
-                          <IoSearch size={20} />
-                        </button>
-                      </div>
-                    )}
-                    {isSearchMode && searchQuery && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-                        {filteredCategories.length > 0 ? (
-                          filteredCategories.map((category) => (
-                            <button
-                              key={category.id}
-                              type="button"
-                              onClick={() => {
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  sub_category: category.id,
-                                }));
-                                setIsSearchMode(false);
-                                setSearchQuery("");
-                              }}
-                              className="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
-                            >
-                              {category.name}
-                            </button>
-                          ))
-                        ) : (
-                          <div className="px-4 py-2 text-gray-500">
-                            No categories found
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <PaginatedDropdown
+                    options={categories}
+                    value={formData.sub_category || ''}
+                    onChange={(value) => setFormData(prev => ({ ...prev, sub_category: value }))}
+                    placeholder="Select Category"
+                    required
+                  />
                 </div>
 
                 <div className="md:col-span-2">
@@ -826,7 +757,8 @@ const AddNewProduct: React.FC = () => {
               Preview Product
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={handleSaveChanges}
               disabled={loading || !isFormValid()}
               className={`px-6 py-3 border border-transparent text-base font-medium rounded-md text-white
                 ${loading || !isFormValid() ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}

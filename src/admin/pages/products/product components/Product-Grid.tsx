@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { FaThList, FaTh, FaPlus, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import PaginatedDropdown from '../components/PaginatedDropdown';
 
 // --- Reusing Interfaces from Product-List-Table-View ---
 interface Category {
@@ -114,10 +115,11 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
       setError("Authentication error: No access token found.");
       return;
     }
-
+  
     try {
-      const response = await fetch(
-        `${baseURL}/api/v1/product/sub-category/?page_size=12`,
+      // First fetch to get total count
+      const initialResponse = await fetch(
+        `${baseURL}/api/v1/product/sub-category/`,
         {
           headers: {
             Authorization: `JWT ${accessToken}`,
@@ -125,18 +127,41 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
           },
         }
       );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  
+      if (!initialResponse.ok) {
+        throw new Error(`HTTP error! status: ${initialResponse.status}`);
       }
-
-      const data = await response.json();
-      // Extract unique subcategories from the response
-      const subcategories = data.results.map((item: any) => ({
-        id: item.id,
-        name: item.name, // Using the subcategory name
-      }));
-      setCategories(subcategories);
+  
+      const initialData = await initialResponse.json();
+      const totalItems = initialData.count;
+      const itemsPerPage = 10;
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+  
+      // Fetch all pages in parallel
+      const fetchPromises = [];
+      for (let page = 1; page <= totalPages; page++) {
+        fetchPromises.push(
+          fetch(
+            `${baseURL}/api/v1/product/sub-category/?page=${page}`,
+            {
+              headers: {
+                Authorization: `JWT ${accessToken}`,
+                "Content-Type": "application/json",
+              },
+            }
+          ).then((response) => response.json())
+        );
+      }
+  
+      // Wait for all requests to complete
+      const responses = await Promise.all(fetchPromises);
+  
+      // Combine all results
+      const allCategories = responses.reduce((acc, response) => {
+        return [...acc, ...response.results];
+      }, []);
+  
+      setCategories(allCategories);
     } catch (err) {
       console.error("Failed to fetch categories:", err);
       setError(
@@ -223,17 +248,29 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
 
         // Filter for out of stock items if that option is selected
         let filteredResults = paginatedData.results;
+        let totalCount = paginatedData.count; // Store the total count from API
+
         if (sortBy === "out_of_stock") {
           filteredResults = paginatedData.results.filter(
             (product) =>
               !product.unlimited &&
               (!product.total_quantity || product.total_quantity === 0) &&
-              product.is_available // Only include available items that have 0 quantity
+              product.is_available
           );
+          // Don't update totalCount here as it would affect pagination
         }
 
-        setProducts(filteredResults || []);
-        setTotalProducts(filteredResults.length || 0);
+        // Calculate price range only if needed
+        if (priceRange[0] === 0 && priceRange[1] === 0) {
+          const prices = filteredResults.map((product) => Number(product.price));
+          const minPrice = Math.min(...prices);
+          const maxPrice = Math.max(...prices);
+          setDbPriceRange([minPrice, maxPrice]);
+          setPriceRange([minPrice, maxPrice]);
+        }
+
+        setProducts(filteredResults);
+        setTotalProducts(totalCount); // Use the total count from API
         setNextPageUrl(paginatedData.next);
         setPrevPageUrl(paginatedData.previous);
       } catch (err) {
@@ -272,8 +309,9 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
   }, [dbPriceRange]);
 
   const handlePageChange = (page: number) => {
-    // Add checks to ensure page is within valid range if needed
-    setCurrentPage(page);
+    if (page >= 1 && page <= Math.ceil(totalProducts / ITEMS_PER_PAGE)) {
+      setCurrentPage(page);
+    }
   };
 
   const handleDelete = async (productId: number, productName: string) => {
@@ -445,29 +483,13 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
         <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0">
           {/* Modified Search Input to Category Dropdown */}
           <div className="relative w-full sm:max-w-xs mr-0 sm:mr-4">
-            <select
+            <PaginatedDropdown
+              options={categories}
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full pl-3 pr-8 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-            >
-              <option value="">All Categories</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setSelectedCategoryForEdit(category);
-                      setEditCategoryName(category.name);
-                      setShowEditCategoryModal(true);
-                    }}
-                    className="ml-2 text-blue-500 hover:text-blue-700"
-                  >
-                    Edit
-                  </button>
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setSelectedCategory(String(value))}
+              placeholder="All Categories"
+              className="w-full"
+            />
           </div>
 
           {/* Right Controls */}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack, IoSearch, IoClose } from "react-icons/io5";
 import Modal from "../../../../components/ui/Modal";
+import PaginatedDropdown from '../components/PaginatedDropdown';
 
 interface SubCategory {
   id: number;
@@ -15,7 +16,6 @@ interface SubCategory {
 const EditProduct: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [loading, setLoading] = useState(false);
   const [selectedImages, setSelectedImages] = useState<(File | null)[]>([
     null,
     null,
@@ -73,6 +73,7 @@ const EditProduct: React.FC = () => {
   });
 
   const [hasChanges, setHasChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Define size and weight options
   const sizeOptions = [
@@ -99,55 +100,74 @@ const EditProduct: React.FC = () => {
 
   const [isSearchMode, setIsSearchMode] = useState(false);
 
-  // Add this new function inside component but before useEffect
-  const fetchAllCategories = async (
-    url: string,
-    allCategories: SubCategory[] = []
-  ): Promise<SubCategory[]> => {
-    const accessToken = localStorage.getItem("accessToken");
-    if (!accessToken) {
-      throw new Error("No access token found");
-    }
+  const [loading, setLoading] = useState(false);
+  const [updateLoading, setUpdateLoading] = useState(false);
 
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `JWT ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const updatedCategories = [...allCategories, ...data.results];
-
-    // If there's a next page, fetch it recursively
-    if (data.next) {
-      return fetchAllCategories(data.next, updatedCategories);
-    }
-
-    return updatedCategories;
-  };
-
-  // Replace the existing categories fetch useEffect with this one
   useEffect(() => {
     const fetchCategories = async () => {
+      const accessToken = localStorage.getItem("accessToken");
+
+      if (!accessToken) {
+        setModalConfig({
+          isOpen: true,
+          title: "Error",
+          message: "No access token found. Please login again.",
+          type: "error",
+        });
+        return;
+      }
+
       try {
-        const baseUrl =
-          "https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/";
-        const allCategories = await fetchAllCategories(baseUrl);
+        const initialResponse = await fetch(
+          "https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/",
+          {
+            headers: {
+              Authorization: `JWT ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!initialResponse.ok) {
+          throw new Error(`HTTP error! status: ${initialResponse.status}`);
+        }
+
+        const initialData = await initialResponse.json();
+        const totalItems = initialData.count;
+        const itemsPerPage = 10;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+        // Fetch all pages
+        const fetchPromises = [];
+        for (let page = 1; page <= totalPages; page++) {
+          fetchPromises.push(
+            fetch(
+              `https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/?page=${page}`,
+              {
+                headers: {
+                  Authorization: `JWT ${accessToken}`,
+                  "Content-Type": "application/json",
+                }
+              }
+            ).then((response) => response.json())
+          );
+        }
+
+        // Wait for all requests to complete
+        const responses = await Promise.all(fetchPromises);
+
+        // Combine all results
+        const allCategories = responses.reduce((acc, response) => {
+          return [...acc, ...response.results];
+        }, []);
+
         setCategories(allCategories);
       } catch (error) {
         console.error("Error fetching categories:", error);
         setModalConfig({
           isOpen: true,
           title: "Error",
-          message:
-            error instanceof Error
-              ? error.message
-              : "Failed to fetch categories",
+          message: error instanceof Error ? error.message : "Failed to fetch categories",
           type: "error",
         });
       }
@@ -165,7 +185,6 @@ const EditProduct: React.FC = () => {
   }, [searchQuery, categories]);
 
   const fetchProduct = async () => {
-    setLoading(true);
     const accessToken = localStorage.getItem("accessToken");
 
     if (!accessToken) {
@@ -175,7 +194,6 @@ const EditProduct: React.FC = () => {
         message: "No access token found. Please login again.",
         type: "error",
       });
-      setLoading(false);
       return;
     }
 
@@ -224,8 +242,6 @@ const EditProduct: React.FC = () => {
           error instanceof Error ? error.message : "Failed to fetch product",
         type: "error",
       });
-    } finally {
-      setLoading(false);
     }
   };
   useEffect(() => {
@@ -245,9 +261,9 @@ const EditProduct: React.FC = () => {
     navigate("/admin/products");
   };
 
-  const handleSaveChanges = async (e: React.FormEvent) => {
+  const handleSaveChanges = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSaving(true);
     const accessToken = localStorage.getItem("accessToken");
     console.log("Starting product update...");
 
@@ -258,7 +274,7 @@ const EditProduct: React.FC = () => {
         message: "No access token found. Please login again.",
         type: "error",
       });
-      setLoading(false);
+      setIsSaving(false);
       return;
     }
 
@@ -326,7 +342,7 @@ const EditProduct: React.FC = () => {
         type: "error",
       });
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -367,13 +383,6 @@ const EditProduct: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      {loading && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg">
-            <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full" />
-          </div>
-        </div>
-      )}
       <div className="max-w-7xl mx-auto mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Your Products</h1>
         <p className="text-gray-600">
@@ -427,7 +436,7 @@ const EditProduct: React.FC = () => {
         </div>
 
         {/* Main Form */}
-        <form onSubmit={handleSaveChanges} className="space-y-8">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
           <div className="bg-white shadow rounded-lg overflow-hidden">
             {/* Basic Information Section */}
             {/* <div className="p-6 border-b border-gray-200"> */}
@@ -464,85 +473,13 @@ const EditProduct: React.FC = () => {
                       Manage Categories
                     </button>
                   </div>
-                  <div className="relative">
-                    {isSearchMode ? (
-                      <div className="relative">
-                        <input
-                        required
-                          type="text"
-                          placeholder="Search categories..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                          autoFocus
-                        />
-                        <button
-                          onClick={() => {
-                            setIsSearchMode(false);
-                            setSearchQuery("");
-                          }}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        >
-                          <IoClose size={20} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="relative">
-                        <select
-                          name="sub_category"
-                          required
-                          value={formData.sub_category || ""}
-                          onChange={handleChange}
-                          className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm appearance-none"
-                        >
-                          <option value={formData.sub_category}>{individualProductCategory}</option>
-                          {filteredCategories.map((category) => (
-                            category.id !== formData.sub_category && (
-                              <option key={category.id} value={category.id}>
-                                {category.name}
-                              </option>
-                            )
-                          ))}
-                        </select>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setIsSearchMode(true);
-                          }}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        >
-                          <IoSearch size={20} />
-                        </button>
-                      </div>
-                    )}
-                    {isSearchMode && searchQuery && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-                        {filteredCategories.length > 0 ? (
-                          filteredCategories.map((category) => (
-                            <button
-                              key={category.id}
-                              onClick={() => {
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  sub_category: category.id,
-                                }));
-                                setIsSearchMode(false);
-                                setSearchQuery("");
-                              }}
-                              className="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
-                            >
-                              {category.name}
-                            </button>
-                          ))
-                        ) : (
-                          <div className="px-4 py-2 text-gray-500">
-                            No categories found
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <PaginatedDropdown
+                    options={categories}
+                    value={formData.sub_category}
+                    onChange={(value) => setFormData(prev => ({ ...prev, sub_category: value }))}
+                    placeholder="Select Category"
+                    required
+                  />
                 </div>
 
                 <div className="md:col-span-2">
@@ -912,13 +849,14 @@ const EditProduct: React.FC = () => {
               Cancel
             </button>
             <button
-              type="submit"
-              disabled={!hasChanges || loading}
+              type="button" // Change from "submit" to "button"
+              onClick={handleSaveChanges}
+              disabled={!hasChanges || isSaving}
               className={`px-6 py-3 border border-transparent text-base font-medium rounded-md text-white ${
                 hasChanges ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
               } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50`}
             >
-              {loading ? (
+              {isSaving ? (
                 <div className="flex items-center">
                   <svg
                     className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
@@ -940,7 +878,7 @@ const EditProduct: React.FC = () => {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Updating Product...
+                  Saving Changes...
                 </div>
               ) : (
                 "Save Changes"

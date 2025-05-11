@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
+import PaginatedDropdown from '../components/PaginatedDropdown';
 
 // Define interfaces for the product data structure based on the API response
 interface Category {
@@ -226,8 +227,9 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
     }
 
     try {
-      const response = await fetch(
-        `${baseURL}/api/v1/product/sub-category/?page_size=12`,
+      // First fetch to get total count
+      const initialResponse = await fetch(
+        `${baseURL}/api/v1/product/sub-category/`,
         {
           headers: {
             Authorization: `JWT ${accessToken}`,
@@ -236,16 +238,40 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!initialResponse.ok) {
+        throw new Error(`HTTP error! status: ${initialResponse.status}`);
       }
 
-      const data = await response.json();
-      const subcategories = data.results.map((item: any) => ({
-        id: item.id,
-        name: item.name,
-      }));
-      setCategories(subcategories);
+      const initialData = await initialResponse.json();
+      const totalItems = initialData.count;
+      const itemsPerPage = 10;
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+      // Fetch all pages in parallel
+      const fetchPromises = [];
+      for (let page = 1; page <= totalPages; page++) {
+        fetchPromises.push(
+          fetch(
+            `${baseURL}/api/v1/product/sub-category/?page=${page}`,
+            {
+              headers: {
+                Authorization: `JWT ${accessToken}`,
+                "Content-Type": "application/json",
+              },
+            }
+          ).then((response) => response.json())
+        );
+      }
+
+      // Wait for all requests to complete
+      const responses = await Promise.all(fetchPromises);
+
+      // Combine all results
+      const allCategories = responses.reduce((acc, response) => {
+        return [...acc, ...response.results];
+      }, []);
+
+      setCategories(allCategories);
     } catch (err) {
       console.error("Failed to fetch categories:", err);
       setError(
@@ -462,29 +488,13 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
         <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0">
           {/* Category Dropdown */}
           <div className="relative w-full sm:max-w-xs mr-0 sm:mr-4">
-            <select
+            <PaginatedDropdown
+              options={categories}
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full pl-3 pr-8 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-            >
-              <option value="">All Categories</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setSelectedCategoryForEdit(category);
-                      setEditCategoryName(category.name);
-                      setShowEditCategoryModal(true);
-                    }}
-                    className="ml-2 text-blue-500 hover:text-blue-700"
-                  >
-                    Edit
-                  </button>
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setSelectedCategory(String(value))}
+              placeholder="All Categories"
+              className="w-full"
+            />
           </div>
 
           {/* Right Controls */}
