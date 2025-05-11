@@ -212,7 +212,7 @@ const SearchResults = () => {
     <div className="container mx-auto px-6 md:px-14 py-8 md:py-12">
       {hasResults && (
         <div className="mb-6">
-          <h1 className="text-3xl font-medium flex justify-center items-center">
+          <h1 className="text-3xl font-medium flex justify-center items-center pt-2">
             Search Results for "{query}"
           </h1>
           <p className="text-gray-600 mt-2 text-center">
@@ -231,7 +231,7 @@ const SearchResults = () => {
       {/* Products Grid */}
       {hasResults && (
         <div className="mb-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 sm:mb-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-8 sm:mb-16">
             {productsData.results.map((item) => {
               const wishlistInfo = getWishlistInfo(item.id);
               return (

@@ -9,6 +9,7 @@ const SuggestedCard: React.FC<CardProps> = ({
   isInitiallyLiked,
   wishItemId: initialWishItemId,
   removeOnUnlike = false
+  
 }) => {
   const [liked, setLiked] = useState(isInitiallyLiked);
   const [wishItemId, setWishItemId] = useState<number | null>(initialWishItemId ?? null);

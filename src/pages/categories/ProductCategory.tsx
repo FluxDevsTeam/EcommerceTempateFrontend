@@ -171,7 +171,7 @@ const ProductCategory = () => {
   return (
     <div className="w-full min-h-full flex flex-col px-6 md:px-24 py-8 md:py-12">
       {/* Category Header with Sort Dropdown */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 pt-2">
         <div>
           <h1 className="text-3xl font-bold capitalize">{categoryData.name.toLowerCase()}</h1>
           <p className="text-gray-600 mt-2">
@@ -189,7 +189,7 @@ const ProductCategory = () => {
       </div>
 
       {/* Products Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 md:gap-8 md:my-8 sm:mb-16">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-8 sm:mb-16">
         {sortedProducts.map((product) => {
           const wishlistInfo = getWishlistInfo(product.id);
           return (

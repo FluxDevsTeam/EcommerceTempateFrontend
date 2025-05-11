@@ -8,7 +8,7 @@ const NewArrivals = () => {
 
   return (
     <div className="w-full min-h-full flex flex-col px-6  md:px-24  py-8 md:py-12 ">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 pt-2">
         <h1 className="text-3xl font-bold capitalize">New Arrivals</h1>
 
         <div className="flex items-center gap-4">

@@ -53,7 +53,6 @@ const Header = () => {
         localStorage.setItem('cachedCategories', JSON.stringify(data.results));
       } catch (error) {
         console.error("Error fetching categories:", error);
-        // Silently retry after 5 seconds if no cached data
         if (!localStorage.getItem('cachedCategories')) {
           setTimeout(fetchCategories, 5000);
         }
@@ -271,7 +270,7 @@ const Header = () => {
   return (
     <div 
       ref={navbarRef}
-      className={`w-full bg-white fixed top-0 left-0 z-50 md:px-24 py-4
+      className={`w-full bg-white fixed top-0 left-0 z-50 md:px-24 pt-4 p-0 md:p-4 
         ${scrolled ? 'shadow-md' : ''}
         transition-all duration-300 ease-in-out
         ${showNavbar ? 'translate-y-0' : '-translate-y-full'}`}
@@ -388,7 +387,7 @@ const Header = () => {
         </div>
 
         {isUserAuthenticated && isUserDropdownOpen && (
-          <div className="absolute right-6 top-12 z-50 w-auto rounded-md border border-gray-300 bg-white shadow-lg transition-all duration-200 ease-out">
+          <div onClick={(e) => e.stopPropagation()} className="absolute right-6 top-12 z-50 w-auto rounded-md border border-gray-300 bg-white shadow-lg transition-all duration-200 ease-out">
             <Link 
               to="/general-settings"
               onClick={() => setIsUserDropdownOpen(false)}

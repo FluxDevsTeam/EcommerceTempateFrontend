@@ -189,7 +189,7 @@ const ProductsPage: React.FC = () => {
 
   return (
     <div className="container mx-auto px-6 md:px-14 py-8 md:py-12 ">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 pt-2">
         <h1 className="text-3xl md:text-4xl font-medium">Filtered Products</h1>
 
         <div className="flex items-center gap-4 pt-3 md:pt-0">
