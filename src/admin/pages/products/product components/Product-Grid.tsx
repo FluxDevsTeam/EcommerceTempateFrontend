@@ -97,7 +97,6 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
   const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([
     0, 0,
   ]);
-  const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
   const [showEditCategoryModal, setShowEditCategoryModal] = useState(false);
   const [selectedCategoryForEdit, setSelectedCategoryForEdit] = useState<{
     id: number;
@@ -105,8 +104,6 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
   } | null>(null);
   const [editCategoryName, setEditCategoryName] = useState("");
   const [editingCategory, setEditingCategory] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState("");
-  const [addingCategory, setAddingCategory] = useState(false);
 
   const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
 
@@ -335,38 +332,6 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
     }
   };
 
-  const handleAddCategory = async () => {
-    if (!newCategoryName.trim()) return;
-    setAddingCategory(true);
-    const accessToken = localStorage.getItem("accessToken");
-
-    try {
-      const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/category/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `JWT ${accessToken}`,
-          },
-          body: JSON.stringify({ name: newCategoryName }),
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to add category");
-
-      // Refresh categories
-      await fetchCategories();
-      setNewCategoryName("");
-      setShowAddCategoryModal(false);
-    } catch (error) {
-      console.error("Error adding category:", error);
-      setError("Failed to add category");
-    } finally {
-      setAddingCategory(false);
-    }
-  };
-
   const handleEditCategory = async () => {
     if (!editCategoryName.trim() || !selectedCategoryForEdit) return;
     setEditingCategory(true);
@@ -450,64 +415,31 @@ const ProductsGrid: React.FC<ProductGridProps> = ({
 
           <div className="flex gap-2">
             <button
-              className="flex items-center justify-center space-x-2 bg-gray-700 text-white px-2 py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit"
+              className="flex items-center justify-center space-x-2 bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit"
               onClick={() => navigate("/admin/admin-categories")}
             >
-              <span
-                style={{ fontSize: "clamp(11px, 3vw, 14px)" }}
-                className="hidden md:inline-block"
-              >
-                Category
-              </span>
+              <span className="text-sm whitespace-nowrap">Category</span>
             </button>
-            <button
+            <button 
               className="flex items-center justify-center space-x-2 bg-gray-700 text-white px-2 py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit"
               onClick={() => navigate("/admin/add-new-product")}
             >
               <FaPlus style={{ fontSize: "clamp(1px, 3vw, 15px)" }} />
               <span
-                style={{ fontSize: "clamp(11px, 3vw, 14px)" }}
+                style={{ fontSize: "clamp(9px, 3vw, 14px)" }}
                 className="hidden md:inline-block"
               >
                 Add New Product
               </span>
+              <span
+                style={{ fontSize: "clamp(9px, 3vw, 14px)" }}
+                className="inline-block md:hidden"
+              >
+                Add Product
+              </span>
             </button>
           </div>
         </div>
-
-        {/* Add Category Modal */}
-        {showAddCategoryModal && (
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-            <div className="bg-white w-full max-w-md rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Add New Category
-              </h3>
-              <input
-                type="text"
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                placeholder="Enter category name"
-                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-              />
-              <div className="flex justify-end gap-4">
-                <button
-                  onClick={() => setShowAddCategoryModal(false)}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-                  disabled={addingCategory}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddCategory}
-                  className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
-                  disabled={addingCategory}
-                >
-                  {addingCategory ? "Adding..." : "Add Category"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Top Controls */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0">

@@ -452,9 +452,18 @@ const EditProduct: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Current category: <strong>{individualProductCategory}</strong>
-                  </label>
+                    <div className="flex justify-between items-center mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Category
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/admin/admin-categories')}
+                      className="text-sm text-blue-600 hover:text-blue-700"
+                    >
+                      Manage Categories
+                    </button>
+                  </div>
                   <div className="relative">
                     {isSearchMode ? (
                       <div className="relative">
@@ -1104,15 +1113,14 @@ const EditProduct: React.FC = () => {
 
                     <div className="space-y-4">
                       <div className="flex items-center space-x-2">
-                        <span
-                          className={`w-3 h-3 rounded-full ${
-                            formData.is_available
-                              ? "bg-green-500"
-                              : "bg-red-500"
-                          }`}
-                        ></span>
                         <span className="text-gray-700">
-                          {formData.is_available ? "In Stock" : "Out of Stock"}
+                          {formData.is_available ? (
+                            formData.unlimited ? 
+                              "Unlimited Stock" : 
+                              `${formData.total_quantity ?? 0} in Stock`
+                          ) : (
+                            "Out of Stock"
+                          )}
                         </span>
                       </div>
 

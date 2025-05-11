@@ -28,6 +28,7 @@ const AddNewProduct: React.FC = () => {
   });
   const [viewProductPreviewModal, setViewProductPreviewModal] = useState(false);
   const [selectedPreviewImage, setSelectedPreviewImage] = useState(0);
+  const [newProductId, setNewProductId] = useState<number | null>(null);
 
   // Form data state
   const [formData, setFormData] = useState({
@@ -35,7 +36,7 @@ const AddNewProduct: React.FC = () => {
     description: "",
     sub_category: null as number | null,
     colour: "",
-    is_available: false,
+    is_available: true, // Changed from false to true
     dimensional_size: null as string | null,
     weight: null as string | null,
     latest_item: false,
@@ -43,7 +44,7 @@ const AddNewProduct: React.FC = () => {
     top_selling_items: false,
     top_selling_position: null as number | null,
     unlimited: false,
-    production_days: null as number | null,
+    production_days: 0,
     image1: null as File | null,
     image2: null as File | null,
     image3: null as File | null,
@@ -169,8 +170,11 @@ const AddNewProduct: React.FC = () => {
 
   const handleCloseModal = () => {
     setModalConfig({ ...modalConfig, isOpen: false });
-    if (modalConfig.type === "success") {
-      navigate("/admin/products");
+    if (modalConfig.type === "success" && newProductId) {
+      // Use timeout to ensure modal is closed before navigation
+      setTimeout(() => {
+        navigate(`/admin/admin-products-details/${newProductId}`);
+      }, 100);
     }
   };
 
@@ -209,6 +213,7 @@ const AddNewProduct: React.FC = () => {
   const handleSaveChanges = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setViewProductPreviewModal(false); // Close preview modal if open
     const accessToken = localStorage.getItem("accessToken");
 
     if (!accessToken) {
@@ -238,28 +243,6 @@ const AddNewProduct: React.FC = () => {
     if (formData.image2) formDataToSend.append("image2", formData.image2);
     if (formData.image3) formDataToSend.append("image3", formData.image3);
 
-    // Log the form data for debugging
-    // console.log("Form data being sent:", {
-    //   name: formData.name,
-    //   description: formData.description,
-    //   sub_category: formData.sub_category,
-    //   colour: formData.colour,
-    //   price: formData.price,
-    //   discounted_price: formData.discounted_price,
-    //   is_available: formData.is_available,
-    //   latest_item: formData.latest_item,
-    //   latest_item_position: formData.latest_item_position,
-    //   dimensional_size: formData.dimensional_size,
-    //   weight: formData.weight,
-    //   top_selling_items: formData.top_selling_items,
-    //   top_selling_position: formData.top_selling_position,
-    //   images: {
-    //     image1: formData.image1?.name,
-    //     image2: formData.image2?.name,
-    //     image3: formData.image3?.name,
-    //   },
-    // });
-
     try {
       const response = await fetch(
         "https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/",
@@ -282,11 +265,12 @@ const AddNewProduct: React.FC = () => {
 
       const data = await response.json();
       console.log("Product added successfully:", data);
-
+      
+      setNewProductId(data.id);
       setModalConfig({
         isOpen: true,
         title: "Success",
-        message: "Product added successfully!",
+        message: "Product added successfully! Click OK to view the product.",
         type: "success",
       });
     } catch (error) {
@@ -305,6 +289,16 @@ const AddNewProduct: React.FC = () => {
     }
   };
 
+  // Add this new function to check form validity
+  const isFormValid = () => {
+    return (
+      formData.name.trim() !== "" &&
+      formData.description.trim() !== "" &&
+      formData.sub_category !== null &&
+      formData.image1 !== null // Require main image
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -318,15 +312,6 @@ const AddNewProduct: React.FC = () => {
               <p className="mt-2 text-sm text-gray-600">
                 Fill in the product details to add a new item to your inventory
               </p>
-            </div>
-            <div className="mt-6 md:mt-0">
-              <button
-                type="button"
-                onClick={() => setViewProductPreviewModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Preview Product
-              </button>
             </div>
           </div>
         </div>
@@ -356,9 +341,18 @@ const AddNewProduct: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category
-                  </label>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Category
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/admin/admin-categories')}
+                      className="text-sm text-blue-600 hover:text-blue-700"
+                    >
+                      Manage Categories
+                    </button>
+                  </div>
                   <div className="relative">
                     {isSearchMode ? (
                       <div className="relative">
@@ -822,9 +816,21 @@ const AddNewProduct: React.FC = () => {
               Cancel
             </button>
             <button
+              type="button"
+              onClick={() => setViewProductPreviewModal(true)}
+              disabled={!isFormValid()}
+              className={`px-6 py-3 border border-transparent text-base font-medium rounded-md text-white
+                ${isFormValid() ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}
+                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+            >
+              Preview Product
+            </button>
+            <button
               type="submit"
-              disabled={loading}
-              className="px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              disabled={loading || !isFormValid()}
+              className={`px-6 py-3 border border-transparent text-base font-medium rounded-md text-white
+                ${loading || !isFormValid() ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
+                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
             >
               {loading ? (
                 <div className="flex items-center">
@@ -1044,6 +1050,17 @@ const AddNewProduct: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Add new buttons section at the bottom of the modal */}
+              <div className="mt-8 flex justify-end gap-4 border-t pt-4">
+                <button
+                  type="button"
+                  onClick={() => setViewProductPreviewModal(false)}
+                  className="px-6 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                >
+                  Back to Edit
+                </button>
               </div>
             </div>
           </div>

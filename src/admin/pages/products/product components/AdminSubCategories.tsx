@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { IoChevronBack } from 'react-icons/io5';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 interface Category {
   id: number;
@@ -26,6 +29,10 @@ const AdminSubCategories = () => {
   const [selectedCategory, setSelectedCategory] = useState<number>(0);
   const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 18;
+  const [totalSubCategories, setTotalSubCategories] = useState(0);
+  const navigate = useNavigate();
 
   const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
 
@@ -51,7 +58,7 @@ const AdminSubCategories = () => {
     const accessToken = localStorage.getItem("accessToken");
 
     try {
-      const response = await fetch(`${baseURL}/api/v1/product/sub-category/`, {
+      const response = await fetch(`${baseURL}/api/v1/product/sub-category/?page=${currentPage}&page_size=${ITEMS_PER_PAGE}`, {
         headers: {
           Authorization: `JWT ${accessToken}`,
           "Content-Type": "application/json",
@@ -60,6 +67,7 @@ const AdminSubCategories = () => {
       if (!response.ok) throw new Error('Failed to fetch subcategories');
       const data = await response.json();
       setSubCategories(data.results);
+      setTotalSubCategories(data.count);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch subcategories');
     } finally {
@@ -70,7 +78,7 @@ const AdminSubCategories = () => {
   useEffect(() => {
     fetchCategories();
     fetchSubCategories();
-  }, []);
+  }, [currentPage]);
 
   const handleAdd = async () => {
     if (!newSubCategoryName.trim() || !selectedCategory) return;
@@ -158,30 +166,28 @@ const AdminSubCategories = () => {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
+  const totalPages = Math.ceil(totalSubCategories / ITEMS_PER_PAGE);
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Subcategories</h1>
-              <p className="mt-1 text-sm text-gray-500">Manage your product subcategories</p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => navigate(-1)}
-                className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Back to Categories
-              </button>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Add Subcategory
-              </button>
-            </div>
+        {/* Back button and header */}
+        <div className="mb-6">
+          <button
+            onClick={() => navigate('/admin/admin-categories')}
+            className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
+          >
+            <IoChevronBack className="w-5 h-5 mr-1" />
+            Back to Categories
+          </button>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
+            <h1 className="text-2xl font-bold text-gray-900">Subcategories</h1>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-center"
+            >
+              Add Subcategory
+            </button>
           </div>
         </div>
 
@@ -238,6 +244,48 @@ const AdminSubCategories = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* Add Pagination Controls */}
+        <div className="mt-6 flex justify-between items-center">
+          <div className="text-sm text-gray-700">
+            Showing {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, totalSubCategories)} to{" "}
+            {Math.min(currentPage * ITEMS_PER_PAGE, totalSubCategories)} of {totalSubCategories} subcategories
+          </div>
+          
+          <div className="flex border rounded">
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              className="p-2 border-r hover:bg-gray-100 disabled:opacity-50"
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-2 border-r hover:bg-gray-100 disabled:opacity-50"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <span className="px-4 py-2 border-r">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-2 border-r hover:bg-gray-100 disabled:opacity-50"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+              className="p-2 hover:bg-gray-100 disabled:opacity-50"
+            >
+              <ChevronsRight className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </div>

@@ -447,7 +447,7 @@ const AdminProductDetails: React.FC = () => {
                     <span className="font-medium">unlimited units</span>
                   ) : (
                     <span className="font-medium">
-                      {product.total_quantity} units
+                      {product.total_quantity || 0} units
                     </span>
                   )}
                 </div>
