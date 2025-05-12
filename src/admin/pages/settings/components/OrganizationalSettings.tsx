@@ -42,6 +42,8 @@ const OrganizationalSettings = () => {
   const [showModal, setShowModal] = useState(false);
   const [initialData, setInitialData] = useState<OrganizationSettings | null>(null);
   const [initialSelectedStates, setInitialSelectedStates] = useState<string[]>([]);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOrganizationSettings();
@@ -65,12 +67,15 @@ const OrganizationalSettings = () => {
         setFormData(response.data);
         setInitialData(response.data);
         
-        // Initialize selected states from the available_states in the response
         if (response.data.available_states) {
           const states = Object.keys(response.data.available_states)
             .filter(key => response.data.available_states[key] === true);
           setSelectedStates(states);
           setInitialSelectedStates(states);
+        }
+
+        if (response.data.brand_logo) {
+          setLogoPreview(response.data.brand_logo);
         }
       }
       setError(null);
@@ -94,14 +99,61 @@ const OrganizationalSettings = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
-    // Map UI field names to API field names
     const apiFieldName = mapFieldNameToApi(name);
-    
     setFormData(prev => ({
       ...prev,
       [apiFieldName]: value
     }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setLogoFile(file);
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadLogo = async () => {
+    if (!logoFile) return;
+
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('accessToken');
+      const formData = new FormData();
+      formData.append('brand_logo', logoFile);
+
+      const response = await axios.patch(
+        'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/organisation-settings/',
+        formData,
+        {
+          headers: {
+            'Authorization': `JWT ${token}`,
+            'Content-Type': 'multipart/form-data',
+          }
+        }
+      );
+
+      setFormData(prev => ({
+        ...prev,
+        brand_logo: response.data.brand_logo
+      }));
+      
+      setSuccessMessage('Logo uploaded successfully');
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 3000);
+    } catch (err) {
+      setError('Failed to upload logo');
+      console.error('Error uploading logo:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const mapFieldNameToApi = (fieldName: string): string => {
@@ -117,7 +169,6 @@ const OrganizationalSettings = () => {
       'linkedin': 'linkedin',
       'tiktok': 'tiktok'
     };
-
     return mapping[fieldName] || fieldName;
   };
 
@@ -148,13 +199,11 @@ const OrganizationalSettings = () => {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
       
-      // Create available_states object from selected states
       const availableStatesObj: Record<string, boolean> = {};
       allNigerianStates.forEach(state => {
         availableStatesObj[state] = selectedStates.includes(state);
       });
 
-      // Prepare data to be sent to the API
       const patchData = {
         warehouse_state: formData.warehouse_state,
         available_states: availableStatesObj,
@@ -197,7 +246,6 @@ const OrganizationalSettings = () => {
   const hasChanges = () => {
     if (!initialData) return false;
     
-    // Check form fields
     const formChanged = 
       formData.warehouse_state !== initialData.warehouse_state ||
       formData.phone_number !== initialData.phone_number ||
@@ -206,9 +254,9 @@ const OrganizationalSettings = () => {
       formData.facebook !== initialData.facebook ||
       formData.twitter !== initialData.twitter ||
       formData.linkedin !== initialData.linkedin ||
-      formData.tiktok !== initialData.tiktok;
+      formData.tiktok !== initialData.tiktok ||
+      logoFile !== null;
 
-    // Check if selected states have changed
     const statesChanged = 
       selectedStates.length !== initialSelectedStates.length ||
       !selectedStates.every(state => initialSelectedStates.includes(state));
@@ -220,6 +268,8 @@ const OrganizationalSettings = () => {
     if (initialData) {
       setFormData(initialData);
       setSelectedStates(initialSelectedStates);
+      setLogoFile(null);
+      setLogoPreview(initialData.brand_logo);
     }
   };
 
@@ -243,63 +293,72 @@ const OrganizationalSettings = () => {
         </div>
       )}
 
-<div className="mb-8 bg-gray-100 p-4 rounded-lg shadow border border-gray-200">
-  <h3 className="font-medium text-lg mb-3">Current Settings</h3>
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <div>
-      <p className="text-sm text-gray-500">Warehouse State</p>
-      <p className="font-medium">{initialData?.warehouse_state || 'Not set'}</p>
-    </div>
-    <div>
-      <p className="text-sm text-gray-500">Phone Number</p>
-      <p className="font-medium">{initialData?.phone_number || 'Not set'}</p>
-    </div>
-    <div>
-      <p className="text-sm text-gray-500">Customer Support Email</p>
-      <p className="font-medium">{initialData?.customer_support_email || 'Not set'}</p>
-    </div>
-    <div>
-      <p className="text-sm text-gray-500">Admin Email</p>
-      <p className="font-medium">{initialData?.admin_email || 'Not set'}</p>
-    </div>
-    <div>
-      <p className="text-sm text-gray-500">Available States</p>
-      <p className="font-medium">
-        {initialSelectedStates.length > 0 
-          ? `${initialSelectedStates.length} states selected` 
-          : 'No states selected'}
-      </p>
-    </div>
-    <div>
-      <p className="text-sm text-gray-500">Social Media</p>
-      <div className="flex space-x-2 mt-1">
-        {initialData?.facebook && (
-          <a href={`https://facebook.com/${initialData.facebook}`} target="_blank" rel="noopener noreferrer">
-            <span className="text-blue-600">FB</span>
-          </a>
-        )}
-        {initialData?.twitter && (
-          <a href={`https://twitter.com/${initialData.twitter}`} target="_blank" rel="noopener noreferrer">
-            <span className="text-blue-400">TW</span>
-          </a>
-        )}
-        {initialData?.linkedin && (
-          <a href={`https://linkedin.com/${initialData.linkedin}`} target="_blank" rel="noopener noreferrer">
-            <span className="text-blue-700">LI</span>
-          </a>
-        )}
-        {initialData?.tiktok && (
-          <a href={`https://tiktok.com/@${initialData.tiktok}`} target="_blank" rel="noopener noreferrer">
-            <span className="text-black">TT</span>
-          </a>
-        )}
-        {!initialData?.facebook && !initialData?.twitter && !initialData?.linkedin && !initialData?.tiktok && (
-          <span className="text-gray-400">None</span>
+      <div className="mb-8 bg-gray-100 p-4 rounded-lg shadow border border-gray-200">
+        <h3 className="font-medium text-lg mb-3">Current Settings</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <p className="text-sm text-gray-500">Warehouse State</p>
+            <p className="font-medium">{initialData?.warehouse_state || 'Not set'}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Phone Number</p>
+            <p className="font-medium">{initialData?.phone_number || 'Not set'}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Customer Support Email</p>
+            <p className="font-medium">{initialData?.customer_support_email || 'Not set'}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Admin Email</p>
+            <p className="font-medium">{initialData?.admin_email || 'Not set'}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Available States</p>
+            <p className="font-medium">
+              {initialSelectedStates.length > 0 
+                ? `${initialSelectedStates.length} states selected` 
+                : 'No states selected'}
+            </p>
+          </div>
+          <div>
+         
+          </div>
+        </div>
+        
+        {/* Display exact social media URLs */}
+        {(initialData?.facebook || initialData?.twitter || initialData?.linkedin || initialData?.tiktok) && (
+          <div className="mt-4 p-3 bg-gray-100 rounded-md border border-gray-200">
+            <h4 className="font-medium mb-2">Social Media Links</h4>
+            <div className="grid grid-cols-1 gap-2">
+              {initialData?.facebook && (
+                <div>
+                  <span className="font-medium">Facebook: </span>
+                  <span className="text-sm break-all">{initialData.facebook}</span>
+                </div>
+              )}
+              {initialData?.twitter && (
+                <div>
+                  <span className="font-medium">Twitter: </span>
+                  <span className="text-sm break-all">{initialData.twitter}</span>
+                </div>
+              )}
+              {initialData?.linkedin && (
+                <div>
+                  <span className="font-medium">LinkedIn: </span>
+                  <span className="text-sm break-all">{initialData.linkedin}</span>
+                </div>
+              )}
+              {initialData?.tiktok && (
+                <div>
+                  <span className="font-medium">TikTok: </span>
+                  <span className="text-sm break-all">{initialData.tiktok}</span>
+                </div>
+              )}
+            </div>
+          </div>
         )}
       </div>
-    </div>
-  </div>
-</div>
+
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-6">Organizational Settings</h2>
         
@@ -347,15 +406,39 @@ const OrganizationalSettings = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
             <label className="block text-sm font-medium mb-2">Logo</label>
-            <input
-              type="text"
-              name="logo"
-              value={uiFormData.logo}
-              onChange={handleChange}
-              placeholder="Enter Logo"
-              className="w-full p-3 border border-gray-300 rounded-md"
-              disabled={true}
-            />
+            <div className="flex items-center space-x-4">
+              {logoPreview && (
+                <div className="w-16 h-16 rounded-md overflow-hidden border border-gray-200">
+                  <img 
+                    src={logoPreview} 
+                    alt="Logo preview" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <div className="flex-1">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-md file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-gray-50 file:text-gray-700
+                    hover:file:bg-gray-100"
+                />
+                {logoFile && (
+                  <button
+                    onClick={uploadLogo}
+                    disabled={loading}
+                    className="mt-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+                  >
+                    {loading ? 'Uploading...' : 'Upload Logo'}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
           
           <div>
@@ -374,16 +457,21 @@ const OrganizationalSettings = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-sm font-medium mb-2">Twitter</label>
-            <input
-              type="text"
-              name="twitter"
-              value={uiFormData.twitter}
-              onChange={handleChange}
-              placeholder="Enter Twitter Username"
-              className="w-full p-3 border border-gray-300 rounded-md"
-              maxLength={100}
-            />
+            <label className="block text-sm font-medium mb-2">Twitter <span className="text-red-500">*</span><span className="text-xs text-gray-500 ml-1">(Enter full URL with https://)</span></label>
+            <div className="flex">
+              <input
+                type="url"
+                name="twitter"
+                value={formData.twitter || ''}
+                onChange={handleChange}
+                placeholder="https://twitter.com/yourprofile"
+                className="flex-1 p-3 border border-gray-300 rounded-md"
+                maxLength={100}
+              />
+            </div>
+            {formData.twitter && !formData.twitter.startsWith('http') && (
+              <p className="text-xs text-red-500 mt-1">URL must start with http:// or https://</p>
+            )}
           </div>
           
           <div>
@@ -402,16 +490,21 @@ const OrganizationalSettings = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-sm font-medium mb-2">Facebook</label>
-            <input
-              type="text"
-              name="facebook"
-              value={uiFormData.facebook}
-              onChange={handleChange}
-              placeholder="Enter Facebook Username" 
-              className="w-full p-3 border border-gray-300 rounded-md"
-              maxLength={100}
-            />
+            <label className="block text-sm font-medium mb-2">Facebook <span className="text-red-500">*</span><span className="text-xs text-gray-500 ml-1">(Enter full URL with https://)</span></label>
+            <div className="flex">
+              <input
+                type="url"
+                name="facebook"
+                value={formData.facebook || ''}
+                onChange={handleChange}
+                placeholder="https://facebook.com/yourpage"
+                className="flex-1 p-3 border border-gray-300 rounded-md"
+                maxLength={100}
+              />
+            </div>
+            {formData.facebook && !formData.facebook.startsWith('http') && (
+              <p className="text-xs text-red-500 mt-1">URL must start with http:// or https://</p>
+            )}
           </div>
           
           <div>
@@ -430,77 +523,86 @@ const OrganizationalSettings = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-sm font-medium mb-2">LinkedIn</label>
-            <input
-              type="text"
-              name="linkedin"
-              value={uiFormData.linkedin}
-              onChange={handleChange}
-              placeholder="Enter LinkedIn Username" 
-              className="w-full p-3 border border-gray-300 rounded-md"
-              maxLength={100}
-            />
+            <label className="block text-sm font-medium mb-2">LinkedIn <span className="text-red-500">*</span><span className="text-xs text-gray-500 ml-1">(Enter full URL with https://)</span></label>
+            <div className="flex">
+              <input
+                type="url"
+                name="linkedin"
+                value={formData.linkedin || ''}
+                onChange={handleChange}
+                placeholder="https://linkedin.com/company/yourpage"
+                className="flex-1 p-3 border border-gray-300 rounded-md"
+                maxLength={100}
+              />
+            </div>
+            {formData.linkedin && !formData.linkedin.startsWith('http') && (
+              <p className="text-xs text-red-500 mt-1">URL must start with http:// or https://</p>
+            )}
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium mb-2">TikTok</label> 
-            <input
-              type="text"
-              name="tiktok"
-              value={uiFormData.tiktok}
-              onChange={handleChange}
-              placeholder="Enter TikTok Username" 
-              className="w-full p-3 border border-gray-300 rounded-md"
-              maxLength={100}
-            />
+            <label className="block text-sm font-medium mb-2">TikTok <span className="text-red-500">*</span><span className="text-xs text-gray-500 ml-1">(Enter full URL with https://)</span></label>
+            <div className="flex">
+              <input
+                type="url"
+                name="tiktok"
+                value={formData.tiktok || ''}
+                onChange={handleChange}
+                placeholder="https://tiktok.com/@yourusername"
+                className="flex-1 p-3 border border-gray-300 rounded-md"
+                maxLength={100}
+              />
+            </div>
+            {formData.tiktok && !formData.tiktok.startsWith('http') && (
+              <p className="text-xs text-red-500 mt-1">URL must start with http:// or https://</p>
+            )}
           </div>
         </div>
-      </div>
 
-      <div className="mb-6">
-        <div className="flex justify-end space-x-4 mb-8">
-          <button 
-            className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-            onClick={handleCancel}
-            disabled={loading || !hasChanges()}
-          >
-            Cancel
-          </button>
-          <button 
-            className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
-            onClick={() => setShowModal(true)}
-            disabled={loading || !hasChanges()}
-          >
-            {loading ? 'Saving...' : 'Save Changes'}
-          </button>
+        <div className="mb-6">
+          <div className="flex justify-end space-x-4 mb-8">
+            <button 
+              className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              onClick={handleCancel}
+              disabled={loading || !hasChanges()}
+            >
+              Cancel
+            </button>
+            <button 
+              className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+              onClick={() => setShowModal(true)}
+              disabled={loading || !hasChanges()}
+            >
+              {loading ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Confirmation Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-            <h3 className="text-lg font-medium mb-4">Confirm Changes</h3>
-            <p className="mb-6">
-              Are you sure you want to save these changes to organization settings?
-            </p>
-            <div className="flex justify-end space-x-4">
-              <button
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-                onClick={() => setShowModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
-                onClick={handleSaveConfirm}
-              >
-                Confirm
-              </button>
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+              <h3 className="text-lg font-medium mb-4">Confirm Changes</h3>
+              <p className="mb-6">
+                Are you sure you want to save these changes to organization settings?
+              </p>
+              <div className="flex justify-end space-x-4">
+                <button
+                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                  onClick={() => setShowModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+                  onClick={handleSaveConfirm}
+                >
+                  Confirm
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

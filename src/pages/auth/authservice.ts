@@ -91,6 +91,8 @@ api.interceptors.response.use(
   }
 );
 
+
+
 // Add auth token to requests
 api.interceptors.request.use(
   (config) => {
@@ -357,6 +359,8 @@ const authService = {
   isLoggedIn: (): boolean => {
     return !!localStorage.getItem('accessToken') && !!localStorage.getItem('user');
   }
+
+  
 };
 
 export default authService;

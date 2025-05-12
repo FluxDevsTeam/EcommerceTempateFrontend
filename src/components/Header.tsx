@@ -31,11 +31,22 @@ const Header = () => {
   const [scrolled, setScrolled] = useState<boolean>(false);
   const [categories, setCategories] = useState<Category[]>([]);
   
+  // Add new state for mobile categories pagination
+  const [currentPage, setCurrentPage] = useState(0);
+  const categoriesPerPage = 5;
+  
   const { currentUser, isAuthenticated, refreshUserData, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const lastScrollY = useRef<number>(0);
   const navbarRef = useRef<HTMLDivElement>(null);
+
+  // Reset current page when mobile menu is opened
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      setCurrentPage(0);
+    }
+  }, [isMobileMenuOpen]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -248,21 +259,72 @@ const Header = () => {
   };
 
   const renderMobileCategoryLinks = () => {
+    // Calculate total pages based on categories count
+    const totalPages = Math.ceil((categories.length + 1) / categoriesPerPage); // +1 for "New Arrivals"
+    
+    // Create a combined array of "New Arrivals" + categories
+    const allItems = [{ id: 'new-arrivals', name: 'New Arrivals' }, ...categories];
+    
+    // Calculate start and end index for current page
+    const startIndex = currentPage * categoriesPerPage;
+    const endIndex = Math.min(startIndex + categoriesPerPage, allItems.length);
+    
+    // Get current items to display
+    const currentItems = allItems.slice(startIndex, endIndex);
+    
     return (
       <>
-        <Link to='/new-arrivals' onClick={handleMobileMenuLinkClick} className="hover:text-gray-600 transition-colors">
-          <li>New Arrivals</li>
-        </Link>
-        {categories.map((category) => (
-          <Link 
-            key={category.id}
-            to={`/category/${category.id}`}
-            onClick={handleMobileMenuLinkClick}
-            className="hover:text-gray-600 transition-colors capitalize"
-          >
-            <li>{category.name.toLowerCase()}</li>
-          </Link>
-        ))}
+        <div className="flex flex-col space-y-1 w-full">
+          {currentItems.map((item) => (
+            <Link 
+              key={item.id}
+              to={item.id === 'new-arrivals' ? '/new-arrivals' : `/category/${item.id}`}
+              onClick={handleMobileMenuLinkClick}
+              className="hover:bg-gray-50 transition-colors capitalize py-3 px-2 rounded-md"
+            >
+              <li className="list-none">{item.name.toLowerCase()}</li>
+            </Link>
+          ))}
+          
+          {/* Pagination controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-200">
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCurrentPage(prev => Math.max(0, prev - 1));
+                }}
+                disabled={currentPage === 0}
+                className={`px-3 py-1 rounded-md text-sm ${
+                  currentPage === 0 
+                    ? 'text-gray-400 cursor-not-allowed' 
+                    : 'text-blue-600 hover:bg-blue-50'
+                }`}
+              >
+                Previous
+              </button>
+              
+              <span className="text-xs text-gray-500">
+                Page {currentPage + 1} of {totalPages}
+              </span>
+              
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));
+                }}
+                disabled={currentPage === totalPages - 1}
+                className={`px-3 py-1 rounded-md text-sm ${
+                  currentPage === totalPages - 1
+                    ? 'text-gray-400 cursor-not-allowed' 
+                    : 'text-blue-600 hover:bg-blue-50'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
       </>
     );
   };
@@ -423,13 +485,13 @@ const Header = () => {
                   <p className="text-sm text-blue-700">Welcome back, {displayName}!</p>
                 </div>
               )}
-              <ul className="flex flex-col space-y-4 text-[16px] font-medium">
+              <ul className="flex flex-col space-y-1 text-[16px] font-medium">
                 {renderMobileCategoryLinks()}
               </ul>
               
               <button 
                 onClick={toggleFilter}
-                className="flex items-center space-x-2 cursor-pointer hover:text-gray-600 transition-colors"
+                className="flex items-center space-x-2 cursor-pointer hover:text-gray-600 transition-colors mt-4 pt-2 border-t border-gray-200"
               >
                 <RiEqualizerLine size={24}/>
                 <span>Filter Products</span>

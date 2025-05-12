@@ -1,4 +1,5 @@
 import { Home, Package, ShoppingCart, Settings, HelpCircle, LogOut, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import NavItem from "./NavItem";
 
 interface SidebarProps {
@@ -6,19 +7,7 @@ interface SidebarProps {
   handleNavClick: (path: string) => void;
   isMobileMenuOpen: boolean;
   toggleMobileMenu: () => void;
-
 }
-
-const handleLogout = async () => {
-  try {
-    await logout();
-    navigate('/login');
-    setIsUserDropdownOpen(false);
-    setIsMobileMenuOpen(false);
-  } catch (error) {
-    console.error("Logout failed", error);
-  }
-};
 
 const Sidebar = ({ 
   activePath, 
@@ -26,12 +15,35 @@ const Sidebar = ({
   isMobileMenuOpen, 
   toggleMobileMenu 
 }: SidebarProps) => {
+  const navigate = useNavigate();
+  
+  const handleLogout = async () => {
+    try {
+      // Here you would call your actual logout function
+      // await logout();
+      navigate('/login');
+      // These state setters would need to be added as props or moved to parent component
+      // setIsUserDropdownOpen(false);
+      // setIsMobileMenuOpen(false);
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
+
+  const handleHelpCentreClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // You can still call handleNavClick if needed for state management
+    handleNavClick("/help");
+    // Open external link in new tab
+    window.open("https://fluxdevs.com/Contact", "_blank");
+  };
+
   return (
     <div className={`
        bg-[#222222]
-  fixed top-0 left-0 h-screen w-64 z-50 flex-col 
-  ${isMobileMenuOpen ? 'flex' : 'hidden'}
-  md:flex md:z-0
+       fixed top-0 left-0 h-screen w-64 z-50 flex-col 
+       ${isMobileMenuOpen ? 'flex' : 'hidden'}
+       md:flex md:z-0
     `}>
       {/* Top section with logo and close button for mobile */}
       <div className="flex justify-between items-center p-6">
@@ -84,14 +96,14 @@ const Sidebar = ({
             label="Help Centre" 
             to="/help"
             active={activePath === "/help"}
-            onClick={() => handleNavClick("/help")}
+            onClick={handleHelpCentreClick}
           />
           <NavItem
             icon={<LogOut className={`h-5 w-5 text-red-500 ${activePath === "/logout" ? "text-black" : ""}`} />}
             label="Log out"
             to="/login"
             active={activePath === "/logout"}
-            onClick={handleLogout}
+            onClick={() => handleLogout()}
             className={`${activePath === "/logout" ? "text-black" : "text-red-500"} hover:text-black`}
           />
         </div>

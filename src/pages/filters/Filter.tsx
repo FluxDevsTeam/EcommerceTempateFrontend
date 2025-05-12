@@ -7,8 +7,7 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { IoClose } from "react-icons/io5";
-import { useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // Define TypeScript interfaces for our data
 interface Category {
@@ -21,10 +20,6 @@ interface SubCategory {
   category: Category;
   name: string;
 }
-
-
-
-
 
 interface ApiResponse<T> {
   count: number;
@@ -45,51 +40,53 @@ interface FilterState {
   priceRange: [number, number];
   selectedSizes: string[];
 }
-
-const FiltersComponent: React.FC<FiltersComponentProps> = ({ 
+const FiltersComponent = ({ 
   isOpen, 
   onClose, 
   onApplyFilters,
   initialFilters 
 }) => {
   // State for our fetched data
-  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [subCategories, setSubCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const pageSize = 5;
   
   // State for filter selections - initialized with initialFilters or defaults
-  const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>(
+  const [selectedSubCategories, setSelectedSubCategories] = useState(
     initialFilters?.selectedSubCategories || []
   );
-  const [priceRange, setPriceRange] = useState<[number, number]>(
+  const [priceRange, setPriceRange] = useState(
     initialFilters?.priceRange || [0, 5000]
   );
-  const [selectedSizes, setSelectedSizes] = useState<string[]>(
+  const [selectedSizes, setSelectedSizes] = useState(
     initialFilters?.selectedSizes || []
   );
   
-  const navigate = useNavigate();
-  
-  // Fetch data on component mount
+  // Fetch data with pagination
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch subcategories
+        // Fetch subcategories with pagination
         const subCategoryResponse = await fetch(
-          'https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/',
+          `https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/?page=${currentPage}&page_size=${pageSize}`
         );
         
-
-      
-        if (!subCategoryResponse.ok ) {
+        if (!subCategoryResponse.ok) {
           throw new Error('Failed to fetch data');
         }
 
-        const subCategoryData: ApiResponse<SubCategory> = await subCategoryResponse.json();
- 
-
+        const subCategoryData = await subCategoryResponse.json();
+        
         setSubCategories(subCategoryData.results);
+        setTotalItems(subCategoryData.count);
+        setTotalPages(Math.ceil(subCategoryData.count / pageSize));
         setLoading(false);
       } catch (err) {
         setError('Failed to load filter data');
@@ -99,10 +96,10 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
     };
 
     fetchData();
-  }, []);
+  }, [currentPage]);
 
   // Handle subcategory selection
-  const handleSubCategoryClick = (id: number) => {
+  const handleSubCategoryClick = (id) => {
     setSelectedSubCategories(prev => {
       if (prev.includes(id)) {
         return prev.filter(item => item !== id);
@@ -112,12 +109,15 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
     });
   };
   
-  // Handle price range changes
-  const handlePriceChange = (value: number[]) => {
-    setPriceRange(value as [number, number]);
+  // Handle page change
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
   
-
+  // Handle price range changes
+  const handlePriceChange = (value) => {
+    setPriceRange(value);
+  };
   
   // Apply filters
   const handleApplyFilter = () => {
@@ -134,27 +134,6 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
     
     try {
       onApplyFilters(filters);
-      
-      // Build query parameters for URL
-      const searchParams = new URLSearchParams();
-      
-      // Add subcategories to query
-      if (selectedSubCategories.length > 0) {
-        searchParams.append('subcategories', selectedSubCategories.join(','));
-      }
-      
-      // Add price range to query
-      searchParams.append('minPrice', priceRange[0].toString());
-      searchParams.append('maxPrice', priceRange[1].toString());
-      
-      // Add sizes to query
-      if (selectedSizes.length > 0) {
-        searchParams.append('sizes', selectedSizes.join(','));
-      }
-      
-      // Navigate to products page with filter parameters
-      navigate(`/filtered-products?${searchParams.toString()}`);
-      
       onClose();
     } catch (err) {
       console.error('Error applying filters:', err);
@@ -174,11 +153,14 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">Filters</h2>
           <button onClick={onClose} className="text-gray-600 hover:text-gray-900 cursor-pointer">
-            <IoClose size={24} />
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
         </div>
         
-        {loading ? (
+        {loading && currentPage === 1 ? (
           <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
           </div>
@@ -187,27 +169,63 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
         ) : (
           <Accordion type="single" collapsible className="w-full border-t border-gray-200" defaultValue="subcategory">
             <AccordionItem value="subcategory" className="border-b border-gray-200">
-              <AccordionTrigger className="py-4 font-semibold cursor-pointer">Subcategory</AccordionTrigger>
+              <AccordionTrigger className="py-4 font-semibold cursor-pointer">
+                Subcategory
+                <span className="ml-2 text-sm text-gray-500">({totalItems})</span>
+              </AccordionTrigger>
               <AccordionContent>
-                <ul className="space-y-3 py-1">
-                  {subCategories.map((subCategory) => (
-                    <li 
-                      key={subCategory.id} 
-                      className={`flex items-center gap-2 cursor-pointer ${
-                        selectedSubCategories.includes(subCategory.id) ? 'text-black font-medium' : 'text-gray-600'
-                      }`}
-                      onClick={() => handleSubCategoryClick(subCategory.id)}
-                    >
-                      <input 
-                        type="checkbox" 
-                        checked={selectedSubCategories.includes(subCategory.id)}
-                        onChange={() => {}}
-                        className="h-4 w-4"
-                      />
-                      <span>{subCategory.name} ({subCategory.category.name})</span>
-                    </li>
-                  ))}
-                </ul>
+                {loading && currentPage > 1 ? (
+                  <div className="flex justify-center items-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black"></div>
+                  </div>
+                ) : (
+                  <>
+                    <ul className="space-y-3 py-1">
+                      {subCategories.map((subCategory) => (
+                        <li 
+                          key={subCategory.id} 
+                          className={`flex items-center gap-2 cursor-pointer ${
+                            selectedSubCategories.includes(subCategory.id) ? 'text-black font-medium' : 'text-gray-600'
+                          }`}
+                          onClick={() => handleSubCategoryClick(subCategory.id)}
+                        >
+                          <input 
+                            type="checkbox" 
+                            checked={selectedSubCategories.includes(subCategory.id)}
+                            onChange={() => {}}
+                            className="h-4 w-4"
+                          />
+                          <span>{subCategory.name} ({subCategory.category.name})</span>
+                        </li>
+                      ))}
+                    </ul>
+                    
+                    {/* Pagination controls */}
+                    {totalPages > 1 && (
+                      <div className="flex justify-between items-center mt-4 pt-2 border-t border-gray-100">
+                        <button 
+                          onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                          disabled={currentPage === 1}
+                          className="p-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 hover:text-gray-700"
+                        >
+                          <ChevronLeft size={16} />
+                        </button>
+                        
+                        <div className="text-xs text-gray-500">
+                          Page {currentPage} of {totalPages}
+                        </div>
+                        
+                        <button 
+                          onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                          disabled={currentPage === totalPages}
+                          className="p-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 hover:text-gray-700"
+                        >
+                          <ChevronRight size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
               </AccordionContent>
             </AccordionItem>
             
@@ -263,4 +281,4 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
   );
 };
 
-export default FiltersComponent;
+export default FiltersComponent

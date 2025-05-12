@@ -160,7 +160,7 @@ const OrdersList: React.FC = () => {
                 "Price",
                 "Delivery",
                 "Status",
-                "Action",
+       
               ].map((heading) => (
                 <th
                   key={heading}
@@ -215,11 +215,7 @@ const OrdersList: React.FC = () => {
                 <td className="px-3 py-4 whitespace-nowrap">
                   <StatusBadge status={order.status} />
                 </td>
-                <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
-                  <button className="text-blue-600 hover:text-blue-800 transition">
-                    View
-                  </button>
-                </td>
+   
               </tr>
             ))}
           </tbody>

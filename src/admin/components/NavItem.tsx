@@ -1,19 +1,16 @@
-
 import { Link } from "react-router-dom";
 
-
-
 interface NavItemProps {
-    icon: React.ReactNode;
-    label: string;
-    to: string;
-    active?: boolean;
-    badge?: number;
-    className?: string;
-    onClick: (path: string) => void;
-  }
-  
- export default function NavItem ({ icon, label, to, active, badge, className, onClick }: NavItemProps)  {
+  icon: React.ReactNode;
+  label: string;
+  to: string;
+  active?: boolean;
+  badge?: number;
+  className?: string;
+  onClick: (e: React.MouseEvent) => void;
+}
+
+export default function NavItem({ icon, label, to, active, badge, className, onClick }: NavItemProps) {
   return (
     <Link
       to={to}
@@ -23,7 +20,7 @@ interface NavItemProps {
         ${active ? "bg-white !text-black" : ""}
         ${className || ""}
       `}
-      onClick={() => onClick(to)}
+      onClick={onClick}
     >
       <span className={`${active ? "text-black" : ""}`}>
         {icon}
@@ -36,4 +33,4 @@ interface NavItemProps {
       )}
     </Link>
   );
-};
+}

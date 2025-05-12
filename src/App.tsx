@@ -38,6 +38,7 @@ import Producter from "./card/Ade";
 import ProductCategory from "./pages/categories/ProductCategory";
 import PrivateRoute from "./routing/PrivateRoute";
 
+
 const queryClient = new QueryClient();
 
 const App: React.FC = () => {

@@ -78,17 +78,19 @@ export default function StatsGrid() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+     
       <StatCard 
         title="Total Products Available" 
-        value={`₦${stats.total_available_products.toLocaleString()}`} 
-        icon={<DollarSign className="text-blue-500" />} 
-     
-      />
-      <StatCard 
-        title="Total Payments" 
-        value={stats.total_payments_this_year} 
+        value={stats.total_available_products} 
         icon={<Package className="text-blue-500" />} 
  
+      />
+
+      <StatCard 
+        title="Total Payments" 
+        value={`₦${stats.total_payments_this_year}`} 
+        icon={<DollarSign className="text-blue-500" />} 
+     
       />
       <StatCard 
         title="Total Sales" 
