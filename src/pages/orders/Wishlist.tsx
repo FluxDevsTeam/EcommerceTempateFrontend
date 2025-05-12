@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
-import Card from '@/card/Card';
-import { WishData } from './api';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import Card from "@/card/Card";
+import { WishData } from "./api";
 
 interface WishItem {
   id: number;
@@ -25,8 +26,8 @@ const Wishlist = () => {
         const data = await WishData();
         setWishlistItems(data);
       } catch (err) {
-        console.error('Failed to load wishlist:', err);
-        setError('Failed to load wishlist.');
+        console.error("Failed to load wishlist:", err);
+        setError("Failed to load wishlist.");
       } finally {
         setLoading(false);
       }
@@ -45,18 +46,35 @@ const Wishlist = () => {
 
   return (
     <div className="-mt-10 p-4 sm:p-14">
-      <h2 className="font-normal text-[32px] sm:text-[40px] tracking mb-4 sm:mb-8">Wishlist</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 mb-8 sm:mb-16">
-        {wishlistItems.map((item) => (
-          <Card
-          key={item.product.id}
-          product={item.product}
-          isInitiallyLiked={true}
-          wishItemId={item.id}
-          removeOnUnlike={true}
-        />
-        ))}
-      </div>
+      <h2 className="font-normal text-[32px] sm:text-[40px] tracking mb-4 sm:mb-8">
+        Wishlist
+      </h2>
+
+      {wishlistItems.length === 0 ? (
+        <div className="text-center py-16">
+          <h2 className="text-2xl font-medium text-gray-600 mb-4">
+            No Items In Wishlist
+          </h2>
+          <Link
+            to="/products"
+            className="inline-block bg-black text-white py-3 px-8 rounded-full hover:bg-gray-800 transition-colors"
+          >
+            Continue Browsing Our Products
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 mb-8 sm:mb-16">
+          {wishlistItems.map((item) => (
+            <Card
+              key={item.product.id}
+              product={item.product}
+              isInitiallyLiked={true}
+              wishItemId={item.id}
+              removeOnUnlike={true}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

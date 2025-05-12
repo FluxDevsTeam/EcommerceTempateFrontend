@@ -76,6 +76,9 @@ const SuggestedItemsDetails = () => {
     type: "success" as "success" | "error",
   });
 
+    const [isAddingToCart, setIsAddingToCart] = useState(false);
+  
+
   // Fetch product data
   const {
     data: product,
@@ -157,6 +160,9 @@ const SuggestedItemsDetails = () => {
       return;
     }
 
+    setIsAddingToCart(true);
+
+
     if (!product) {
       setModalConfig({
         isOpen: true,
@@ -164,10 +170,11 @@ const SuggestedItemsDetails = () => {
         message: "Product data not available",
         type: "error",
       });
+      setIsAddingToCart(false);
       return;
     }
 
-    const selectedSizeData = productSizes?.find(
+    const selectedSizeData = product.sizes.find(
       (size) => size.size === selectedSize
     );
 
@@ -178,6 +185,7 @@ const SuggestedItemsDetails = () => {
         message: "Selected size not found",
         type: "error",
       });
+      setIsAddingToCart(false);
       return;
     }
 
@@ -203,6 +211,7 @@ const SuggestedItemsDetails = () => {
         message: "Item added to cart successfully!",
         type: "success",
       });
+      setIsAddingToCart(false);
       return;
     }
 
@@ -249,6 +258,7 @@ const SuggestedItemsDetails = () => {
           message: errorData.error,
           type: "error",
         });
+        setIsAddingToCart(false);
         throw new Error("Failed to add to cart");
       }
 
@@ -260,6 +270,8 @@ const SuggestedItemsDetails = () => {
       });
     } catch (error) {
       console.error("Error adding to cart:", error);
+    }  finally {
+      setIsAddingToCart(false);
     }
   };
 
@@ -452,10 +464,13 @@ const SuggestedItemsDetails = () => {
               onClick={handleAddToCart}
               className="w-full py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               type="button"
-              disabled={!isInStock}
+              disabled={!isInStock || isAddingToCart}
             >
-
-              {isInStock ? 'Add to Cart' : 'Out of Stock'}
+              {isAddingToCart
+                  ? "Adding..."
+                  : isInStock
+                  ? "Add to Cart"
+                  : "Out of Stock"}
             </button>
           </div>
         </div>

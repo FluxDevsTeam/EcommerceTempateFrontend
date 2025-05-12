@@ -512,12 +512,12 @@ const ConfirmOrder = () => {
                   className="w-full p-3 border border-gray-300 rounded-lg"
                   disabled={isSubmitting}
                 >
-                  <option value="">Select a state</option>
+                  {/* <option value="">Select a state</option>
                   {availableStates.map((state, indexPurpose) => (
                     <option key={indexPurpose} value={state}>
                       {state}
                     </option>
-                  ))}
+                  ))} */}
                 </select>
               </div>
 
