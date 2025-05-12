@@ -4,24 +4,24 @@ import { FaHeart } from "react-icons/fa";
 
 interface WishProps {
   color?: string;
-  liked?: boolean;
+  liked: boolean;
   onToggle: () => void;
 }
 
-const Wish: React.FC<WishProps> = ({ color = "red", liked, onToggle }) => {
+const SuggestedWish: React.FC<WishProps> = ({ color = "red", liked, onToggle }) => {
   return (
     <div
-      className="absolute top-2 right-2 text-[23px] sm:text-[30px] cursor-pointer"
+      className="absolute top-2 right-2   cursor-pointer"
       onClick={onToggle}
       aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'}
     >
       {liked ? (
-        <FaHeart style={{ color: color }} />
+        <FaHeart className="w-2 h-2" style={{ color: color }} />
       ) : (
-        <FiHeart style={{ color: "black" }} />
+        <FiHeart className="w-2 h-2" style={{ color: "black" }} />
       )}
     </div>
   );
 };
 
-export default Wish;
+export default SuggestedWish;

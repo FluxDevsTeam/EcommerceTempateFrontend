@@ -1,67 +1,84 @@
-import { Link } from "react-router-dom";
-
 type PaginationProps = {
-  currentPage: number;
+  nextPageUrl: string | null;
+  prevPageUrl: string | null;
+  getPageUrl: (page: number) => string;
   totalPages: number;
-  onPageChange: (page: number) => void;
+  currentPage: number;
+  onPageChange: (url: string) => void;
 };
 
-  const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) => {
-  const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+const getPageNumbers = (currentPage: number, totalPages: number): number[] => {
+  const maxVisible = totalPages;
+  let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+  let end = start + maxVisible - 1;
+
+  if (end > totalPages) {
+    end = totalPages;
+    start = Math.max(1, end - maxVisible + 1);
+  }
+
+  const pages = [];
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+  return pages;
+};
+
+
+const Pagination = ({ nextPageUrl, currentPage, totalPages, getPageUrl, prevPageUrl, onPageChange }: PaginationProps) => {
+  const pages = getPageNumbers(currentPage, totalPages);
 
   return (
     <div className='flex justify-between items-center px-6 sm:px-24 mt-20'>
-      <p className="flex border border-[#E0E0E0] rounded overflow-hidden">
-        <span
-          className="w-8 h-8 p-1 text-center flex items-center justify-center cursor-pointer"
-          onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
-        >
-          &lt;
-        </span>
-
-        <span
-          className="w-8 h-8 p-1 text-center flex items-center justify-center border-l border-[#E0E0E0] cursor-pointer"
-          onClick={() => onPageChange(1)}
+      <div className="flex border border-[#E0E0E0] rounded overflow-hidden">
+        <button
+          className="w-8 h-8 border-r border-[#E0E0E0] cursor-pointer disabled:opacity-30"
+          onClick={() => prevPageUrl && onPageChange(getPageUrl(1))}
+          disabled={!prevPageUrl}
         >
           &lt;&lt;
-        </span>
+        </button>
+        <button
+          className="w-8 h-8 flex items-center justify-center cursor-pointer disabled:opacity-30"
+          onClick={() => prevPageUrl && onPageChange(prevPageUrl)}
+          disabled={!prevPageUrl}
+        >
+          &lt;
+        </button>
 
-        {pages.map((page) => (
-          <span
+          {pages.map((page) => (
+          <button
             key={page}
-            className={`w-8 h-8 p-1 text-center flex items-center justify-center border-l border-[#E0E0E0] cursor-pointer ${
-              currentPage === page ? "bg-[#184455] text-white" : ""
-            }`}
-            onClick={() => onPageChange(page)}
+            className={`px-2 py-1 rounded ${page === currentPage ? 'bg-[#184455] text-white font-bold' : 'text-[#184455]'}`}
+            onClick={() => onPageChange(getPageUrl(page))}
           >
             {page}
-          </span>
+          </button>
         ))}
 
-        <span className="w-8 h-8 p-1 text-center flex items-center justify-center border-l border-[#E0E0E0]">...</span>
-
-        <span
-          className="w-8 h-8 p-1 text-center flex items-center justify-center border-l border-[#E0E0E0] cursor-pointer"
-          onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+        <button
+          className="w-8 h-8 flex items-center justify-center border-l border-[#E0E0E0] cursor-pointer disabled:opacity-30"
+          onClick={() => nextPageUrl && onPageChange(nextPageUrl)}
+          disabled={!nextPageUrl}
         >
           &gt;
-        </span>
-
-        <span
-          className="w-8 h-8 p-1 text-center flex items-center justify-center border-l border-[#E0E0E0] rounded-r cursor-pointer"
-          onClick={() => onPageChange(totalPages)}
+        </button>
+        <button
+          className="w-8 h-8 border-l border-[#E0E0E0] cursor-pointer disabled:opacity-30"
+          onClick={() => onPageChange(getPageUrl(totalPages))}
+          disabled={currentPage === totalPages}
         >
           &gt;&gt;
-        </span>
-      </p>
+        </button>
+      </div>
 
-      <Link
-        to={""}
-        className='text-[#184455] font-semibold'
-        onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+      <button
+        className='text-[#184455] font-semibold disabled:opacity-30'
+        onClick={() => nextPageUrl && onPageChange(nextPageUrl)}
+        disabled={!nextPageUrl}
       >
         Next
-      </Link>
+      </button>
     </div>
   );
 };

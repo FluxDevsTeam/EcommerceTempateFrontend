@@ -1,8 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "./pages/auth/AuthContext";
-import MainLayout from "./pages/auth/Mainlayout";
+import { AuthProvider, useAuth } from "./pages/auth/AuthContext";
+import Mainlayout from "./pages/auth/Mainlayout";
 import Homepage from "./pages/homepage/Homepage";
 import Login from "./pages/auth/Login";
 import SignUp from "./pages/auth/Signup";
@@ -24,7 +24,7 @@ import AdminCategories from "./admin/pages/products/product components/AdminCate
 import AdminSubCategories from "./admin/pages/products/product components/AdminSubCategories";
 import Orders from "./pages/orders/Order";
 import ProductDetail from "./components/products/ProductDetail";
-import Categories from "./pages/categories/Categories";
+import NewArrivals from "./pages/categories/NewArrivals";
 import AuthLayout from "./pages/auth/AuthLayout";
 import AdminLayout from "./pages/auth/AdminLayout";
 import Dashboard from "./admin/pages/dashboard/Dashboard";
@@ -32,15 +32,15 @@ import Products from "./admin/pages/products/Products";
 import Settings from "./admin/pages/settings/Settings";
 import AdminOrders from "./admin/pages/orders/AdminOrders";
 import SearchResults from "./components/products/SearchResults";
-import ShoeCategory from "./pages/categories/ShoeCategory";
-import ClothesCategory from "./pages/categories/ClothesCategory";
-import AccessoriesCategory from "./pages/categories/AccessoriesCategory";
 import ProductsPage from "./pages/filters/FilteredPages";
 import Wishlist from "./pages/orders/Wishlist";
 import Confirm from "./pages/orders/Confirm";
 import Contact from "./pages/orders/Contact";
 import SuggestedItemDetails from "./components/products/SuggestedItemsDetails";
 import ScrollToTop from "./components/ScrollToTop";
+import Producter from "./card/Ade";
+import ProductCategory from "./pages/categories/ProductCategory";
+import PrivateRoute from "./routing/PrivateRoute";
 
 const queryClient = new QueryClient();
 
@@ -48,8 +48,6 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        {" "}
-        {/* Move AuthProvider here */}
         <Router>
           <ScrollToTop />
           <AppContent />
@@ -60,10 +58,13 @@ const App: React.FC = () => {
 };
 
 const AppContent: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+  
   return (
     <Routes>
       {/* Public routes with MainLayout */}
-      <Route element={<MainLayout />}>
+      <Route element={<Mainlayout />}>
+        <Route path="/category/:id" element={<ProductCategory />} />
         <Route path="/" element={<Homepage />} />
         <Route path="/product/item/:id" element={<ProductDetail />} />
         <Route path="/suggested/:id" element={<SuggestedItemDetails />} />
@@ -76,24 +77,35 @@ const AppContent: React.FC = () => {
         <Route path="/shoe-category" element={<ShoeCategory />} />
         <Route path="/clothes-category" element={<ClothesCategory />} />
         <Route path="/accessories-category" element={<AccessoriesCategory />} />
+        <Route path="/new-arrivals" element={<NewArrivals />} />
+        
         <Route path="/filtered-products" element={<ProductsPage />} />
-        <Route path="/confirm-order" element={<ConfirmOrder />} />
         <Route path="/faqs" element={<FAQs />} />
-        <Route path="/general-settings" element={<GeneralSettings />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
-        <Route path="/orders/:id" element={<Confirm />} />
-        <Route path="/wishlist" element={<Wishlist />} />
+
         <Route path="/contact-us" element={<Contact />} />
+        <Route path="/ade" element={<Producter />} />
+      </Route>
+
+      {/* Protected routes */}
+      <Route element={<PrivateRoute isAuthenticated={isAuthenticated} />}>
+        <Route element={<Mainlayout />}>
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/confirm-order" element={<ConfirmOrder />} />
+          <Route path="/general-settings" element={<GeneralSettings />} />
+          <Route path="/orders/:id" element={<Confirm />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+        </Route>
       </Route>
 
       {/* AuthLayout Routes */}
-
       <Route element={<AuthLayout />}>
-        <Route path="login" element={<Login />} />
-        <Route path="signup" element={<SignUp />} />
-        <Route path="forgot-password" element={<ForgotPassword />} />
-        <Route path="verify-email" element={<VerifyEmail />} />
-        <Route path="change-password" element={<ChangePassword />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/change-password" element={<ChangePassword />} />
       </Route>
 
       {/* Admin routes with AdminLayout */}
@@ -105,6 +117,7 @@ const AppContent: React.FC = () => {
         <Route path="admin-products-details/:id" element={<AdminProductDetails />} />
         <Route path="admin-categories" element={<AdminCategories />} />
         <Route path="admin-categories/subcategories" element={<AdminSubCategories />} />
+
         <Route path="orders" element={<AdminOrders />} />
         <Route path="settings" element={<Settings />} />
       </Route>

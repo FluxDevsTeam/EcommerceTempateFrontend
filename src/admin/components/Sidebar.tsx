@@ -6,7 +6,19 @@ interface SidebarProps {
   handleNavClick: (path: string) => void;
   isMobileMenuOpen: boolean;
   toggleMobileMenu: () => void;
+
 }
+
+const handleLogout = async () => {
+  try {
+    await logout();
+    navigate('/login');
+    setIsUserDropdownOpen(false);
+    setIsMobileMenuOpen(false);
+  } catch (error) {
+    console.error("Logout failed", error);
+  }
+};
 
 const Sidebar = ({ 
   activePath, 
@@ -77,9 +89,9 @@ const Sidebar = ({
           <NavItem
             icon={<LogOut className={`h-5 w-5 text-red-500 ${activePath === "/logout" ? "text-black" : ""}`} />}
             label="Log out"
-            to="/logout"
+            to="/login"
             active={activePath === "/logout"}
-            onClick={() => handleNavClick("/logout")}
+            onClick={handleLogout}
             className={`${activePath === "/logout" ? "text-black" : "text-red-500"} hover:text-black`}
           />
         </div>

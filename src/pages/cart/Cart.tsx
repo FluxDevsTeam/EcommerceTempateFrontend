@@ -7,7 +7,7 @@ import {
   removeLocalCartItem,
 } from "../../utils/cartStorage";
 import Suggested from "../../components/products/Suggested";
-// Update the interfaces to match API response
+
 interface Product {
   id: number;
   name: string;
@@ -414,9 +414,10 @@ const Cart = () => {
   // Fetch suggested products when cart items change
   // useEffect(() => {
   //   fetchSuggestedProducts();
-  // }, [cartItems]);
+  // }, [cartItems])
 
   return (
+    <div>
     <div className="max-w-6xl mx-auto px-4 py-6 font-poppins">
       {/* Breadcrumb */}
       <div className="flex items-center text-sm mb-6">

@@ -2,7 +2,7 @@ import {ArrowUp, ArrowDown } from 'lucide-react';
 
 interface StatCardProps {
   title: string;
-  value: string;
+  value: number;
   icon: React.ReactNode;
   change: number;
   changeText: string;
@@ -20,15 +20,8 @@ export default function StatCard({ title, value, icon, change, changeText, chang
       </div>
       <div className="text-gray-600 mb-2">{title}</div>
       <div className="flex items-center">
-        <div className={`flex items-center mr-2 ${changeType === 'positive' ? 'text-green-500' : 'text-red-500'}`}>
-          {changeType === 'positive' ? (
-            <ArrowUp size={16} />
-          ) : (
-            <ArrowDown size={16} />
-          )}
-          <span className="ml-1">{change}</span>
-        </div>
-        <span className="text-gray-500 text-sm">{changeText}</span>
+       
+
       </div>
     </div>
   );

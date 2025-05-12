@@ -1,67 +1,94 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import ProductCard from './ProductsCard';
-import { Product } from '@/types/api-types';
 import search from '/images/Empty-rafiki 1 (1).png';
-
+import Card from '@/card/Card';
+import PaginationComponent from '@/components/Pagination';
+import { WishData } from '@/card/wishListApi';
+import { WishItem } from '@/card/types';
 
 // Full search API endpoint
 const SEARCH_API_URL = "https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/search/";
 
+export interface Category {
+  id: number;
+  name: string;
+}
 
+export interface SubCategory {
+  id: number;
+  name: string;
+  category: Category;
+}
 
-const fetchSearchResults = async (searchQuery?: string, page: number = 1, pageSize: number = 24, ordering?: string): Promise<{
-  products: Product[],
-  totalProducts: number,
-  totalPages: number
-}> => {
+interface Product {
+  id: number;
+  name: string;
+  image1: string;
+  undiscounted_price: string;
+  price: string;
+  description: string;
+  total_quantity: number;
+  sub_category: SubCategory;
+  colour: string;
+  image2: string | null;
+  image3: string | null;
+  is_available: boolean;
+  latest_item: boolean;
+  latest_item_position: number;
+  dimensional_size: string;
+  weight: string;
+  top_selling_items: boolean;
+  top_selling_position: number;
+  date_created: string;
+  date_updated: string;
+}
+
+interface ApiResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Product[];
+}
+
+const fetchSearchResults = async (
+  searchQuery?: string, 
+  page: number = 1, 
+  ordering?: string
+): Promise<ApiResponse> => {
   const url = new URL(SEARCH_API_URL);
   
-  // Add search query parameter
   if (searchQuery) {
     url.searchParams.set('search', searchQuery);
   }
   
-  // Add pagination parameters
   url.searchParams.set('page', page.toString());
-  url.searchParams.set('page_size', pageSize.toString());
   
-  // Add ordering parameter if provided
   if (ordering) {
     url.searchParams.set('ordering', ordering);
   }
   
   const response = await fetch(url.toString());
   if (!response.ok) throw new Error("Failed to fetch products");
-  const data = await response.json();
-  
-  const products = data.results || [];
-  const totalProducts = data.count || 0;
-  const totalPages = Math.ceil(totalProducts / pageSize);
-  
-  return {
-    products,
-    totalProducts,
-    totalPages
-  };
+  return response.json();
 };
 
 const SearchResults = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
-  const pageParam = searchParams.get('page');
-  const orderingParam = searchParams.get('ordering');
-  const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+  const orderingParam = searchParams.get('ordering') || '';
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [pagination, setPagination] = useState({
-    currentPage: currentPage,
-    totalPages: 1,
-    totalProducts: 0
+  const [productsData, setProductsData] = useState<ApiResponse>({
+    count: 0,
+    next: null,
+    previous: null,
+    results: []
   });
-  const [ordering, setOrdering] = useState(orderingParam || '');
+  const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
+  const [wishlistLoading, setWishlistLoading] = useState(true);
+  const [ordering, setOrdering] = useState(orderingParam);
 
   useEffect(() => {
     const loadSearchResults = async () => {
@@ -69,23 +96,17 @@ const SearchResults = () => {
         setLoading(true);
         setError(null);
         
-        const { products, totalProducts, totalPages } = 
-          await fetchSearchResults(query, currentPage, 24, ordering);
+        const data = await fetchSearchResults(query, currentPage, ordering);
         
-        if (!products) {
+        if (!data.results) {
           throw new Error('No products data received from the API');
         }
         
-        if (!Array.isArray(products)) {
-          throw new Error(`Invalid products data format: ${typeof products}`);
+        if (!Array.isArray(data.results)) {
+          throw new Error(`Invalid products data format: ${typeof data.results}`);
         }
         
-        setProducts(products);
-        setPagination({
-          currentPage,
-          totalPages,
-          totalProducts
-        });
+        setProductsData(data);
         
       } catch (err) {
         console.error('Search results fetching error:', err);
@@ -98,7 +119,12 @@ const SearchResults = () => {
           setError('Failed to load search results. Please try again later.');
         }
         
-        setProducts([]);
+        setProductsData({
+          count: 0,
+          next: null,
+          previous: null,
+          results: []
+        });
       } finally {
         setLoading(false);
       }
@@ -107,84 +133,52 @@ const SearchResults = () => {
     loadSearchResults();
   }, [query, currentPage, ordering]);
 
-  // Function to navigate to a specific page
-  const handlePageChange = (page: number) => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('page', page.toString());
-    window.history.pushState({}, '', url.toString());
-    window.location.href = url.toString();
+  // Fetch wishlist data
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const wishlistRes = await WishData();
+        setWishlistItems(wishlistRes);
+      } catch (err) {
+        console.error('Error loading wishlist:', err);
+      } finally {
+        setWishlistLoading(false);
+      }
+    };
+
+    fetchWishlist();
+  }, []);
+
+  // Helper function to check if a product is in wishlist
+  const getWishlistInfo = (productId: number) => {
+    const matchedWish = wishlistItems.find(item => item.product.id === productId);
+    return {
+      isInitiallyLiked: !!matchedWish,
+      wishItemId: matchedWish?.id
+    };
   };
 
-  // Handle ordering change
+  const handlePageChange = (newPage: number) => {
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('page', newPage.toString());
+      return newParams;
+    });
+  };
+
   const handleOrderingChange = (newOrdering: string) => {
     setOrdering(newOrdering);
-    
-    const url = new URL(window.location.href);
-    url.searchParams.set('ordering', newOrdering);
-    url.searchParams.delete('page'); // Reset to page 1 when changing ordering
-    window.history.pushState({}, '', url.toString());
-    
-    // No need to trigger location change here, the useEffect will handle the new API call
-  };
-
-  // Render pagination controls
-  const renderPagination = () => {
-    const { currentPage, totalPages } = pagination;
-    
-    if (totalPages <= 1) return null;
-    
-    const pageNumbers = [];
-    const maxPageButtons = 5;
-    
-    let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
-    let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
-    
-    if (endPage - startPage + 1 < maxPageButtons) {
-      startPage = Math.max(1, endPage - maxPageButtons + 1);
-    }
-    
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i);
-    }
-
-    return (
-      <div className="flex justify-center mt-8 space-x-2 px-4 sm:px-6 py-8 md:py-12">
-        {currentPage > 1 && (
-          <button 
-            className="px-3 py-1 border rounded-md hover:bg-gray-100"
-            onClick={() => handlePageChange(currentPage - 1)}
-          >
-            Previous
-          </button>
-        )}
-        
-        {pageNumbers.map(number => (
-          <button
-            key={number}
-            className={`px-3 py-1 border rounded-md ${
-              currentPage === number ? 'bg-black text-white' : 'hover:bg-gray-100'
-            }`}
-            onClick={() => handlePageChange(number)}
-          >
-            {number}
-          </button>
-        ))}
-        
-        {currentPage < totalPages && (
-          <button 
-            className="px-3 py-1 border rounded-md hover:bg-gray-100"
-            onClick={() => handlePageChange(currentPage + 1)}
-          >
-            Next
-          </button>
-        )}
-      </div>
-    );
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('ordering', newOrdering);
+      newParams.delete('page'); // Reset to page 1 when changing ordering
+      return newParams;
+    });
   };
 
   if (error) {
     return (
-      <div className="container mx-auto px-6  py-8 md:py-12">
+      <div className="container mx-auto px-6 py-8 md:py-12">
         <div className="bg-red-50 border-l-4 border-red-400 p-4">
           <div className="flex">
             <div className="flex-shrink-0">
@@ -201,7 +195,7 @@ const SearchResults = () => {
     );
   }
 
-  if (loading) {
+  if (loading || wishlistLoading) {
     return (
       <div className="flex justify-center items-center py-10 text-lg">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mr-3"></div>
@@ -210,18 +204,20 @@ const SearchResults = () => {
     );
   }
   
-  const hasResults = products.length > 0;
+  const hasResults = productsData.results.length > 0;
+  const itemsPerPage = 10;
+  const totalPages = productsData.count ? Math.ceil(productsData.count / itemsPerPage) : 1;
 
   return (
     <div className="container mx-auto px-6 md:px-14 py-8 md:py-12">
       {hasResults && (
         <div className="mb-6">
-          <h1 className=" text-3xl font-medium flex justify-center items-center">
+          <h1 className="text-3xl font-medium flex justify-center items-center pt-2">
             Search Results for "{query}"
           </h1>
-        
-        
-   
+          <p className="text-gray-600 mt-2 text-center">
+            Showing {productsData.count} results
+          </p>
         </div>
       )}
 
@@ -232,17 +228,33 @@ const SearchResults = () => {
         </div>
       )}
 
-      {/* Products Grid - Display all products without grouping */}
+      {/* Products Grid */}
       {hasResults && (
         <div className="mb-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 sm:mb-16">
-            {products.map((item) => (
-              <ProductCard key={item.id} item={item} />
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-8 sm:mb-16">
+            {productsData.results.map((item) => {
+              const wishlistInfo = getWishlistInfo(item.id);
+              return (
+                <Card 
+                  key={item.id} 
+                  product={item}
+                  isInitiallyLiked={wishlistInfo.isInitiallyLiked}
+                  wishItemId={wishlistInfo.wishItemId}
+                />
+              );
+            })}
           </div>
           
           {/* Pagination Controls */}
-          {renderPagination()}
+          <div className="mt-6">
+            <PaginationComponent
+              currentPage={currentPage}
+              totalPages={totalPages}
+              hasNextPage={Boolean(productsData.next)}
+              hasPreviousPage={Boolean(productsData.previous)}
+              handlePageChange={handlePageChange}
+            />
+          </div>
         </div>
       )}
     </div>

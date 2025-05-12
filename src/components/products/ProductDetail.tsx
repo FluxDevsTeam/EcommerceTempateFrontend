@@ -20,6 +20,15 @@ interface SubCategory {
   name: string;
 }
 
+// Define proper size object structure
+interface Size {
+  id: number;
+  size: string;
+  quantity: number;
+  undiscounted_price: string;
+  price: string;
+}
+
 interface Product {
   id: number;
   name: string;
@@ -30,31 +39,14 @@ interface Product {
   image1: string;
   image2: string;
   image3: string;
-  discounted_price: string;
+  discounted_price?: string;
   price: string;
+  undiscounted_price?: number;
   is_available: boolean;
   dimensional_size: string;
   weight: string;
-}
-
-interface ProductSize {
-  id: number;
-  product: {
-    id: number;
-    name: string;
-    image1: string;
-    discounted_price: string;
-    price: string;
-  };
-  size: string;
-  quantity: number;
-}
-
-interface ProductSizesResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: ProductSize[];
+  unlimited: boolean; // Added the unlimited field
+  sizes: Size[];
 }
 
 interface ProductDetailParams {
@@ -116,6 +108,7 @@ const ProductDetail = () => {
     queryKey: ["productSizes", productId],
     queryFn: () => fetchSizes(productId),
     enabled: !!productId,
+
   });
 
   // Group all useEffect hooks together
@@ -127,11 +120,12 @@ const ProductDetail = () => {
       if (images.length > 0 && !mainImage) {
         setMainImage(images[0]);
       }
-      if (productSizes && productSizes.length > 0 && !selectedSize) {
-        setSelectedSize(productSizes[0].size);
+      // Set the first available size as default if none selected
+      if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+        setSelectedSize(product.sizes[0].size);
       }
     }
-  }, [product, productSizes, mainImage, selectedSize]);
+  }, [product, mainImage, selectedSize]);
 
   const handleAddToCart = async () => {
     if (!selectedSize) {
@@ -261,8 +255,9 @@ const ProductDetail = () => {
     setModalConfig({ ...modalConfig, isOpen: false });
   };
 
-  if (!id) {
+  if (!id || isNaN(productId)) {
     return <div className="text-center py-8">Product ID not provided</div>;
+
   }
 
   if (isLoading)
@@ -282,20 +277,20 @@ const ProductDetail = () => {
   );
 
   // Calculate discount percentage
-  const price = parseFloat(product.price);
-  const discountedPrice = parseFloat(product.discounted_price);
-  const discountPercentage =
-    price > 0 ? Math.round(((price - discountedPrice) / price) * 100) : 0;
+
+  const discountedPrice = parseFloat(product.price);
+  const undiscountedPrice = product.undiscounted_price || parseFloat(product.price);
+  const discountPercentage = undiscountedPrice > 0 
+    ? Math.round(((undiscountedPrice - discountedPrice) / undiscountedPrice) * 100) 
+    : 0;
 
   // Get available quantity for selected size
-  const selectedSizeData = productSizes?.find(
-    (size) => size.size === selectedSize
-  );
+  const selectedSizeData = product.sizes.find(size => size.size === selectedSize);
   const availableQuantity = selectedSizeData?.quantity || 0;
 
   // Handle quantity changes
   const handleQuantityIncrease = () => {
-    if (quantity < availableQuantity) {
+    if (product.unlimited || quantity < availableQuantity) {
       setQuantity(quantity + 1);
     }
   };
@@ -306,7 +301,11 @@ const ProductDetail = () => {
     }
   };
 
+  // Determine if the item is in stock
+  const isInStock = product.unlimited || availableQuantity > 0;
+
   return (
+    <div>
     <div className="w-full min-h-screen md:mt-8 px-6 md:px-12 py-4 lg:px-20">
       {/* Success/Error Modal */}
       {modalConfig.isOpen && (
@@ -390,19 +389,19 @@ const ProductDetail = () => {
             </h1>
 
             <span className="inline-block bg-blue-100 text-sm md:text-base rounded-2xl p-2">
-              {availableQuantity} left in stock
+
+              {product.unlimited ? 'Unlimited stock' : `${availableQuantity} left in stock`}
             </span>
 
             <div className="flex flex-col md:flex-row md:items-center gap-3">
-              <span className="text-xl md:text-3xl font-normal">
-                {" "}
-                ₦ {product.discounted_price}
-              </span>
-              <div className="flex space-x-2">
-                <span className="text-gray-500 line-through text-3xl">
-                  {" "}
-                  ₦ {product.price}
-                </span>
+
+              <span className="text-xl md:text-3xl font-normal"> ₦ {product.price}</span>
+              <div className="flex space-x-2">  
+                {product.undiscounted_price && (
+                  <span className="text-gray-500 line-through text-3xl"> 
+                    ₦ {product.undiscounted_price}
+                  </span>
+                )}
                 {discountPercentage > 0 && (
                   <span className="bg-red-200 text-[#FF3333] p-3 rounded-full text-sm">
                     {discountPercentage}% off
@@ -411,7 +410,8 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <p className="text-gray-700 text-base leading-relaxed">
+            
+            <p className="text-gray-700 text-base leading-relaxed line-clamp-2">
               {product.description}
             </p>
 
@@ -426,12 +426,11 @@ const ProductDetail = () => {
             <div className="space-y-2">
               <p className="text-gray-600 text-sm sm:text-base">Size</p>
               <div className="grid grid-cols-4 gap-2">
-                {sizesLoading ? (
-                  <div className="col-span-4 text-center py-2">
-                    Loading sizes...
-                  </div>
-                ) : productSizes && productSizes.length > 0 ? (
-                  productSizes.map((item) => (
+
+                {isLoading ? (
+                  <div className="col-span-4 text-center py-2">Loading sizes...</div>
+                ) : product.sizes && product.sizes.length > 0 ? (
+                  product.sizes.map((item) => (
                     <button
                       type="button"
                       key={item.id}
@@ -439,21 +438,20 @@ const ProductDetail = () => {
                         setSelectedSize(item.size);
                         setQuantity(1); // Reset quantity when size changes
                       }}
-                      disabled={item.quantity <= 0}
+                      disabled={!product.unlimited && item.quantity <= 0}
                       className={`p-3 text-sm sm:text-base border rounded-2xl transition-colors ${
                         item.size === selectedSize
-                          ? "bg-black text-white border-black"
-                          : item.quantity <= 0
-                          ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-                          : "bg-gray-200 hover:bg-gray-300 border-gray-300 cursor-pointer"
+
+                          ? 'bg-black text-white border-black'
+                          : !product.unlimited && item.quantity <= 0
+                            ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                            : 'bg-gray-200 hover:bg-gray-300 border-gray-300 cursor-pointer'
                       }`}
-                      title={item.quantity <= 0 ? "Out of stock" : ""}
+                      title={!product.unlimited && item.quantity <= 0 ? 'Out of stock' : ''}
                     >
                       {item.size.toUpperCase()}
-                      {item.quantity <= 0 && (
-                        <span className="block text-xs text-red-500">
-                          (Sold out)
-                        </span>
+                      {!product.unlimited && item.quantity <= 0 && (
+                        <span className="block text-xs text-red-500">(Sold out)</span>
                       )}
                     </button>
                   ))
@@ -478,7 +476,7 @@ const ProductDetail = () => {
               <button
                 className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleQuantityIncrease}
-                disabled={quantity >= availableQuantity}
+                disabled={!product.unlimited && quantity >= availableQuantity}
               >
                 +
               </button>
@@ -489,33 +487,40 @@ const ProductDetail = () => {
               onClick={handleAddToCart}
               className="w-full py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               type="button"
-              disabled={availableQuantity <= 0}
+              disabled={!isInStock}
             >
-              {availableQuantity <= 0 ? "Out of Stock" : "Add to Cart"}
+              {isInStock ? 'Add to Cart' : 'Out of Stock'}
             </button>
           </div>
         </div>
       </div>
 
       {/* Description Section */}
-      <div className="mt-12 space-y-6">
+      <div className="mt-12 flex flex-col  md:flex-row  space-y-6">
+        <div className='md:w-[60%] w-full gap-5 space-y-3'>
         <h2 className="text-xl sm:text-2xl font-medium">Description</h2>
         <p className="text-gray-700 text-sm sm:text-base">
           {product.description}
         </p>
-        <DescriptionList
+
+        </div>
+        <div className='md:w-[30%] mx-auto w-full flex justify-center items-center'>
+        <DescriptionList 
           details={{
-            Category: product.sub_category.category.name,
-            Subcategory: product.sub_category.name,
-            Weight: product.weight,
-            Size: product.dimensional_size,
-            Color: product.colour,
+            "Category": product.sub_category.category.name,
+            "Subcategory": product.sub_category.name,
+            "Weight": product.weight,
+            "Color": product.colour
           }}
         />
-
+        </div>
         {/* Conditional rendering for Suggested or SuggestedProductDetails */}
-        <Suggested />
+      
       </div>
+    </div>  
+    <div className="px-0 md:px-12 ">
+    <Suggested />
+    </div>
     </div>
   );
 };

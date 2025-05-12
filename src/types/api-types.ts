@@ -10,7 +10,7 @@ interface SubCategory {
 
 export interface Product {
   id: number;
-discounted_price: string;
+undiscounted_price: string;
   name: string;
   description: string;
   discount: boolean;

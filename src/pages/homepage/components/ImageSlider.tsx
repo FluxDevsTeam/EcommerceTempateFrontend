@@ -23,9 +23,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
 
   // Flatten all image1, image2, image3 into a single list
   const allImages = data.flatMap((item) => [
-    { id: `${item.id}-1`, src: item.image1, alt: item.name ,name: item.name,},
-    { id: `${item.id}-2`, src: item.image2, alt: item.name , name: item.name },
-    { id: `${item.id}-3`, src: item.image3, alt: item.name , name: item.name },
+    { id: `${item.id}-1`, src: item.image1, alt: item.name ,name: item.name,}
   ]);
 
   return (
@@ -42,8 +40,8 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
            />
            
            {/* Text overlay */}
-           <div className="w-[45%] absolute bottom-10 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 rounded-b-xl">
-             <h3 className="text-white uppercase text-3xl md:text-5xl font-medium">{image.name}</h3>
+           <div className="w-full absolute bottom-10 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 rounded-b-xl">
+             <h3 className="text-white uppercase text-3xl md:text-5xl font-medium line-clamp-3">{image.name}</h3>
              {/* You can add more text elements here */}
            </div>
          </div>

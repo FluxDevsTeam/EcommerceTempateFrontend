@@ -1,16 +1,44 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { FaRegHeart } from "react-icons/fa";
+import Card from "@/card/Card";
+import PaginationComponent from '@/components/Pagination';
 import SortDropdown from './FilterDropDown';
+import { WishData } from '@/card/wishListApi';
+import { WishItem } from '@/card/types';
 
-// Define TypeScript interfaces
+export interface Category {
+  id: number;
+  name: string;
+}
+
+export interface SubCategory {
+  id: number;
+  name: string;
+  category: Category;
+}
+
 interface Product {
   id: number;
   name: string;
   image1: string;
-  discounted_price: string;
+  undiscounted_price: string;
   price: string;
+  description: string;
+  total_quantity: number;
+  sub_category: SubCategory;
+  colour: string;
+  image2: string | null;
+  image3: string | null;
+  is_available: boolean;
+  latest_item: boolean;
+  latest_item_position: number;
+  dimensional_size: string;
+  weight: string;
+  top_selling_items: boolean;
+  top_selling_position: number;
+  date_created: string;
+  date_updated: string;
 }
 
 interface ApiResponse<T> {
@@ -27,16 +55,24 @@ interface FilterState {
 }
 
 const ProductsPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const [products, setProducts] = useState<Product[]>([]);
+  const [productsData, setProductsData] = useState<ApiResponse<Product>>({
+    count: 0,
+    next: null,
+    previous: null,
+    results: []
+  });
+  const [displayProducts, setDisplayProducts] = useState<Product[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [wishlistLoading, setWishlistLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [totalCount, setTotalCount] = useState<number>(0);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  
   const [sortOption, setSortOption] = useState<'latest' | 'highest' | 'lowest'>('latest');
+
+  // Get current page from URL or default to 1
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
   // URL filter parsing
   const getFiltersFromURL = (): FilterState => {
@@ -57,6 +93,22 @@ const ProductsPage: React.FC = () => {
 
   const currentFilters = getFiltersFromURL();
 
+  // Fetch wishlist data
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const wishlistRes = await WishData();
+        setWishlistItems(wishlistRes);
+      } catch (err) {
+        console.error('Error loading wishlist:', err);
+      } finally {
+        setWishlistLoading(false);
+      }
+    };
+
+    fetchWishlist();
+  }, []);
+
   // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
@@ -74,7 +126,6 @@ const ProductsPage: React.FC = () => {
         apiParams.append('max_price', currentFilters.priceRange[1].toString());
         apiParams.append('page', currentPage.toString());
        
-
         const response = await fetch(
           `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?${apiParams.toString()}`
         );
@@ -84,9 +135,7 @@ const ProductsPage: React.FC = () => {
         }
 
         const data: ApiResponse<Product> = await response.json();
-        setProducts(data.results);
-        setTotalCount(data.count);
-
+        setProductsData(data);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching products:', err);
@@ -96,37 +145,64 @@ const ProductsPage: React.FC = () => {
     };
 
     fetchProducts();
-  }, [currentPage,  searchParams]);
+  }, [currentPage, searchParams]);
 
-  // Sort products client-side when sortOption or products change
+  // Sort products when sortOption or products change
   useEffect(() => {
-    if (products.length > 0) {
-      let sortedProducts = [...products];
+    if (productsData.results.length > 0) {
+      const sortedProducts = [...productsData.results];
 
       if (sortOption === 'latest') {
         sortedProducts.sort((a, b) => b.id - a.id);
       } else if (sortOption === 'highest') {
-        sortedProducts.sort((a, b) => parseFloat(b.discounted_price) - parseFloat(a.discounted_price));
+        sortedProducts.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
       } else if (sortOption === 'lowest') {
-        sortedProducts.sort((a, b) => parseFloat(a.discounted_price) - parseFloat(b.discounted_price));
+        sortedProducts.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
       }
 
-      setProducts(sortedProducts);
+      setDisplayProducts(sortedProducts);
+    } else {
+      setDisplayProducts([]);
     }
-  }, [sortOption]);
+  }, [sortOption, productsData.results]);
 
- 
+  // Helper function to check if a product is in wishlist
+  const getWishlistInfo = (productId: number) => {
+    const matchedWish = wishlistItems.find(item => item.product.id === productId);
+    return {
+      isInitiallyLiked: !!matchedWish,
+      wishItemId: matchedWish?.id
+    };
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('page', newPage.toString());
+      return newParams;
+    });
+  };
+
+  // Calculate total pages
+  const itemsPerPage = 10;
+  const totalPages = productsData.count ? Math.ceil(productsData.count / itemsPerPage) : 1;
+
   return (
     <div className="container mx-auto px-6 md:px-14 py-8 md:py-12 ">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 pt-2">
         <h1 className="text-3xl md:text-4xl font-medium">Filtered Products</h1>
 
-        <div className="flex items-center gap-4">
-          <p className="text-gray-600">{totalCount} products found</p>
+        <div className="flex items-center gap-4 pt-3 md:pt-0">
+          <p className="text-gray-600">{productsData.count} products found</p>
           <SortDropdown
             onSortChange={(sortValue) => {
               setSortOption(sortValue);
-              setCurrentPage(1); // Reset page to 1 when sort changes
+              // Reset to first page when sort changes
+              setSearchParams(prev => {
+                const newParams = new URLSearchParams(prev);
+                newParams.set('page', '1');
+                return newParams;
+              });
             }}
           />
         </div>
@@ -152,13 +228,13 @@ const ProductsPage: React.FC = () => {
       </div>
 
       {/* Loading / Error / Empty states */}
-      {loading ? (
+      {loading || wishlistLoading ? (
         <div className="flex justify-center items-center py-16">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
         </div>
       ) : error ? (
         <div className="text-red-500 text-center py-8">{error}</div>
-      ) : products.length === 0 ? (
+      ) : displayProducts.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-xl text-gray-600">No products found matching your filters.</p>
           <Button
@@ -172,57 +248,29 @@ const ProductsPage: React.FC = () => {
         <>
           {/* Products grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 sm:mb-16">
-            {products.map((item) => {
-               const price = parseFloat(item.price);
-               const discountedPrice = parseFloat(item.discounted_price);
-               const amountSaved = price - discountedPrice;
+            {displayProducts.map((item) => {
+              const wishlistInfo = getWishlistInfo(item.id);
               return (
-               <div
-                        key={item.id}
-                        className="group hover:shadow-lg transition-shadow duration-300 rounded-xl overflow-hidden cursor-pointer"
-                        onClick={() =>
-                          navigate(`/product/item/${item.id}`)
-                        }
-                      >
-                        <div className=" rounded-lg relative">
-                          <div>
-                            <img
-                              src={item.image1}
-                              alt={item.name}
-                              className="w-full h-[200px] md:h-[300px] shadow-lg   object-cover"
-                            />
-                            <button
-                              className="absolute top-2 right-2 text-gray-600 hover:text-red-500 p-2 transition-colors duration-200"
-                              aria-label="Add to favorites"
-                            >
-                              <FaRegHeart size={15} />
-                            </button>
-                          </div>
-                        </div>
-            
-                        <div className="p-3 sm:p-4">
-                    <h3 className="text-base leading-[100%]  sm:text-lg font-normal truncate">
-                      {item.name}
-                    </h3>
-                    <div className="mt-2 flex flex-wrap items-center gap-1 sm:gap-2">
-                      <span className="text-xl  font-normal leading-[100%] text-primary">
-                      ₦ {discountedPrice.toFixed(0)}
-                      </span>
-                      <span className="text-gray-500 line-through text-xl sm:text-xl ">
-                      ₦ {price.toFixed(0)}
-                      </span>
-                      <span className="bg-red-200 text-[#FF3333] px-2 py-1 rounded-full text-xs sm:text-sm">
-                      ₦  {amountSaved.toFixed(0)}
-                      </span>
-                    </div>
-                  </div>
-                      </div>
+                <Card 
+                  key={item.id} 
+                  product={item}
+                  isInitiallyLiked={wishlistInfo.isInitiallyLiked}
+                  wishItemId={wishlistInfo.wishItemId}
+                />
               );
             })}
           </div>
 
-          {/* Pagination (optional) */}
-          {/* Add pagination buttons if needed */}
+          {/* Pagination */}
+          <div className="mt-6">
+            <PaginationComponent
+              currentPage={currentPage}
+              totalPages={totalPages}
+              hasNextPage={Boolean(productsData.next)}
+              hasPreviousPage={Boolean(productsData.previous)}
+              handlePageChange={handlePageChange}
+            />
+          </div>
         </>
       )}
     </div>

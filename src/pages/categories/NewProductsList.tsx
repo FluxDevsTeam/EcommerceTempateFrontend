@@ -1,28 +1,43 @@
-// NewProductsList.tsx
 import { useQuery } from '@tanstack/react-query';
-import { FaRegHeart } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import Card from '@/card/Card';
+import PaginationComponent from '../../components/Pagination';
+import { useState, useEffect } from 'react';
+import { WishData } from '@/card/wishListApi';
+import { WishItem } from '@/card/types';
 
-interface Category {
+export interface Category {
   id: number;
   name: string;
 }
 
-interface SubCategory {
+export interface SubCategory {
   id: number;
-  category: Category;
   name: string;
+  category: Category;
 }
 
 interface Product {
   id: number;
   name: string;
-  description: string;
+  image1: string;
+  undiscounted_price: string;
   price: string;
-  discounted_price: string;
+  description: string;
   total_quantity: number;
   sub_category: SubCategory;
-  image1: string;
+  colour: string;
+  image2: string | null;
+  image3: string | null;
+  is_available: boolean;
+  latest_item: boolean;
+  latest_item_position: number;
+  dimensional_size: string;
+  weight: string;
+  top_selling_items: boolean;
+  top_selling_position: number;
+  date_created: string;
+  date_updated: string;
 }
 
 interface ApiResponse {
@@ -32,12 +47,14 @@ interface ApiResponse {
   results: Product[];
 }
 
+
+
 interface NewProductsListProps {
   sortOption: string;
 }
 
-const fetchProducts = async (): Promise<ApiResponse> => {
-  const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/');
+const fetchProducts = async (page = 1): Promise<ApiResponse> => {
+  const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?page=${page}`);
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
@@ -45,23 +62,59 @@ const fetchProducts = async (): Promise<ApiResponse> => {
 };
 
 const NewProductsList = ({ sortOption }: NewProductsListProps) => {
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+  const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
+  const [wishlistLoading, setWishlistLoading] = useState(true);
+
+  // Fetch products
   const { data, isLoading, error } = useQuery<ApiResponse>({
-    queryKey: ['products'],
-    queryFn: fetchProducts
+    queryKey: ['products', currentPage],
+    queryFn: () => fetchProducts(currentPage),
   });
 
-  if (isLoading) return <div className="flex justify-center items-center py-10 text-lg">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mr-3"></div>
-    Loading results...
-  </div>;
+  // Fetch wishlist data
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const wishlistRes = await WishData();
+        setWishlistItems(wishlistRes);
+      } catch (err) {
+        console.error('Error loading wishlist:', err);
+      } finally {
+        setWishlistLoading(false);
+      }
+    };
 
-  if (error) return <div>Error: {error.message}</div>;
+    fetchWishlist();
+  }, []);
+
+  const handlePageChange = (newPage: number) => {
+    setSearchParams({ page: newPage.toString() });
+  };
+
+  if (isLoading || wishlistLoading) return (
+    <div className="flex justify-center items-center py-10 text-lg">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mr-3"></div>
+      Loading results...
+    </div>
+  );
+
+  if (error) return <div>Error: {(error as Error).message}</div>;
+
+  // Helper function to check if a product is in wishlist
+  const getWishlistInfo = (productId: number) => {
+    const matchedWish = wishlistItems.find(item => item.product.id === productId);
+    return {
+      isInitiallyLiked: !!matchedWish,
+      wishItemId: matchedWish?.id
+    };
+  };
 
   // Copy and sort the products
   const sortedProducts = [...(data?.results || [])].sort((a, b) => {
-    const priceA = parseFloat(a.discounted_price);
-    const priceB = parseFloat(b.discounted_price);
+    const priceA = parseFloat(a.price);
+    const priceB = parseFloat(b.price);
 
     if (sortOption === 'Highest price') {
       return priceB - priceA;
@@ -73,56 +126,40 @@ const NewProductsList = ({ sortOption }: NewProductsListProps) => {
     }
   });
 
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 my-8 sm:mb-16">
-      {sortedProducts.map((item) => {
-        const price = parseFloat(item.price);
-        const discountedPrice = parseFloat(item.discounted_price);
-        const amountSaved = price - discountedPrice;
+  // Calculate total pages
+  const itemsPerPage = 10; // Adjust this based on your API's default page size
+  const totalPages = data?.count ? Math.ceil(data.count / itemsPerPage) : 1;
 
-        return (
-            <div
-                   key={item.id}
-                   className="group hover:shadow-lg transition-shadow duration-300 rounded-xl overflow-hidden cursor-pointer"
-                   onClick={() =>
-                     navigate(`/product/item/${item.id}`)
-                   }
-                 >
-                   <div className=" rounded-lg relative">
-                     <div>
-                       <img
-                         src={item.image1}
-                         alt={item.name}
-                         className="w-full h-[200px] md:h-[300px] shadow-lg   object-cover"
-                       />
-                       <button
-                         className="absolute top-2 right-2 text-gray-600 hover:text-red-500 p-2 transition-colors duration-200"
-                         aria-label="Add to favorites"
-                       >
-                         <FaRegHeart size={15} />
-                       </button>
-                     </div>
-                   </div>
-         
-                   <div className="p-3 sm:p-4">
-               <h3 className="text-base leading-[100%]  sm:text-lg font-normal truncate">
-                 {item.name}
-               </h3>
-               <div className="mt-2 flex flex-wrap items-center gap-1 sm:gap-2">
-                 <span className="text-xl  font-normal leading-[100%] text-primary">
-                 ₦ {discountedPrice.toFixed(0)}
-                 </span>
-                 <span className="text-gray-500 line-through text-xl sm:text-xl ">
-                 ₦ {price.toFixed(0)}
-                 </span>
-                 <span className="bg-red-200 text-[#FF3333] px-2 py-1 rounded-full text-xs sm:text-sm">
-                 ₦{amountSaved.toFixed(0)}
-                 </span>
-               </div>
-             </div>
-                 </div>
-        );
-      })}
+  // Determine if there are next and previous pages
+  const hasNextPage = Boolean(data?.next);
+  const hasPreviousPage = Boolean(data?.previous);
+
+  return (
+    <div>
+      <div className=" grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-8 sm:mb-16">
+        {sortedProducts.map((item) => {
+          const wishlistInfo = getWishlistInfo(item.id);
+          return (
+            <Card
+              key={item.id}
+              product={item}
+              isInitiallyLiked={wishlistInfo.isInitiallyLiked}
+              wishItemId={wishlistInfo.wishItemId}
+            />
+          );
+        })}
+      </div>
+
+      {/* Pagination controls */}
+      <div className="mt-6">
+        <PaginationComponent
+          currentPage={currentPage}
+          totalPages={totalPages}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
+          handlePageChange={handlePageChange}
+        />
+      </div>
     </div>
   );
 };
