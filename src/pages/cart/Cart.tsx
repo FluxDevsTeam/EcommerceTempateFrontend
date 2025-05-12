@@ -647,7 +647,8 @@ const Cart = () => {
 
       <Suggested />
     </div>
+     </div>
   );
-};
+}
 
 export default Cart;

@@ -74,10 +74,6 @@ const AppContent: React.FC = () => {
         <Route path="/cart/error/" element={<PaymentFailed />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="//verify-reset-otp" element={<VerifyForgotPassword />} />
-        <Route path="/categories" element={<Categories />} />
-        <Route path="/shoe-category" element={<ShoeCategory />} />
-        <Route path="/clothes-category" element={<ClothesCategory />} />
-        <Route path="/accessories-category" element={<AccessoriesCategory />} />
         <Route path="/new-arrivals" element={<NewArrivals />} />
         
         <Route path="/filtered-products" element={<ProductsPage />} />
