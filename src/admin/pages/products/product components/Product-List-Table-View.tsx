@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  FaSearch,
+  // FaSearch,
   FaPlus,
   FaThList,
   FaTh,
@@ -27,7 +27,7 @@ interface Product {
   id: number;
   name: string;
   description: string;
-  total_quantity: number; // Assuming this might be relevant later
+  total_quantity: number;
   sub_category: SubCategory;
   colour: string;
   image1: string;
@@ -44,6 +44,7 @@ interface Product {
   top_selling_position: number | null;
   date_created: string;
   date_updated: string;
+  unlimited: false;
 }
 
 interface ApiResponse {
