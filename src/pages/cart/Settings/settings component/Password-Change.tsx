@@ -241,130 +241,134 @@ const PasswordChange = () => {
   };
 
   return (
-    <div className="shadow-2xl px-6 py-10 rounded-3xl mb-12 md:rounded-md">
-      <form onSubmit={passwordChangePost}>
-        <h2 className="text-2xl font-bold mb-4">Change Password</h2>
-        <div className="grid md:grid-cols-2 gap-4">
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-white rounded-2xl p-8 shadow-md">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="h-14 w-14 bg-green-50 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
           <div>
-            <label className="block mb-2 text-sm">Old Password</label>
+            <h2 className="text-2xl font-bold text-gray-900">Password Settings</h2>
+            <p className="text-gray-500 text-sm">Update your security preferences</p>
+          </div>
+        </div>
+
+        <form onSubmit={passwordChangePost} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Current Password
+            </label>
             <input
               type="password"
-              required
               name="old_password"
               value={passwordChangeFormData.old_password}
               onChange={handlePasswordInput}
-              className="w-full p-3 border border-gray-300 rounded-lg"
-            />
-          </div>
-          <div>
-            <label className="block mb-2 text-sm">New Password</label>
-            <input
-              type="password"
               required
-              name="new_password"
-              value={passwordChangeFormData.new_password}
-              onChange={handlePasswordInput}
-              className="w-full p-3 border border-gray-300 rounded-lg"
+              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
             />
           </div>
-          <div className="md:col-span-2">
-            <label className="block mb-2 text-sm">Confirm New Password</label>
-            <input
-              type="password"
-              required
-              name="confirm_password"
-              value={passwordChangeFormData.confirm_password}
-              onChange={handlePasswordInput}
-              className="w-full p-3 border border-gray-300 rounded-lg"
-            />
-          </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-start mt-4">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                New Password
+              </label>
+              <input
+                type="password"
+                name="new_password"
+                value={passwordChangeFormData.new_password}
+                onChange={handlePasswordInput}
+                required
+                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm New Password
+              </label>
+              <input
+                type="password"
+                name="confirm_password"
+                value={passwordChangeFormData.confirm_password}
+                onChange={handlePasswordInput}
+                required
+                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+              />
+            </div>
+          </div>
+
           <button
-            disabled={
-              isRequestingPasswordChange ||
-              !passwordChangeFormData.old_password ||
-              !passwordChangeFormData.new_password ||
-              !passwordChangeFormData.confirm_password
-            }
+            disabled={isRequestingPasswordChange || !passwordChangeFormData.old_password || !passwordChangeFormData.new_password || !passwordChangeFormData.confirm_password}
             type="submit"
-            className={`w-fit text-xs px-3 py-2 text-white rounded-lg mb-1 transition-colors
-            ${
-              isRequestingPasswordChange ||
-              !passwordChangeFormData.old_password ||
-              !passwordChangeFormData.new_password ||
-              !passwordChangeFormData.confirm_password
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-black hover:bg-blue-600"
-            }`}
+            className={`
+              px-6 py-3 rounded-lg text-white font-medium transition-all
+              ${isRequestingPasswordChange || !passwordChangeFormData.old_password || !passwordChangeFormData.new_password || !passwordChangeFormData.confirm_password
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-green-100"
+              }
+            `}
           >
-            {/* Change text based on loading state */}
-            {isRequestingPasswordChange ? "Requesting..." : "Request change"}
+            {isRequestingPasswordChange ? (
+              <div className="flex items-center gap-2">
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Requesting...
+              </div>
+            ) : (
+              "Change Password"
+            )}
           </button>
-        </div>
-      </form>
+        </form>
 
-      {/* OTP */}
-      <form onSubmit={otpPost} className="passwordChangeOtpForm hidden mt-4">
-        <div>
-          <label className="block mb-2 text-sm">
-            Enter the OTP sent to you
-          </label>
-          <div className="md:flex md:items-center">
-            {/* Replace the single input with OtpInput */}
-            <OtpInput
-              value={otpFormData.otp}
-              onChange={(otpValue: string) => setOtpFormData({ otp: otpValue })}
-              numInputs={6}
-              renderSeparator={<span className="mx-1"></span>}
-              renderInput={(props) => (
-                <input
-                  {...props}
-                  // Apply Tailwind classes for styling each box
-                  className="!w-10 h-10 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{
-                    width: "2.5rem", // Equivalent to w-10
-                  }}
-                />
-              )}
-            />
+        {/* OTP Form */}
+        <form onSubmit={otpPost} className="passwordChangeOtpForm hidden mt-8 pt-8 border-t">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Verify Password Change</h3>
+          <div className="space-y-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Enter Verification Code
+            </label>
+            <div className="flex items-center gap-4">
+              <OtpInput
+                value={otpFormData.otp}
+                onChange={(otpValue: string) => setOtpFormData({ otp: otpValue })}
+                numInputs={6}
+                renderSeparator={<span className="mx-1"></span>}
+                renderInput={(props) => (
+                  <input
+                    {...props}
+                    className="w-12 h-12 text-center text-lg font-semibold border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  />
+                )}
+              />
+            </div>
 
-            {/* Resend button */}
-            <span
-              onClick={!resendDisabled ? resendOTP : undefined}
-              className={`text-sm inline-block mt-2 md:mt-0 md:ml-4 ${
-                resendDisabled
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-blue-500 cursor-pointer"
-              }`}
-            >
-              Resend <br />
-              {isTimerActive && (
-                <span className={`text-gray-900`}>
-                  ({formatTime(timeLeft)})
-                </span>
-              )}
-            </span>
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={!resendDisabled ? resendOTP : undefined}
+                disabled={resendDisabled}
+                className={`
+                  px-4 py-2 rounded-lg text-sm font-medium transition-all
+                  ${resendDisabled
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-green-600 hover:bg-green-50"
+                  }
+                `}
+              >
+                Resend Code
+                {isTimerActive && <span className="ml-2">({formatTime(timeLeft)})</span>}
+              </button>
+            </div>
           </div>
-        </div>
+        </form>
+      </div>
 
-        <div className="flex justify-end mt-8 ">
-          <button
-            type="submit"
-            disabled={!otpFormData.otp || otpFormData.otp.length !== 6}
-            className={`${
-              !otpFormData.otp || otpFormData.otp.length !== 6
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-black hover:bg-gray-700 transition-colors"
-            } px-6 py-3 text-white rounded-full`}
-          >
-            Save
-          </button>
-        </div>
-      </form>
-
+      {/* Keep existing modals but update their styling */}
       {/* Email Change Status Modal */}
       {isPasswordPostMsgModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">

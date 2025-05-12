@@ -12,12 +12,16 @@ import ChangePassword from "./pages/auth/ChangePassword";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import { Navigate } from "react-router-dom";
 import Cart from "./pages/cart/Cart";
+import PaymentFailed from "./pages/cart/Payment-Failed";
 import ConfirmOrder from "./pages/cart/ConfirmOrder";
 import FAQs from "./pages/cart/FAQs";
 import GeneralSettings from "./pages/cart/Settings/Settings";
 import TermsOfService from "./pages/cart/TermsOfService";
 import AddNewProduct from "./admin/pages/products/product components/AddNewProduct";
 import EditProduct from "./admin/pages/products/product components/EditProduct";
+import AdminProductDetails from "./admin/pages/products/product components/AdminProductDetails";
+import AdminCategories from "./admin/pages/products/product components/AdminCategories";
+import AdminSubCategories from "./admin/pages/products/product components/AdminSubCategories";
 import Orders from "./pages/orders/Order";
 import ProductDetail from "./components/products/ProductDetail";
 import NewArrivals from "./pages/categories/NewArrivals";
@@ -66,11 +70,20 @@ const AppContent: React.FC = () => {
         <Route path="/product/item/:id" element={<ProductDetail />} />
         <Route path="/suggested/:id" element={<SuggestedItemDetails />} />
         <Route path="/search" element={<SearchResults />} />
-        <Route path="/verify-reset-otp" element={<VerifyForgotPassword />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/cart/error/" element={<PaymentFailed />} />
+        <Route path="/orders" element={<Orders />} />
+        <Route path="//verify-reset-otp" element={<VerifyForgotPassword />} />
+        <Route path="/categories" element={<Categories />} />
+        <Route path="/shoe-category" element={<ShoeCategory />} />
+        <Route path="/clothes-category" element={<ClothesCategory />} />
+        <Route path="/accessories-category" element={<AccessoriesCategory />} />
         <Route path="/new-arrivals" element={<NewArrivals />} />
+        
         <Route path="/filtered-products" element={<ProductsPage />} />
         <Route path="/faqs" element={<FAQs />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
+
         <Route path="/contact-us" element={<Contact />} />
         <Route path="/ade" element={<Producter />} />
       </Route>
@@ -95,13 +108,17 @@ const AppContent: React.FC = () => {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/change-password" element={<ChangePassword />} />
       </Route>
-      
+
       {/* Admin routes with AdminLayout */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="products" element={<Products />} />
         <Route path="add-new-product" element={<AddNewProduct />} />
         <Route path="products/edit/:id" element={<EditProduct />} />
+        <Route path="admin-products-details/:id" element={<AdminProductDetails />} />
+        <Route path="admin-categories" element={<AdminCategories />} />
+        <Route path="admin-categories/subcategories" element={<AdminSubCategories />} />
+
         <Route path="orders" element={<AdminOrders />} />
         <Route path="settings" element={<Settings />} />
       </Route>

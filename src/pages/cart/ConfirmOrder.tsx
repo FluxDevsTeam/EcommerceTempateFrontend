@@ -4,6 +4,15 @@ import { FiArrowRight } from "react-icons/fi";
 // import { ThreeDots } from "react-loader-spinner";
 
 const ConfirmOrder = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (!accessToken) {
+      navigate("/login?redirect=/confirm-order");
+    }
+  }, [navigate]);
+
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -19,17 +28,18 @@ const ConfirmOrder = () => {
   const [cartId, setCartId] = useState<string | null>(null);
 
   const [isLoadingSummary, setIsLoadingSummary] = useState(true);
-  const [isLoadingCart, setIsLoadingCart] = useState(true);
+  // const [isLoadingCart, setIsLoadingCart] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [modalErrorMessage, setModalErrorMessage] = useState("");
+  // const [showErrorModal, setShowErrorModal] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string>("paystack");
   const [error, setError] = useState<string | null>(null);
   const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
-  const navigate = useNavigate();
+  const [availableStates, setAvailableStates] = useState<string[]>([]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
@@ -102,7 +112,7 @@ const ConfirmOrder = () => {
 
   useEffect(() => {
     const fetchCartData = async () => {
-      setIsLoadingCart(true);
+      // setIsLoadingCart(true);
       setError(null);
       const accessToken = localStorage.getItem("accessToken");
 
@@ -112,7 +122,7 @@ const ConfirmOrder = () => {
         );
         setCartDetails(null);
         setCartId(null);
-        setIsLoadingCart(false);
+        // setIsLoadingCart(false);
         setError("User not logged in (cart details).");
         return;
       }
@@ -161,7 +171,7 @@ const ConfirmOrder = () => {
         setCartDetails(null);
         setCartId(null);
       } finally {
-        setIsLoadingCart(false); // Set specific loading state to false
+        // setIsLoadingCart(false);
       }
     };
 
@@ -377,6 +387,45 @@ const ConfirmOrder = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchAvailableStates = async () => {
+      // setIsLoadingStates(true);
+
+      const accessToken = localStorage.getItem("accessToken");
+
+      if (!accessToken) {
+        console.error(
+          "No access token found for cart details. User might not be logged in."
+        );
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${baseURL}/api/v1/admin/organisation-settings/`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `JWT ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!response.ok) throw new Error("Failed to fetch states");
+        const data = await response.json();
+        console.log(data);
+        setAvailableStates(data.available_states);
+      } catch (error) {
+        console.error("Error fetching states:", error);
+      }
+      //  finally {
+      //   // setIsLoadingStates(false);
+      // }
+    };
+
+    fetchAvailableStates();
+  }, []);
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 font-poppins relative">
       {/* Breadcrumbs */}
@@ -455,16 +504,21 @@ const ConfirmOrder = () => {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="">
                 <label className="block mb-2 text-sm">State</label>
-                <input
+                <select
                   required
-                  type="text"
                   name="state"
                   value={formData.state}
                   onChange={handleInputChange}
-                  placeholder="Enter State"
                   className="w-full p-3 border border-gray-300 rounded-lg"
                   disabled={isSubmitting}
-                />
+                >
+                  <option value="">Select a state</option>
+                  {availableStates.map((state, indexPurpose) => (
+                    <option key={indexPurpose} value={state}>
+                      {state}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -558,7 +612,7 @@ const ConfirmOrder = () => {
                 <div className="flex justify-between">
                   <span>Subtotal</span>
                   <span className="font-semibold">
-                    ${orderSummary?.subtotal?.toFixed(2) ?? "N/A"}
+                    &#8358; {orderSummary?.subtotal?.toFixed(2) ?? "N/A"}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -574,14 +628,15 @@ const ConfirmOrder = () => {
                 <div className="flex justify-between">
                   <span>Delivery Fee</span>
                   <span className="font-semibold">
-                    ${Number(orderSummary?.delivery_fee)?.toFixed(2) ?? "N/A"}
+                    &#8358;
+                    {Number(orderSummary?.delivery_fee)?.toFixed(2) ?? "N/A"}
                   </span>
                 </div>
                 <div className="border-t pt-4 mt-4">
                   <div className="flex justify-between">
                     <span className="font-bold">Total</span>
                     <span className="font-bold">
-                      ${orderSummary?.total?.toFixed(2) ?? "N/A"}
+                      &#8358; {orderSummary?.total?.toFixed(2) ?? "N/A"}
                     </span>
                   </div>
                   <div className="text-sm text-gray-500 mt-2">
@@ -595,24 +650,24 @@ const ConfirmOrder = () => {
                   <div>
                     <input
                       type="radio"
-                      name="paymentProvider" 
-                      id="paystack"          
-                      value="paystack"       
-                      checked={selectedProvider === "paystack"} 
+                      name="paymentProvider"
+                      id="paystack"
+                      value="paystack"
+                      checked={selectedProvider === "paystack"}
                       onChange={(e) => setSelectedProvider(e.target.value)}
-                      className="mr-1"
+                      className="mr-1 cursor-pointer"
                     />
                     <label htmlFor="paystack">PayStack</label>
                   </div>
                   <div>
                     <input
                       type="radio"
-                      name="paymentProvider" 
-                      id="flutterwave"       
-                      value="flutterwave"    
-                      checked={selectedProvider === "flutterwave"} 
-                      onChange={(e) => setSelectedProvider(e.target.value)} 
-                      className="mr-1"
+                      name="paymentProvider"
+                      id="flutterwave"
+                      value="flutterwave"
+                      checked={selectedProvider === "flutterwave"}
+                      onChange={(e) => setSelectedProvider(e.target.value)}
+                      className="mr-1 cursor-pointer"
                     />
                     <label htmlFor="flutterwave">Flutterwave</label>
                   </div>
@@ -621,11 +676,29 @@ const ConfirmOrder = () => {
                 <button
                   onClick={initiatePayment}
                   className={`paymentBtn w-full bg-black text-white py-3 px-6 rounded-full mt-4 flex items-center justify-center gap-2 ${
-                    isSubmitting || isLoadingSummary || !formData.city || !formData.delivery_address || !formData.email || !formData.first_name || !formData.last_name || !formData.phone_number || !formData.state
+                    isSubmitting ||
+                    isLoadingSummary ||
+                    !formData.city ||
+                    !formData.delivery_address ||
+                    !formData.email ||
+                    !formData.first_name ||
+                    !formData.last_name ||
+                    !formData.phone_number ||
+                    !formData.state
                       ? "opacity-50 cursor-not-allowed"
                       : "hover:bg-gray-800"
                   }`}
-                  disabled={isSubmitting || isLoadingSummary  || !formData.city || !formData.delivery_address || !formData.email || !formData.first_name || !formData.last_name || !formData.phone_number || !formData.state}
+                  disabled={
+                    isSubmitting ||
+                    isLoadingSummary ||
+                    !formData.city ||
+                    !formData.delivery_address ||
+                    !formData.email ||
+                    !formData.first_name ||
+                    !formData.last_name ||
+                    !formData.phone_number ||
+                    !formData.state
+                  }
                 >
                   Proceed to Payment
                   <FiArrowRight />

@@ -287,137 +287,151 @@ const ChangeEmail = () => {
   
   
   return (
-    <div className="mb-16 shadow-xl px-6 py-10 rounded-3xl md:rounded-md">
-      <form onSubmit={emailchange} className="mb-6">
-        <div>
-          <h2 className="text-2xl font-bold mb-12">Change Email</h2>
-          <div className="space-y-7">
-            <div>
-              <label className="block mb-2 text-sm">
-                Current Email Address
-              </label>
-              <input
-                type="email"
-                value={userProfileDeets?.email ?? ""}
-                readOnly
-                placeholder="e.g jonesdexter@xyz.com"
-                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100"
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-white rounded-2xl p-8 shadow-md">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="h-14 w-14 bg-purple-50 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Email Settings</h2>
+            <p className="text-gray-500 text-sm">Manage your email preferences</p>
+          </div>
+        </div>
+
+        <form onSubmit={emailchange} className="space-y-6">
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Current Email Address
+            </label>
+            <input
+              type="email"
+              value={userProfileDeets?.email ?? ""}
+              readOnly
+              className="w-full px-4 py-3 rounded-lg bg-white border border-gray-200 text-gray-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              New Email Address
+            </label>
+            <input
+              type="email"
+              name="new_email"
+              value={emailChangeFormData.new_email}
+              onChange={handleEmailChange}
+              placeholder="Enter new email address"
+              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+            />
+            {emailChangeFormData.new_email && !isValidEmail(emailChangeFormData.new_email) && (
+              <p className="mt-2 text-sm text-red-500 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                Please enter a valid email address
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Verify Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={emailChangeFormData.password}
+              onChange={handleEmailChange}
+              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+            />
+          </div>
+
+          <button
+            disabled={isButtonDisabled || !emailChangeFormData.new_email || !emailChangeFormData.password || !isValidEmail(emailChangeFormData.new_email)}
+            type="submit"
+            className={`
+              px-6 py-3 rounded-lg text-white font-medium transition-all
+              ${isButtonDisabled || !emailChangeFormData.new_email || !emailChangeFormData.password || !isValidEmail(emailChangeFormData.new_email)
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-purple-600 hover:bg-purple-700 shadow-lg hover:shadow-purple-100"
+              }
+            `}
+          >
+            {isButtonDisabled ? (
+              <div className="flex items-center gap-2">
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Please Wait...
+              </div>
+            ) : (
+              "Change Email"
+            )}
+          </button>
+        </form>
+
+        {/* OTP Form */}
+        <form onSubmit={otpPost} className="emailOtpForm hidden mt-8 pt-8 border-t">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Verify Email Change</h3>
+          <div className="space-y-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Enter Verification Code
+            </label>
+            <div className="flex items-center gap-4">
+              <OtpInput
+                value={otpFormData.otp}
+                onChange={(otpValue: string) => setOtpFormData({ otp: otpValue })}
+                numInputs={6}
+                renderSeparator={<span className="mx-1"></span>}
+                renderInput={(props) => (
+                  <input
+                    {...props}
+                    className="w-12 h-12 text-center text-lg font-semibold border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  />
+                )}
               />
             </div>
 
-            <div className="grid">
-              <label className="block mb-2 text-sm">New Email Address</label>
-              <input
-                type="email"
-                name="new_email"
-                value={emailChangeFormData.new_email}
-                onChange={handleEmailChange}
-                placeholder="e.g jonesdexter@xyz.com"
-                className="w-full p-3 border border-gray-300 rounded-lg"
-                aria-describedby="email-error"
-              />
-              {emailChangeFormData.new_email &&
-                !isValidEmail(emailChangeFormData.new_email) && (
-                  <p id="email-error" className="text-red-500 text-sm mt-1">
-                    Please enter a valid email address (e.g.,
-                    jonesdexter@xyz.com).
-                  </p>
-                )}
-
-              <label className="block mb-2 text-sm mt-4">Verify password</label>
-              <input
-                type="password"
-                name="password"
-                value={emailChangeFormData.password}
-                onChange={handleEmailChange}
-            //     placeholder="********"
-                className="w-full p-3 border border-gray-300 rounded-lg"
-              />
+            <div className="flex items-center justify-between">
               <button
-                // The disabled logic remains the same, checking for input values
-                disabled={
-                  isButtonDisabled || // Keep this check
-                  !emailChangeFormData.new_email ||
-                  !emailChangeFormData.password ||
-                  !isValidEmail(emailChangeFormData.new_email) // Also disable if email is invalid
-                }
                 type="submit"
-                className={`${
-                  // Style adjustments based on input validity and button disabled state
-                  !emailChangeFormData.new_email ||
-                  !emailChangeFormData.password ||
-                  !isValidEmail(emailChangeFormData.new_email) ||
-                  isButtonDisabled // Add isButtonDisabled here for styling consistency
-                    ? "cursor-not-allowed bg-gray-400"
-                    : "bg-black hover:bg-blue-600 transition-colors" // Use bg-black for default enabled state
-                } w-fit text-xs mt-3 px-3 py-2 text-white rounded-lg mb-1`}
+                disabled={isSavingOTP || !otpFormData.otp || otpFormData.otp.length !== 6}
+                className={`
+                  px-6 py-3 rounded-lg text-white font-medium transition-all
+                  ${isSavingOTP || !otpFormData.otp || otpFormData.otp.length !== 6
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-purple-600 hover:bg-purple-700 shadow-lg hover:shadow-purple-100"
+                  }
+                `}
               >
-                {/* Text changes based ONLY on isButtonDisabled */}
-                {isButtonDisabled ? "Please Wait..." : "Request Change"}
+                {isSavingOTP ? "Verifying..." : "Verify Email"}
+              </button>
+
+              <button
+                type="button"
+                onClick={!resendDisabled ? resendOTP : undefined}
+                disabled={resendDisabled}
+                className={`
+                  px-4 py-2 rounded-lg text-sm font-medium transition-all
+                  ${resendDisabled
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-purple-600 hover:bg-purple-50"
+                  }
+                `}
+              >
+                Resend Code
+                {isTimerActive && <span className="ml-2">({formatTime(timeLeft)})</span>}
               </button>
             </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
 
-      {/* OTP */}
-      <form onSubmit={otpPost} className="emailOtpForm hidden">
-        <div>
-          <label className="block mb-2 text-sm">
-            Enter the OTP sent to you
-          </label>
-          <div className="md:flex md:items-center">
-            {/* Replace the single input with OtpInput */}
-            <OtpInput
-              value={otpFormData.otp}
-              onChange={(otpValue: string) => setOtpFormData({ otp: otpValue })}
-              numInputs={6}
-              renderSeparator={<span className="mx-1"></span>}
-              renderInput={(props) => (
-                <input
-                  {...props}
-                  // Apply Tailwind classes for styling each box
-                  className="!w-10 h-10 text-center border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{
-                    width: "2.5rem", // Equivalent to w-10
-                  }}
-                />
-              )}
-            />
-		
-            {/* Resend button */}
-            <span
-              onClick={!resendDisabled ? resendOTP : undefined}
-              className={`text-sm inline-block mt-2 md:mt-0 md:ml-4 ${
-                resendDisabled
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-blue-500 cursor-pointer'
-              }`}
-            >
-              Resend <br />
-              {isTimerActive && (
-                <span className={`text-gray-900`}>({formatTime(timeLeft)})</span>
-              )}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex justify-end mt-8 ">
-          <button
-            type="submit"
-            disabled={isSavingOTP || !otpFormData.otp || otpFormData.otp.length !== 6}
-            className={`${
-              isSavingOTP || !otpFormData.otp || otpFormData.otp.length !== 6
-                ? "bg-gray-400 cursor-not-allowed" 
-                : "bg-black hover:bg-gray-700 transition-colors" 
-            } px-6 py-3 text-white rounded-full`}
-          >
-            {/* Change text based on loading state */}
-            {isSavingOTP ? "Saving..." : "Save"}
-          </button>
-        </div>
-      </form>
-
+      {/* Keep existing modals but update their styling */}
       {/* Email Change Status Modal */}
       {isEmailPostMsgModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
