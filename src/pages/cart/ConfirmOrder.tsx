@@ -71,26 +71,17 @@ const ConfirmOrder = () => {
         },
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        let errorBody;
-        try {
-          errorBody = await response.json();
-        } catch (e) {
-          errorBody = await response.text();
-        }
-        console.error(
-          `HTTP error fetching summary! status: ${response.status}, body:`,
-          errorBody
-        );
-        setError(`Failed to load order summary: ${response.statusText}`);
-        setOrderSummary(null);
-        throw new Error(`HTTP error! status: ${response.status}`);
+        console.log(data)
+        
+      } else {
+        console.log("Order summary fetched/refreshed:", data);
+        setOrderSummary(data);
+        setError(null);
       }
 
-      const data = await response.json();
-      console.log("Order summary fetched/refreshed:", data);
-      setOrderSummary(data);
-      setError(null);
     } catch (err) {
       console.error("Failed to fetch order summary:", err);
       if (!error || error.includes("summary")) {
@@ -402,7 +393,7 @@ const ConfirmOrder = () => {
 
       try {
         const response = await fetch(
-          `${baseURL}/api/v1/admin/organisation-settings/`,
+          `${baseURL}/api/v1/admin/user/organisation-settings/`,
           {
             method: "GET",
             headers: {
@@ -512,12 +503,12 @@ const ConfirmOrder = () => {
                   className="w-full p-3 border border-gray-300 rounded-lg"
                   disabled={isSubmitting}
                 >
-                  {/* <option value="">Select a state</option>
+                  <option value="">Select a state</option>
                   {availableStates.map((state, indexPurpose) => (
                     <option key={indexPurpose} value={state}>
                       {state}
                     </option>
-                  ))} */}
+                  ))}
                 </select>
               </div>
 

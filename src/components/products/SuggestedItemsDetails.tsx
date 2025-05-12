@@ -106,6 +106,29 @@ const SuggestedItemsDetails = () => {
     }
   }, [product, mainImage, selectedSize]);
 
+    const createNewCart = async (accessToken: string) => {
+    const response = await fetch(`${baseURL}/api/v1/cart/`, {
+      method: "POST",
+      headers: {
+        Authorization: `JWT ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        first_name: "",
+        last_name: "",
+        email: "",
+        state: "",
+        city: "",
+        delivery_address: "",
+        phone_number: "",
+      }),
+    });
+  
+    if (!response.ok) throw new Error("Failed to create cart");
+    const data = await response.json();
+    return data.id;
+  };
+
   if (!id || isNaN(productId)) {
     return <div className="text-center py-8">Invalid or missing product ID</div>;
   }
@@ -216,7 +239,7 @@ const SuggestedItemsDetails = () => {
     }
 
     try {
-      // First get or create cart
+      // First try to get cart
       const cartResponse = await fetch(`${baseURL}/api/v1/cart/`, {
         method: "GET",
         headers: {
@@ -225,12 +248,29 @@ const SuggestedItemsDetails = () => {
         },
       });
 
-      if (!cartResponse.ok) throw new Error("Failed to get cart");
+      let cartUuid;
+      
+      if (cartResponse.ok) {
+        const cartData = await cartResponse.json();
+        cartUuid = cartData.results[0]?.id;
+      }
 
-      const cartData = await cartResponse.json();
-      const cartUuid = cartData.results[0]?.id;
-
-      if (!cartUuid) throw new Error("No cart UUID found");
+      // If no cart exists, create one
+      if (!cartUuid) {
+        try {
+          cartUuid = await createNewCart(accessToken);
+        } catch (error) {
+          console.error("Error creating cart:", error);
+          setModalConfig({
+            isOpen: true,
+            title: "Error",
+            message: "Failed to create cart",
+            type: "error",
+          });
+          setIsAddingToCart(false);
+          return;
+        }
+      }
 
       // Add item to cart
       const response = await fetch(
