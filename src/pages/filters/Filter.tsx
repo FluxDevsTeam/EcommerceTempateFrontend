@@ -28,6 +28,12 @@ interface ApiResponse<T> {
   results: T[];
 }
 
+interface FilterState {
+  selectedSubCategories: number[];
+  priceRange: [number, number];
+  selectedSizes: string[];
+}
+
 interface FiltersComponentProps {
   isOpen: boolean;
   onClose: () => void;
@@ -35,36 +41,31 @@ interface FiltersComponentProps {
   initialFilters?: FilterState;
 }
 
-interface FilterState {
-  selectedSubCategories: number[];
-  priceRange: [number, number];
-  selectedSizes: string[];
-}
-const FiltersComponent = ({ 
+const FiltersComponent: React.FC<FiltersComponentProps> = ({ 
   isOpen, 
   onClose, 
   onApplyFilters,
   initialFilters 
 }) => {
   // State for our fetched data
-  const [subCategories, setSubCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   
   // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalItems, setTotalItems] = useState<number>(0);
   const pageSize = 5;
   
   // State for filter selections - initialized with initialFilters or defaults
-  const [selectedSubCategories, setSelectedSubCategories] = useState(
+  const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>(
     initialFilters?.selectedSubCategories || []
   );
-  const [priceRange, setPriceRange] = useState(
+  const [priceRange, setPriceRange] = useState<[number, number]>(
     initialFilters?.priceRange || [0, 5000]
   );
-  const [selectedSizes, setSelectedSizes] = useState(
+  const [selectedSizes, setSelectedSizes] = useState<string[]>(
     initialFilters?.selectedSizes || []
   );
   
@@ -82,14 +83,15 @@ const FiltersComponent = ({
           throw new Error('Failed to fetch data');
         }
 
-        const subCategoryData = await subCategoryResponse.json();
+        const subCategoryData: ApiResponse<SubCategory> = await subCategoryResponse.json();
         
         setSubCategories(subCategoryData.results);
         setTotalItems(subCategoryData.count);
         setTotalPages(Math.ceil(subCategoryData.count / pageSize));
         setLoading(false);
       } catch (err) {
-        setError('Failed to load filter data');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load filter data';
+        setError(errorMessage);
         setLoading(false);
         console.error('Error fetching data:', err);
       }
@@ -99,7 +101,7 @@ const FiltersComponent = ({
   }, [currentPage]);
 
   // Handle subcategory selection
-  const handleSubCategoryClick = (id) => {
+  const handleSubCategoryClick = (id: number) => {
     setSelectedSubCategories(prev => {
       if (prev.includes(id)) {
         return prev.filter(item => item !== id);
@@ -110,12 +112,12 @@ const FiltersComponent = ({
   };
   
   // Handle page change
-  const handlePageChange = (page) => {
+  const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
   
   // Handle price range changes
-  const handlePriceChange = (value) => {
+  const handlePriceChange = (value: [number, number]) => {
     setPriceRange(value);
   };
   
@@ -126,7 +128,7 @@ const FiltersComponent = ({
       return;
     }
 
-    const filters = {
+    const filters: FilterState = {
       selectedSubCategories,
       priceRange,
       selectedSizes
@@ -281,4 +283,4 @@ const FiltersComponent = ({
   );
 };
 
-export default FiltersComponent
+export default FiltersComponent;

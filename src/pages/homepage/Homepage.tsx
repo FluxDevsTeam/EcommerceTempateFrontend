@@ -54,7 +54,7 @@ const Homepage = () => {
   };
 
   return (
-    <div className="w-full min-h-full px-4 md:px-12 py-4 lg:px-20">
+    <div className="w-full min-h-full px-4 md:px-12 py-4 lg:px-28">
       {/* Hero Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
         <div className="block md:hidden flex justify-center lg:justify-end">
@@ -89,7 +89,7 @@ const Homepage = () => {
       </div>
 
       {/* Content Sections */}
-      <div className="md:mt-3 md:space-y-10">
+      <div className="md:mt-3 md:space-y-10 ">
         <ImageGrid 
           product={data?.latest_items?.results ?? []} 
           getWishlistInfo={getWishlistInfo} 

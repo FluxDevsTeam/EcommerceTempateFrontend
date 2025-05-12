@@ -280,7 +280,7 @@ const Header = () => {
               key={item.id}
               to={item.id === 'new-arrivals' ? '/new-arrivals' : `/category/${item.id}`}
               onClick={handleMobileMenuLinkClick}
-              className="hover:bg-gray-50 transition-colors capitalize py-3 px-2 rounded-md"
+              className="hover:bg-gray-50 transition-colors capitalize py-1 px-2 rounded-md"
             >
               <li className="list-none">{item.name.toLowerCase()}</li>
             </Link>
@@ -288,7 +288,7 @@ const Header = () => {
           
           {/* Pagination controls */}
           {totalPages > 1 && (
-            <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-200">
+            <div className="flex justify-between items-center mt-4 pt-2 border-t border-gray-200">
               <button 
                 onClick={(e) => {
                   e.preventDefault();
@@ -478,20 +478,20 @@ const Header = () => {
         </div>
 
         {isMobileMenuOpen && (
-          <div className="block bg-white md:hidden p-4 border-t mt-2">
-            <div className="flex flex-col w-full space-y-4">
+          <div className="block bg-white md:hidden p-4 border-t ">
+            <div className="flex flex-col w-full space-y-1">
               {isUserAuthenticated && (
                 <div className="bg-blue-50 rounded-md p-2 mb-2">
                   <p className="text-sm text-blue-700">Welcome back, {displayName}!</p>
                 </div>
               )}
-              <ul className="flex flex-col space-y-1 text-[16px] font-medium">
+              <ul className="flex flex-col space-y-1 text-4 font-medium">
                 {renderMobileCategoryLinks()}
               </ul>
               
               <button 
                 onClick={toggleFilter}
-                className="flex items-center space-x-2 cursor-pointer hover:text-gray-600 transition-colors mt-4 pt-2 border-t border-gray-200"
+                className="flex items-center space-x-2 cursor-pointer hover:text-gray-600 transition-colors  py-2 border-t border-gray-200"
               >
                 <RiEqualizerLine size={24}/>
                 <span>Filter Products</span>
@@ -502,10 +502,9 @@ const Header = () => {
       </div>
 
       <FiltersComponent 
-        isOpen={showFilter} 
+        isOpen={showFilter}
         onClose={toggleFilter}
-        onApplyFilters={handleApplyFilters}
-      />
+        onApplyFilters={handleApplyFilters} initialFilters={undefined}      />
     </div>
   );
 };

@@ -61,7 +61,7 @@ const handleToggle = async () => {
         <img
           src={product.image1}
           alt={product.name}
-          className="rounded-2xl h-[180px] lg:h-[300px]"
+          className="rounded-2xl w-auto h-[200px] lg:h-[250px] "
           onClick={handleProductClick}
         />
         <Wish

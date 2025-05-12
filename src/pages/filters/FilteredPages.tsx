@@ -247,7 +247,7 @@ const ProductsPage: React.FC = () => {
       ) : (
         <>
           {/* Products grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 sm:mb-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:space-x-8 space-x-0 mb-8 sm:mb-16">
             {displayProducts.map((item) => {
               const wishlistInfo = getWishlistInfo(item.id);
               return (

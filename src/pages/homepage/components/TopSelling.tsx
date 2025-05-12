@@ -17,7 +17,7 @@ const TopSelling: React.FC<TopSellingProps> = ({ product, getWishlistInfo }) => 
         Top Selling Items
       </h2>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-8 sm:mb-16">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-8 md:space-x-8 space-x-0 sm:mb-16">
         {product.map((item) => {
           const wishlistInfo = getWishlistInfo(item.id);
           return (

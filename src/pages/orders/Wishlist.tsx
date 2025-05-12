@@ -45,8 +45,8 @@ const Wishlist = () => {
   }
 
   return (
-    <div className="-mt-10 p-4 sm:p-14">
-      <h2 className="font-normal text-[32px] sm:text-[40px] tracking mb-4 sm:mb-8">
+    <div className="-mt-10  p-4 sm:p-14">
+      <h2 className="font-normal text-[32px] px-8 sm:text-[40px] tracking mb-4 sm:mb-8">
         Wishlist
       </h2>
 
@@ -63,7 +63,7 @@ const Wishlist = () => {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 mb-8 sm:mb-16">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 mb-8 md:space-x-8 space-x-0 sm:mb-16">
           {wishlistItems.map((item) => (
             <Card
               key={item.product.id}
