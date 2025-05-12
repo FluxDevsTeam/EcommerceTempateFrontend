@@ -34,12 +34,9 @@ const Order = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-4">
-        <div className="animate-pulse space-y-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 bg-gray-200 rounded"></div>
-          ))}
-        </div>
+      <div className="flex justify-center items-center py-10 text-lg">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mr-3"></div>
+        Loading orders...
       </div>
     );
   }
@@ -49,7 +46,7 @@ const Order = () => {
   }
 
   return (
-    <div className="p-4 sm:p-14 pb-10 sm:pb-28">
+    <div className="p-4 sm:p-14  mt-6 md:mt-0 pb-10 sm:pb-28">
       <h2 className="font-normal text-[32px] sm:text-[40px] tracking mb-8">My Orders</h2>
 
       {orders.map((order: OrderData) => (
