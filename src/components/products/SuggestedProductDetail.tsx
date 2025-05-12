@@ -9,7 +9,13 @@ import { useState, useEffect } from "react";
 import { WishItem } from "@/card/types";
 import { WishData } from "@/card/wishListApi";
 
-const SuggestedProductDetails: React.FC = () => {
+interface SuggestedProductDetailsProps {
+  onSuggestedItemClick?: (image: string) => void;
+}
+
+const SuggestedProductDetails: React.FC<SuggestedProductDetailsProps> = ({ 
+  onSuggestedItemClick 
+})=> {
   const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
   const [wishlistLoading, setWishlistLoading] = useState(true);
 
@@ -102,6 +108,7 @@ const SuggestedProductDetails: React.FC = () => {
                   product={item}
                   isInitiallyLiked={wishlistInfo.isInitiallyLiked}
                   wishItemId={wishlistInfo.wishItemId}
+                  onItemClick={onSuggestedItemClick}
                 />
               </div>
             </div>

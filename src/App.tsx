@@ -75,7 +75,7 @@ const AppContent: React.FC = () => {
         <Route path="/orders" element={<Orders />} />
         <Route path="//verify-reset-otp" element={<VerifyForgotPassword />} />
         <Route path="/new-arrivals" element={<NewArrivals />} />
-        
+         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/filtered-products" element={<ProductsPage />} />
         <Route path="/faqs" element={<FAQs />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
@@ -87,12 +87,11 @@ const AppContent: React.FC = () => {
       {/* Protected routes */}
       <Route element={<PrivateRoute isAuthenticated={isAuthenticated} />}>
         <Route element={<Mainlayout />}>
-          <Route path="/cart" element={<Cart />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/confirm-order" element={<ConfirmOrder />} />
           <Route path="/general-settings" element={<GeneralSettings />} />
           <Route path="/orders/:id" element={<Confirm />} />
-          <Route path="/wishlist" element={<Wishlist />} />
+       
         </Route>
       </Route>
 
@@ -114,7 +113,6 @@ const AppContent: React.FC = () => {
         <Route path="admin-products-details/:id" element={<AdminProductDetails />} />
         <Route path="admin-categories" element={<AdminCategories />} />
         <Route path="admin-categories/subcategories" element={<AdminSubCategories />} />
-
         <Route path="orders" element={<AdminOrders />} />
         <Route path="settings" element={<Settings />} />
       </Route>

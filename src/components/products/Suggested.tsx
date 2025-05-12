@@ -9,7 +9,9 @@ import { useState, useEffect } from "react";
 import { WishItem } from "@/card/types";
 import { WishData } from "@/card/wishListApi";
 
-const Suggested: React.FC = () => {
+const Suggested: React.FC<{ onSuggestedItemClick?: (image: string) => void }> = ({ 
+  onSuggestedItemClick 
+}) => {
   const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
   const [wishlistLoading, setWishlistLoading] = useState(true);
 
@@ -103,6 +105,7 @@ const Suggested: React.FC = () => {
                   className="text-sm"
                   isInitiallyLiked={wishlistInfo.isInitiallyLiked}
                   wishItemId={wishlistInfo.wishItemId}
+                   onItemClick={onSuggestedItemClick}
                 />
               </div>
             </div>

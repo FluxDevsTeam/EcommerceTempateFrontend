@@ -349,11 +349,7 @@ const Header = () => {
                     Welcome, {displayName}
                   </span>
                   <span onClick={toggleUserDropdown}><FaUserCheck size={24} /></span>  
-                  <span>
-                    <Link to="/wishlist" className="hover:text-gray-600 transition-colors">
-                      <FaRegHeart size={24} />
-                    </Link>
-                  </span>
+                 
                 </div>
               ) : (
                 <Link to="/login" className="flex items-center gap-2">
@@ -388,6 +384,11 @@ const Header = () => {
                 </div>
               )}
             </div>
+             <span>
+                <Link to="/wishlist" className="hover:text-gray-600 transition-colors">
+                      <FaRegHeart size={24} />
+                </Link>
+                  </span>
             <Link to="/cart" className="hover:text-gray-600 transition-colors">
               <BsCart size={26} />
             </Link>
@@ -433,15 +434,16 @@ const Header = () => {
                 >
                   <FaUserCheck size={24} />
                 </button>
-                <Link to="/wishlist" className="hover:text-gray-600 transition-colors">
-                  <FaRegHeart size={24} />
-                </Link>
+              
               </div>
             ) : (
               <Link to="/login" className="hover:text-gray-600 transition-colors" aria-label="Sign in">
                 <IoPersonCircleOutline size={28} />
               </Link>
             )}
+              <Link to="/wishlist" className="hover:text-gray-600 transition-colors">
+                  <FaRegHeart size={24} />
+                </Link>
             <Link to="/cart" className="hover:text-gray-600 transition-colors" aria-label="Cart">
               <BsCart size={24} />
             </Link>

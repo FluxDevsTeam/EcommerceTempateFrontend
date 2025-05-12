@@ -8,7 +8,8 @@ const SuggestedCard: React.FC<CardProps> = ({
   product,
   isInitiallyLiked,
   wishItemId: initialWishItemId,
-  removeOnUnlike = false
+  removeOnUnlike = false,
+  onItemClick 
   
 }) => {
   const [liked, setLiked] = useState(isInitiallyLiked);
@@ -43,7 +44,12 @@ const SuggestedCard: React.FC<CardProps> = ({
           src={product.image1}
           alt={product.name}
           className="rounded-lg w-[90px] h-[90px] md:h-[180px] md::h-[300px] object-cover"
-          onClick={() => navigate(`/suggested/${product.id}`)}
+           onClick={() => {
+            if (onItemClick) {
+              onItemClick(product.image1); 
+            }
+            navigate(`/suggested/${product.id}`);
+          }}
         />
         <Wish
           color="red"

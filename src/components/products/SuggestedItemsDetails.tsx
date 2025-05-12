@@ -106,6 +106,10 @@ const SuggestedItemsDetails = () => {
     }
   }, [product, mainImage, selectedSize]);
 
+const handleSuggestedItemClick = (image: string) => {
+    setMainImage(image); 
+  };
+
     const createNewCart = async (accessToken: string) => {
     const response = await fetch(`${baseURL}/api/v1/cart/`, {
       method: "POST",
@@ -540,7 +544,9 @@ const SuggestedItemsDetails = () => {
       </div>
     </div>  
     <div className="px-0 md:px-12 ">
-    <SuggestedProductDetails />
+    <SuggestedProductDetails 
+    onSuggestedItemClick={handleSuggestedItemClick}
+    />
     </div>
     </div>
   );
