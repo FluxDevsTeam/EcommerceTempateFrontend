@@ -405,7 +405,8 @@ const ConfirmOrder = () => {
         if (!response.ok) throw new Error("Failed to fetch states");
         const data = await response.json();
         console.log(data);
-        setAvailableStates(data.available_states);
+        setAvailableStates(data);
+        console.log(data.available_states)
       } catch (error) {
         console.error("Error fetching states:", error);
       }

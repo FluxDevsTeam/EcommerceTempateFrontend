@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import Suggested from "./Suggested";
-import { addToLocalCart } from "../../utils/cartStorage";
+import { addToLocalCart, isItemInLocalCart } from "../../utils/cartStorage";
 
 import DescriptionList from "./DescriptionList";
 
@@ -179,6 +179,18 @@ const ProductDetail = () => {
     const accessToken = localStorage.getItem("accessToken");
 
     if (!accessToken) {
+      // Check if item already exists in local cart
+      if (isItemInLocalCart(product.id, selectedSizeData.id)) {
+        setModalConfig({
+          isOpen: true,
+          title: "Notice",
+          message: "This item is already in your cart",
+          type: "error",
+        });
+        setIsAddingToCart(false);
+        return;
+      }
+
       // Store in local storage for guest users
       addToLocalCart({
         productId: product.id,

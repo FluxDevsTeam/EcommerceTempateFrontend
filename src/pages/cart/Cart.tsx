@@ -290,15 +290,23 @@ const Cart = () => {
     const accessToken = localStorage.getItem("accessToken");
 
     if (!accessToken) {
-      // Handle local storage deletion
-      const idString = cartItemId.toString();
-      const productId = parseInt(idString.slice(0, -1));
-      const sizeId = parseInt(idString.slice(-1));
-      removeLocalCartItem(productId, sizeId);
-      setCartItems((prev) => prev.filter((item) => item.id !== cartItemId));
+      // For guest users, find the item in cartItems
+      const itemToRemove = cartItems.find(item => item.id === cartItemId);
+      if (itemToRemove) {
+        // Extract the real productId and sizeId from the cartItem
+        const productId = itemToRemove.product.id;
+        const sizeId = itemToRemove.size.id;
+        
+        // Remove from local storage
+        removeLocalCartItem(productId, sizeId);
+        
+        // Update UI
+        setCartItems(prev => prev.filter(item => item.id !== cartItemId));
+      }
       return;
     }
 
+    // Rest of the authenticated user logic
     if (!cartUid) {
       console.error("Cart UID not available for API call.");
       return;
@@ -320,7 +328,7 @@ const Cart = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      setCartItems((prev) => prev.filter((item) => item.id !== cartItemId));
+      setCartItems(prev => prev.filter(item => item.id !== cartItemId));
     } catch (error) {
       console.error("Failed to delete cart item:", error);
     }
@@ -368,7 +376,7 @@ const Cart = () => {
           </Link>
         </div>
       ) : (
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-8 mb-9">
           {/* Cart Items */}
           <div className="w-full lg:w-2/3">
             {cartItems.map((item: CartItem) => (
