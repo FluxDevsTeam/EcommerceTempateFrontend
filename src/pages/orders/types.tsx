@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 // types.ts
 export interface Product {
     id: number;
@@ -20,6 +22,7 @@ export interface Product {
   }
   
   export interface OrderData {
+    total_amount: string;
     id: string;
     user: number;
     order_date: string;
@@ -50,4 +53,3 @@ export interface Product {
     product: WishProduct;
     date: string;
   }
-  

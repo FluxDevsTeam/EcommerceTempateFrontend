@@ -21,7 +21,7 @@ const Confirm = () => {
       try {
         setLoading(true);
         const data = await fetchData(); // returns array of orders
-        const foundOrder = data.find((order: OrderData) => order.id === id);
+        const foundOrder = data.results.find((order: OrderData) => order.id === id);
         if (foundOrder) {
           setOrder(foundOrder);
         } else {
@@ -147,20 +147,23 @@ const Confirm = () => {
           <h3 className='text-[20px] leading-[30px] mb-4'>Order Summary</h3>
           <div className="text-[#667085] text-[18px] leading-[28px]">
             <p className='flex justify-between items-center text-[#475467] text-[20px] leading-[30px] mb-2'>
-              <span className=''>Discount</span>
+              <span className=''>Amount</span>
               <span className='text-right'>0</span>
             </p>
             <p className='flex justify-between items-center mb-2'>
               <span className='text-[#00000099]'>Discount</span>
-              <span className='text-right'>0</span>
+              <span className='text-right'>₦{order.total_amount}</span>
             </p>
             <p className='flex justify-between items-center mb-2'>
               <span className='text-[#00000099]'>Delivery</span>
-              <span className='text-right'>N {order.delivery_fee}</span>
+              <span className='text-right'>₦{order.delivery_fee}</span>
             </p>
             <p className='flex justify-between items-center mb-2 mt-10'>
               <span>Total</span>
-              <span className='text-[20px] leading-[30px] text-[#1D2939] font-bold'>$0.00</span>
+             <span className='text-[20px] leading-[30px] text-[#1D2939] font-bold'>
+              ₦{(parseFloat(order.total_amount) + parseFloat(order.delivery_fee)).toLocaleString()}
+            </span>
+
             </p>
           </div>
         </div>
