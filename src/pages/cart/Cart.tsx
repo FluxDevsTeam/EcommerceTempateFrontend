@@ -285,13 +285,18 @@ const Cart = () => {
       setCartItems(originalItems);
     }
   };
-
   const removeItem = async (cartItemId: number) => {
     const accessToken = localStorage.getItem("accessToken");
-
+    
+    // Store original cart items for potential rollback
+    const originalItems = [...cartItems];
+    
+    // Optimistic UI update - remove item immediately
+    setCartItems(prev => prev.filter(item => item.id !== cartItemId));
+    
     if (!accessToken) {
-      // For guest users, find the item in cartItems
-      const itemToRemove = cartItems.find(item => item.id === cartItemId);
+      // For guest users, find the item in original items
+      const itemToRemove = originalItems.find(item => item.id === cartItemId);
       if (itemToRemove) {
         // Extract the real productId and sizeId from the cartItem
         const productId = itemToRemove.product.id;
@@ -299,9 +304,6 @@ const Cart = () => {
         
         // Remove from local storage
         removeLocalCartItem(productId, sizeId);
-        
-        // Update UI
-        setCartItems(prev => prev.filter(item => item.id !== cartItemId));
       }
       return;
     }
@@ -309,6 +311,7 @@ const Cart = () => {
     // Rest of the authenticated user logic
     if (!cartUid) {
       console.error("Cart UID not available for API call.");
+      setCartItems(originalItems); // Rollback on error
       return;
     }
 
@@ -327,10 +330,13 @@ const Cart = () => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
-      setCartItems(prev => prev.filter(item => item.id !== cartItemId));
+      
+      // API call successful, UI is already updated
+      
     } catch (error) {
       console.error("Failed to delete cart item:", error);
+      // Rollback UI on error
+      setCartItems(originalItems);
     }
   };
 
