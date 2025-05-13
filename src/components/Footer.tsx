@@ -1,10 +1,12 @@
 import { FaTwitter, FaFacebookF, FaInstagram, FaGithub } from "react-icons/fa";
 import { SiVisa, SiMastercard, SiPaypal } from "react-icons/si";
 import { Link } from "react-router-dom";
+import logo from '/images/logo.png'
+
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-100 py-10 px-6">
+    <footer className="bg-customBlue py-10 px-6">
       <div className="max-w-6xl mx-auto">
         {/* Newsletter Subscription */}
         <div className="bg-black md:w-[40%] w-full mx-auto text-white p-6 rounded-lg text-center mb-10">
@@ -21,7 +23,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Shop Info */}
           <div className="font-poppins ">
-            <h2 className="text-xl font-semibold">SHOP.CO</h2>
+           <img src={logo} alt="logo" />
             <p className="text-gray-600 mt-2">
               We have clothes that suit your style and which you’re proud to wear.
               From women to men.

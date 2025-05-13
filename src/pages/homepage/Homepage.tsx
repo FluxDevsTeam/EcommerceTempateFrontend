@@ -9,6 +9,7 @@ import { WishItem } from "@/card/types";
 import { ProductAPIResponse} from "./types/data-types"; // Import WishItem type
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import banner from '/images/banner.png'
 
 const Homepage = () => {
   const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
@@ -59,7 +60,7 @@ const Homepage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
         <div className="block md:hidden flex justify-center lg:justify-end">
           <img 
-            src={image1} 
+            src={banner} 
             alt="Banner image" 
             className="w-full max-w-[280px] sm:max-w-xs md:max-w-md lg:max-w-lg object-contain"
           />
