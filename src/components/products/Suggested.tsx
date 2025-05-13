@@ -102,7 +102,6 @@ const Suggested: React.FC<{ onSuggestedItemClick?: (image: string) => void }> = 
               <div className="transform scale-90 hover:scale-95 transition-transform duration-200 md:scale-100">
                 <SuggestedCard 
                   product={item} 
-                  className="text-sm"
                   isInitiallyLiked={wishlistInfo.isInitiallyLiked}
                   wishItemId={wishlistInfo.wishItemId}
                    onItemClick={onSuggestedItemClick}

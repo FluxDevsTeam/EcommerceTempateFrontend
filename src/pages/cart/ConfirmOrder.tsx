@@ -404,6 +404,7 @@ const ConfirmOrder = () => {
         const data = await response.json();
         console.log(data);
         setAvailableStates(data.available_states);
+
         // console.log(data.available_states)
       } catch (error) {
         console.error("Error fetching states:", error);
