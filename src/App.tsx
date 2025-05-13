@@ -79,18 +79,19 @@ const AppContent: React.FC = () => {
         <Route path="/filtered-products" element={<ProductsPage />} />
         <Route path="/faqs" element={<FAQs />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
-
+<Route path="/confirm-order" element={<ConfirmOrder />} />
         <Route path="/contact-us" element={<Contact />} />
         <Route path="/ade" element={<Producter />} />
+         
       </Route>
 
       {/* Protected routes */}
       <Route element={<PrivateRoute isAuthenticated={isAuthenticated} />}>
         <Route element={<Mainlayout />}>
           <Route path="/orders" element={<Orders />} />
-          <Route path="/confirm-order" element={<ConfirmOrder />} />
+            <Route path="/orders/:id" element={<Confirm />} />
           <Route path="/general-settings" element={<GeneralSettings />} />
-          <Route path="/orders/:id" element={<Confirm />} />
+       
        
         </Route>
       </Route>
