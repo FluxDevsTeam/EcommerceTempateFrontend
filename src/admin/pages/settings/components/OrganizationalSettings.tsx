@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 interface OrganizationSettings {
-  available_states: any;
+  available_states: Record<string, boolean> | string[];
   warehouse_state: string;
   phone_number: string;
   customer_support_email: string;
@@ -24,7 +24,7 @@ const allNigerianStates = [
 
 const OrganizationalSettings = () => {
   const [formData, setFormData] = useState<OrganizationSettings>({
-    available_states: {},
+    available_states: [],
     warehouse_state: '',
     phone_number: '+234',
     customer_support_email: '',
@@ -66,13 +66,18 @@ const OrganizationalSettings = () => {
       if (response.data) {
         setFormData(response.data);
         setInitialData(response.data);
+        console.log(response.data)
         
-        if (response.data.available_states) {
-          const states = Object.keys(response.data.available_states)
+        let states: string[] = [];
+        if (Array.isArray(response.data.available_states)) {
+          states = response.data.available_states;
+        } else if (typeof response.data.available_states === 'object' && response.data.available_states !== null) {
+          states = Object.keys(response.data.available_states)
             .filter(key => response.data.available_states[key] === true);
-          setSelectedStates(states);
-          setInitialSelectedStates(states);
         }
+        
+        setSelectedStates(states);
+        setInitialSelectedStates(states);
 
         if (response.data.brand_logo) {
           setLogoPreview(response.data.brand_logo);
@@ -175,9 +180,11 @@ const OrganizationalSettings = () => {
   const getUiFormData = () => {
     return {
       warehouseStates: formData.warehouse_state || '',
-      availableStates: typeof formData.available_states === 'object'
-        ? JSON.stringify(formData.available_states)
-        : formData.available_states || '',
+      availableStates: Array.isArray(formData.available_states) 
+        ? formData.available_states.join(', ')
+        : typeof formData.available_states === 'object'
+          ? JSON.stringify(formData.available_states)
+          : formData.available_states || '',
       phoneNumber: formData.phone_number || '+234',
       logo: formData.brand_logo || '',
       customerSupportEmail: formData.customer_support_email || '',
@@ -194,54 +201,91 @@ const OrganizationalSettings = () => {
     handleSave();
   };
 
-  const handleSave = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      
-      const availableStatesObj: Record<string, boolean> = {};
-      allNigerianStates.forEach(state => {
-        availableStatesObj[state] = selectedStates.includes(state);
-      });
+ const handleSave = async () => {
+  try {
+    setLoading(true);
+    const token = localStorage.getItem('accessToken');
 
-      const patchData = {
-        warehouse_state: formData.warehouse_state,
-        available_states: availableStatesObj,
-        phone_number: formData.phone_number,
-        customer_support_email: formData.customer_support_email,
-        admin_email: formData.admin_email,
-        facebook: formData.facebook,
-        twitter: formData.twitter,
-        linkedin: formData.linkedin,
-        tiktok: formData.tiktok
-      };
+    const patchData = {
+      warehouse_state: formData.warehouse_state,
+      available_states: selectedStates,
+      phone_number: formData.phone_number,
+      customer_support_email: formData.customer_support_email,
+      admin_email: formData.admin_email,
+      facebook: formData.facebook,
+      twitter: formData.twitter,
+      linkedin: formData.linkedin,
+      tiktok: formData.tiktok
+    };
 
-      await axios.patch<OrganizationSettings>(
-        'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/organisation-settings/',
-        patchData,
-        {
-          headers: {
-            'Authorization': `JWT ${token}`,
-            'Content-Type': 'application/json',
-          }
+    console.log("Data being sent in PATCH request:", JSON.stringify(patchData, null, 2));
+
+    const response = await axios.patch<OrganizationSettings>(
+      'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/organisation-settings/',
+      patchData,
+      {
+        headers: {
+          'Authorization': `JWT ${token}`,
+          'Content-Type': 'application/json',
         }
-      );
-      
-      setSuccessMessage('Organization settings updated successfully');
-      setError(null);
-      setInitialData(formData);
-      setInitialSelectedStates(selectedStates);
-      
-      setTimeout(() => {
-        setSuccessMessage(null);
-      }, 3000);
-    } catch (err) {
-      setError('Failed to update organization settings');
-      console.error('Error updating organization settings:', err);
-    } finally {
-      setLoading(false);
+      }
+    );
+
+    setSuccessMessage('Organization settings updated successfully');
+    setError(null);
+    setInitialData(formData);
+    setInitialSelectedStates(selectedStates);
+
+    setTimeout(() => {
+      setSuccessMessage(null);
+    }, 3000);
+  } catch (err) {
+    let errorMessage = 'Failed to update organization settings';
+
+    if (axios.isAxiosError(err)) {
+      if (err.response) {
+        const data = err.response.data;
+        console.error('Server responded with error:', data);
+
+        if (typeof data === 'string') {
+          errorMessage = data;
+        } else if (typeof data === 'object' && data !== null) {
+          const messages: string[] = [];
+
+          for (const key in data) {
+            const value = data[key];
+            if (Array.isArray(value)) {
+              messages.push(`${key}: ${value.join(', ')}`);
+            } else if (typeof value === 'string') {
+              messages.push(`${key}: ${value}`);
+            } else {
+              messages.push(`${key}: ${JSON.stringify(value)}`);
+            }
+          }
+
+          errorMessage = messages.join(' | ');
+        } else {
+          errorMessage = JSON.stringify(data);
+        }
+
+      } else if (err.request) {
+        console.error('No response received:', err.request);
+        errorMessage = 'No response received from server';
+      } else {
+        console.error('Request setup error:', err.message);
+        errorMessage = `Request error: ${err.message}`;
+      }
+    } else {
+      console.error('Unexpected error:', err);
+      errorMessage = `Unexpected error: ${err instanceof Error ? err.message : String(err)}`;
     }
-  };
+
+    setError(errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const hasChanges = () => {
     if (!initialData) return false;
@@ -325,7 +369,6 @@ const OrganizationalSettings = () => {
           </div>
         </div>
         
-        {/* Display exact social media URLs */}
         {(initialData?.facebook || initialData?.twitter || initialData?.linkedin || initialData?.tiktok) && (
           <div className="mt-4 p-3 bg-gray-100 rounded-md border border-gray-200">
             <h4 className="font-medium mb-2">Social Media Links</h4>
