@@ -52,3 +52,79 @@ export const removeLocalCartItem = (productId: number, sizeId: number) => {
 export const clearLocalCart = () => {
   localStorage.removeItem('guestCart');
 };
+
+export const isItemInLocalCart = (productId: number, sizeId: number): boolean => {
+  const cart = getLocalCart();
+  return cart.some(item => item.productId === productId && item.sizeId === sizeId);
+};
+
+const baseURL = "https://ecommercetemplate.pythonanywhere.com";
+
+export const migrateLocalCartToUserCart = async (accessToken: string): Promise<boolean> => {
+  try {
+    const localCart = getLocalCart();
+    if (localCart.length === 0) return true;
+
+    // First get or create user cart
+    let cartUuid;
+    const cartResponse = await fetch(`${baseURL}/api/v1/cart/`, {
+      method: "GET",
+      headers: {
+        Authorization: `JWT ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (cartResponse.ok) {
+      const cartData = await cartResponse.json();
+      cartUuid = cartData.results[0]?.id;
+    }
+
+    // If no cart exists, create one
+    if (!cartUuid) {
+      const createResponse = await fetch(`${baseURL}/api/v1/cart/`, {
+        method: "POST",
+        headers: {
+          Authorization: `JWT ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          first_name: "",
+          last_name: "",
+          email: "",
+          state: "",
+          city: "",
+          delivery_address: "",
+          phone_number: "",
+        }),
+      });
+
+      if (!createResponse.ok) throw new Error("Failed to create cart");
+      const newCartData = await createResponse.json();
+      cartUuid = newCartData.id;
+    }
+
+    // Add each local cart item to user's cart
+    for (const item of localCart) {
+      await fetch(`${baseURL}/api/v1/cart/${cartUuid}/items/`, {
+        method: "POST",
+        headers: {
+          Authorization: `JWT ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          product: item.productId,
+          size: item.sizeId,
+          quantity: item.quantity,
+        }),
+      });
+    }
+
+    // Clear local cart after successful migration
+    clearLocalCart();
+    return true;
+  } catch (error) {
+    console.error("Error migrating cart:", error);
+    return false;
+  }
+};

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import authService from './authservice';
+import { migrateLocalCartToUserCart } from '../../utils/cartStorage';
 
 interface User {
   id: string;
@@ -151,8 +152,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       if (response.user) {
         setCurrentUser(response.user);
+        
+        // After successful login, migrate local cart items
+        const accessToken = localStorage.getItem('accessToken');
+        if (accessToken) {
+          try {
+            await migrateLocalCartToUserCart(accessToken);
+          } catch (cartError) {
+            console.error("Failed to migrate cart items:", cartError);
+          }
+        }
       } else {
-        // If login response doesn't include user data, fetch it
         await refreshUserData();
       }
       
