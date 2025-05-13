@@ -6,10 +6,10 @@ import logo from '/images/logo.png'
 
 const Footer = () => {
   return (
-    <footer className="bg-customBlue py-10 px-6">
+    <footer className="bg-gray-100 py-10 px-6">
       <div className="max-w-6xl mx-auto">
         {/* Newsletter Subscription */}
-        <div className="bg-black md:w-[40%] w-full mx-auto text-white p-6 rounded-lg text-center mb-10">
+        <div className="bg-customBlue md:w-[40%] w-full mx-auto text-white p-6 rounded-lg text-center mb-10">
           <input 
             type="email" 
             placeholder="Enter your email address" 

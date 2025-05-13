@@ -74,7 +74,7 @@ const Homepage = () => {
             Access exclusive deals, track orders and enjoy a seamless shopping experience
           </p>
           <Link to='/shoe-category'>
-            <button className="bg-black text-white border rounded-full px-6 py-3 w-auto md:w-[210px] hover:bg-gray-800 transition-colors">
+            <button className="bg-customBlue text-white border rounded-full px-6 py-3 w-auto md:w-[210px] hover:bg-gray-800 transition-colors">
               Shop Now
             </button>
           </Link>
@@ -82,7 +82,7 @@ const Homepage = () => {
         
         <div className="hidden md:block flex justify-center lg:justify-end lg:mt-[-20px] mt-0">
           <img 
-            src={image1} 
+            src={banner} 
             alt="Banner image" 
             className="w-full max-w-[280px] sm:max-w-xs md:max-w-md lg:max-w-lg object-contain"
           />
