@@ -28,10 +28,8 @@ const ConfirmOrder = () => {
   const [cartId, setCartId] = useState<string | null>(null);
 
   const [isLoadingSummary, setIsLoadingSummary] = useState(true);
-  // const [isLoadingCart, setIsLoadingCart] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  // const [showErrorModal, setShowErrorModal] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string>("paystack");
   const [error, setError] = useState<string | null>(null);
   const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
@@ -406,7 +404,8 @@ const ConfirmOrder = () => {
         const data = await response.json();
         console.log(data);
         setAvailableStates(data.available_states);
-        console.log(data.available_states)
+
+        // console.log(data.available_states)
       } catch (error) {
         console.error("Error fetching states:", error);
       }
