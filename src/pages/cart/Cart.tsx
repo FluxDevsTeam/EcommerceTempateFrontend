@@ -357,16 +357,8 @@ const Cart = () => {
   
   return (
     <div>
-    <div className="max-w-6xl mx-auto px-4 py-6 font-poppins">
-      {/* Breadcrumb */}
-      <div className="flex items-center text-sm mb-6">
-        <Link to="/" className="text-gray-500">
-          Home
-        </Link>
-        <span className="mx-2">›</span>
-        <span>Cart</span>
-      </div>
-
+    <div className="max-w-6xl mx-auto px-4 py-12 md:py-6 font-poppins">
+     
       <h1 className="text-3xl font-bold mb-8">Your Cart</h1>
 
       {cartItems.length === 0 ? (

@@ -419,19 +419,7 @@ const ConfirmOrder = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 font-poppins relative">
-      {/* Breadcrumbs */}
-      <div className="flex items-center text-sm mb-6">
-        <Link to="/" className="text-gray-500">
-          Home
-        </Link>
-        <span className="mx-2">›</span>
-        <Link to="/cart" className="text-gray-500">
-          Cart
-        </Link>
-        <span className="mx-2">›</span>
-        <span>Confirm Order</span>
-      </div>
-
+     
       <h1
         className="font-bold mb-8"
         style={{ fontSize: "clamp(18px, 3vw, 24px)" }}

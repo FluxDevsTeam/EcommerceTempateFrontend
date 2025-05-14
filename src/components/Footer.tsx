@@ -69,7 +69,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-10 flex justify-between items-center flex-wrap font-poppins ">
-          <p className="text-gray-600 text-sm">Shop.co © 2025, All Rights Reserved</p>
+          <p className="text-gray-600 text-sm">KidsDesignCompany © 2025, All Rights Reserved</p>
           <div className="flex gap-4">
             <SiVisa className="text-2xl text-gray-700" />
             <SiMastercard className="text-2xl text-gray-700" />

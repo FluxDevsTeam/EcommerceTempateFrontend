@@ -83,3 +83,7 @@ body {
     max-height: 250px;
   }
 }
+
+.SliderThumb {
+	background-color:#0078A5;
+}

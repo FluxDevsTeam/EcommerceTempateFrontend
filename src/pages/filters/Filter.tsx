@@ -8,6 +8,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { SliderThumb } from '@radix-ui/react-slider';
+import { SliderThumbProps } from '@radix-ui/react-slider';
 
 // Define TypeScript interfaces for our data
 interface Category {
@@ -232,22 +234,22 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
             </AccordionItem>
             
             <AccordionItem value="price" className="border-b border-gray-200">
-              <AccordionTrigger className="py-4 font-semibold cursor-pointer">Price</AccordionTrigger>
-              <AccordionContent>
-                <div className="pt-2 pb-6">
-                  <Slider
-                    value={priceRange}
-                    max={10000}
-                    step={100}
-                    onValueChange={handlePriceChange}
-                    className="mt-6 font-bold bg-black cursor-pointer"
-                  />
-                  <div className="flex justify-between mt-2">
-                    <span className="text-gray-600 font-bold"> ₦{priceRange[0]}</span>
-                    <span className="text-gray-600 font-bold"> ₦{priceRange[1]}</span>
-                  </div>
-                </div>
-              </AccordionContent>
+              <AccordionTrigger className="py-4 text-customBlue font-semibold cursor-pointer">Price</AccordionTrigger>
+        <AccordionContent>
+  <div className="pt-2 pb-6">
+    <Slider
+      value={priceRange}
+      max={10000}
+      step={100}
+      onValueChange={handlePriceChange}
+      className="mt-6 font-bold bg-customBlue cursor-pointer"
+    />          
+    <div className="flex justify-between mt-2">
+      <span className="text-gray-600 font-bold"> ₦{priceRange[0]}</span>
+      <span className="text-gray-600 font-bold"> ₦{priceRange[1]}</span>
+    </div>
+  </div>
+</AccordionContent>
             </AccordionItem>
           </Accordion>
         )}
@@ -267,13 +269,13 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
           <Button 
             onClick={onClose} 
             variant="outline" 
-            className="w-1/2 border border-black text-black rounded-full cursor-pointer font-medium hover:bg-gray-100"
+            className="w-1/2 border border-black text-black rounded-full cursor-pointer font-medium hover:bg-customBlue hover:text-white"
           >
             Cancel
           </Button>
           <Button 
             onClick={handleApplyFilter} 
-            className="w-1/2 bg-black text-white rounded-full font-medium cursor-pointer hover:bg-black/90"
+            className="w-1/2 bg-customBlue text-white rounded-full font-medium cursor-pointer hover:bg-black/90"
           >
             Apply Filter
           </Button>

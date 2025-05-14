@@ -188,9 +188,9 @@ const ProductsPage: React.FC = () => {
   const totalPages = productsData.count ? Math.ceil(productsData.count / itemsPerPage) : 1;
 
   return (
-    <div className="container mx-auto px-6 md:px-14 py-8 md:py-12 ">
+    <div className="container mx-auto px-6 md:px-14 py-8 md:py-0 ">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 pt-2">
-        <h1 className="text-3xl md:text-4xl font-medium">Filtered Products</h1>
+        <h1 className="text-3xl md:text-4xl font-semibold capitalize ">Filtered Products</h1>
 
         <div className="flex items-center gap-4 pt-3 md:pt-0">
           <p className="text-gray-600">{productsData.count} products found</p>

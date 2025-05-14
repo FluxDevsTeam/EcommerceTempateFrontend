@@ -19,16 +19,9 @@ const GeneralSettings = () => {
       <div className="max-w-4xl mx-auto px-4">
         {/* Header and Breadcrumbs */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-semi-bold capitalize mb-2">
             Account Settings
           </h1>
-          <div className="flex items-center text-sm text-gray-500">
-            <Link to="/" className="hover:text-black transition-colors">
-              Home
-            </Link>
-            <span className="mx-2">›</span>
-            <span>Settings</span>
-          </div>
         </div>
 
         {/* Tabs Navigation */}

@@ -178,7 +178,7 @@ const SearchResults = () => {
 
   if (error) {
     return (
-      <div className="container mx-auto px-6 py-8 md:py-12">
+      <div className="container mx-auto px-6 py-8 md:py-0">
         <div className="bg-red-50 border-l-4 border-red-400 p-4">
           <div className="flex">
             <div className="flex-shrink-0">

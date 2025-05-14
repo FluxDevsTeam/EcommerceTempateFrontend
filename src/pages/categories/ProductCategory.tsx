@@ -169,11 +169,11 @@ const ProductCategory = () => {
   const totalPages = productsData.count ? Math.ceil(productsData.count / itemsPerPage) : 1;
 
   return (
-    <div className="w-full min-h-full flex flex-col px-6 md:px-24 py-8 md:py-12">
+    <div className="w-full min-h-full flex flex-col px-6 md:px-24 py-8 md:py-0">
       {/* Category Header with Sort Dropdown */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 pt-2">
         <div>
-          <h1 className="text-3xl font-bold capitalize">{categoryData.name.toLowerCase()}</h1>
+          <h1 className="text-3xl font-semibold capitalize">{categoryData.name.toLowerCase()}</h1>
           <p className="text-gray-600 mt-2">
             Showing {productsData.count} products in this category
           </p>

@@ -46,7 +46,7 @@ const Wishlist = () => {
 
   return (
     <div className="mt-8 md:mt-0 p-4 sm:p-14">
-      <h2 className="font-normal text-[32px] px-8 sm:text-[40px] tracking mb-4 sm:mb-8">
+      <h2 className="text-3xl font-semibold capitalize tracking mb-4 sm:mb-8">
         Wishlist
       </h2>
 

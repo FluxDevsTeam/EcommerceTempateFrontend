@@ -1,4 +1,4 @@
-import image1 from "/images/Frame 1618876995 (1).png";
+
 import ImageGrid from "./components/ImageGrid";
 import TopSelling from "./components/TopSelling";
 import ImageSlider from "./components/ImageSlider";
@@ -58,7 +58,7 @@ const Homepage = () => {
     <div className="w-full min-h-full px-4 md:px-12 py-4 lg:px-28">
       {/* Hero Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-        <div className="block md:hidden flex justify-center lg:justify-end">
+        <div className="block md:hidden flex justify-center lg:justify-end mt-[20px]">
           <img 
             src={banner} 
             alt="Banner image" 
@@ -74,13 +74,13 @@ const Homepage = () => {
             Access exclusive deals, track orders and enjoy a seamless shopping experience
           </p>
           <Link to='/shoe-category'>
-            <button className="bg-customBlue text-white border rounded-full px-6 py-3 w-auto md:w-[210px] hover:bg-gray-800 transition-colors">
+            <button className="bg-customBlue text-white border rounded-full px-6 py-3 w-auto md:w-[210px] hover:brightness-90 transition-colors">
               Shop Now
             </button>
           </Link>
         </div>
         
-        <div className="hidden md:block flex justify-center lg:justify-end lg:mt-[-20px] mt-0">
+        <div className="hidden md:block flex justify-center lg:justify-en ">
           <img 
             src={banner} 
             alt="Banner image" 

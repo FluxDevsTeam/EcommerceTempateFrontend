@@ -481,42 +481,36 @@ const ProductDetail = () => {
               <div className="space-y-2">
                 <p className="text-gray-600 text-sm sm:text-base">Size</p>
                 <div className="grid grid-cols-4 gap-2">
-                  {isLoading ? (
-                    <div className="col-span-4 text-center py-2">
-                      Loading sizes...
-                    </div>
-                  ) : product.sizes && product.sizes.length > 0 ? (
-                    product.sizes.map((item) => (
-                      <button
-                        type="button"
-                        key={item.id}
-                        onClick={() => {
-                          setSelectedSize(item.size);
-                          setQuantity(1); // Reset quantity when size changes
-                        }}
-                        disabled={!product.unlimited && item.quantity <= 0}
-                        className={`p-3 text-sm sm:text-base border rounded-2xl transition-colors ${
-                          item.size === selectedSize
-                            ? "bg-black text-white border-black"
-                            : !product.unlimited && item.quantity <= 0
-                            ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-                            : "bg-gray-200 hover:bg-gray-300 border-gray-300 cursor-pointer"
-                        }`}
-                        title={
-                          !product.unlimited && item.quantity <= 0
-                            ? "Out of stock"
-                            : ""
-                        }
-                      >
-                        {item.size.toUpperCase()}
-                        {!product.unlimited && item.quantity <= 0 && (
-                          <span className="block text-xs text-red-500">
-                            (Sold out)
-                          </span>
-                        )}
-                      </button>
-                    ))
-                  ) : (
+                   {isLoading ? (
+      <div className="col-span-4 text-center py-2">Loading sizes...</div>
+    ) : product.sizes && product.sizes.length > 0 ? (
+      product.sizes.map((item) => (
+        <button
+          type="button"
+          key={item.id}
+          onClick={() => {
+            setSelectedSize(item.size);
+            setQuantity(1); // Reset quantity when size changes
+          }}
+          disabled={!product.unlimited && item.quantity <= 0}
+          className={`p-3 text-sm sm:text-base border rounded-2xl transition-colors ${
+            item.size === selectedSize
+              ? "bg-customBlue text-white border-customBlue" // Selected state
+              : !product.unlimited && item.quantity <= 0
+              ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+              : "bg-gray-200 hover:bg-gray-300 border-gray-300 cursor-pointer"
+          }`}
+          title={
+            !product.unlimited && item.quantity <= 0 ? "Out of stock" : ""
+          }
+        >
+          {item.size.toUpperCase()}
+          {!product.unlimited && item.quantity <= 0 && (
+            <span className="block text-xs text-red-500">(Sold out)</span>
+          )}
+        </button>
+      ))
+    ) : (
                     <div className="col-span-4 text-center py-2 text-red-500">
                       No sizes available
                     </div>
@@ -546,7 +540,7 @@ const ProductDetail = () => {
               {/* Add to Cart */}
               <button
                 onClick={handleAddToCart}
-                className="w-full py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 bg-customBlue text-white rounded-2xl hover:brightness-90  transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 type="button"
                 disabled={!isInStock || isAddingToCart}
               >
