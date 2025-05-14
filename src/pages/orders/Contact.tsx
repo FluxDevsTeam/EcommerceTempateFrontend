@@ -5,7 +5,7 @@ import { FaFacebook, FaInstagram, FaLinkedin } from 'react-icons/fa';
 import { FaXTwitter } from "react-icons/fa6";
 import { useEffect, useState } from "react";
 import validator from 'validator';
-
+import emailjs from '@emailjs/browser'
 
 type FormData = {
   firstName: string;
@@ -31,7 +31,7 @@ const Contact = () => {
 
     useEffect(() => {
       const handleResize = () => {
-        setSize(window.innerWidth >= 640 ? 40 : 30);
+        setSize(window.innerWidth >= 640 ? 20 : 15);
       };
 
       handleResize();
@@ -174,7 +174,7 @@ const Contact = () => {
             {errors.message && <span className="text-red-500 text-xs mt-1">{errors.message}</span>}
           </div>
 
-          <button type="submit" className='text-white bg-black w-full p-3 rounded-full block text-center'>
+          <button type="submit" className='text-white bg-customBlue w-full p-3 rounded-full block text-center'>
             Send Message
           </button>
         </form>
@@ -186,7 +186,7 @@ const Contact = () => {
           <div className="mb-8">
             <p className="flex gap-3 items-center">
               <img src={call} alt="call" className="w-[20px] sm:w-[24px]" />
-              <span className="font-semibold text-[18px] sm:text-[24px] text-right">Call: +234 700 123 4567</span>
+              <span className="font-semibold text-[18px] sm:text-[24px] text-right">Call: +234 806 322 4027</span>
             </p>
             <p className="text-[#333333] mb-0.5">Talk to a Customer Service<br />Representative for help with our site,<br />app, or finding a Redfin Agent.</p>
             <p className="text-[#063AF5]">Email: info@mycaban.com</p>
@@ -196,21 +196,21 @@ const Contact = () => {
               <img src={location} alt="location" className="w-[20px] sm:w-[24px]" />
               <span className="font-semibold text-[18px] sm:text-[24px]">Address</span>
             </p>
-            <p className="text-[#333333] mb-0.5">Talk to a Customer Service<br />Representative for help with our site,<br />app, or finding a Redfin Agent.</p>
+            <p className="text-[#333333] mb-0.5">Lagos State, Nigeria.</p>
           </div>
           <div>
             <p className="font-semibold text-[20px] sm:text-[24px] text-[#292929] mb-2">Connect with us</p>
             <div className="flex gap-4 sm:gap-6">
-              <Link to="https://facebook.com" target="_blank" rel="noopener noreferrer">
+              <Link to="https://facebook.com" target="_blank" rel="noopener noreferrer" className="bg-customBlue text-white p-3 rounded-full hover:opacity-90 transition">
                 <FaFacebook size={iconSize} />
               </Link>
-              <Link to="https://twitter.com" target="_blank" rel="noopener noreferrer">
+              <Link to="https://twitter.com" target="_blank" rel="noopener noreferrer" className="bg-customBlue text-white p-3 rounded-full hover:opacity-90 transition">
                 <FaXTwitter size={iconSize} />
               </Link>
-              <Link to="https://instagram.com" target="_blank" rel="noopener noreferrer">
+              <Link to="https://instagram.com" target="_blank" rel="noopener noreferrer" className="bg-customBlue text-white p-3 rounded-full hover:opacity-90 transition">
                 <FaInstagram size={iconSize} />
               </Link>
-              <Link to="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+              <Link to="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="bg-customBlue text-white p-3 rounded-full hover:opacity-90 transition">
                 <FaLinkedin size={iconSize} />
               </Link>
             </div>

@@ -11,6 +11,7 @@
     "build:css": "npx tailwindcss -i ./src/index.css -o ./dist/output.css --minify"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@fontsource/poppins": "^5.2.5",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
@@ -26,7 +27,6 @@
     "axios": "^1.9.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "emailjs-com": "^3.2.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.487.0",
     "next-themes": "^0.4.6",
