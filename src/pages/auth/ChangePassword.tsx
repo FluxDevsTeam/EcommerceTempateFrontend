@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 
 // Define the schema for form validation
 const changePasswordSchema = z.object({

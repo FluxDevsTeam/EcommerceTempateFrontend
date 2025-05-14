@@ -33,7 +33,7 @@ export default function SortDropdown({ onSortChange }: SortDropdownProps) {
         <div className="absolute z-10 mt-2 w-40 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
           <button
             onClick={() => selectOption('Latest', 'latest')}
-            className={`block w-full px-4 py-2 text-left text-sm font-medium ${
+            className={`block w-full px-4 py-2 text-left text-sm font-normal ${
               selectedOption === 'Latest' ? 'bg-gray-100' : 'hover:bg-gray-50'
             }`}
           >
@@ -49,7 +49,7 @@ export default function SortDropdown({ onSortChange }: SortDropdownProps) {
           </button>
           <button
             onClick={() => selectOption('Lowest price', 'lowest')}
-            className={`block w-full px-4 py-2 text-left text-sm font-medium ${
+            className={`block w-full px-4 py-2 text-left text-sm font-normal ${
               selectedOption === 'Lowest price' ? 'bg-gray-100' : 'hover:bg-gray-50'
             }`}
           >

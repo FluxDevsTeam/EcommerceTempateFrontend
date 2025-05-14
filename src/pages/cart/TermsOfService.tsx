@@ -65,15 +65,7 @@ const TermsOfService = () => {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 font-poppins">
-      {/* Breadcrumbs */}
-      <div className="flex items-center text-sm mb-6">
-        <Link to="/" className="text-gray-500">
-          Home
-        </Link>
-        <span className="mx-2">›</span>
-        <span>Terms of Service</span>
-      </div>
+    <div className="w-full min-h-full flex flex-col px-6  md:px-24  py-12 md:py-0 font-poppins">
 
       <h1 className="text-3xl font-bold mb-8">Terms of Service</h1>
 

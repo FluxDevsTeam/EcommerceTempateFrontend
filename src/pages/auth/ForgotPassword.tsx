@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link } from 'react-router-dom';
 import authService from './authservice';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Define schema for each step

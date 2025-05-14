@@ -275,7 +275,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
           </Button>
           <Button 
             onClick={handleApplyFilter} 
-            className="w-1/2 bg-customBlue text-white rounded-full font-medium cursor-pointer hover:bg-black/90"
+            className="w-1/2 bg-customBlue hover:brightness-90 text-white rounded-full font-medium cursor-pointer hover:bg-black/90"
           >
             Apply Filter
           </Button>

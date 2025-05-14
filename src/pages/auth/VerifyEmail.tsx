@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 
 type VerifyEmailFormData = {
   code: string;

@@ -2,17 +2,23 @@ import { Link, useLocation, matchPath } from 'react-router-dom';
 import { routes } from '@/routing/route';
 import { useEffect, useState } from 'react';
 
-
+// Define the Category interface
 interface Category {
   id: number;
   name: string;
 }
 
+// Define interface for route objects
+interface RouteType {
+  path: string;
+  name: string;
+  // Add any other properties that might be in your routes
+}
 
 const Breadcrumbs = () => {
   const location = useLocation();
-  const pathnames = location.pathname.split('/').filter(x => x);
-  const [categories, setCategories] = useState([]);
+  const pathnames = location.pathname.split('/').filter((x) => x);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   // Fetch categories (similar to your existing fetch)
   useEffect(() => {
@@ -26,14 +32,14 @@ const Breadcrumbs = () => {
   if (location.pathname === '/') return null;
 
   // Function to get category name by ID
-  const getCategoryName = (id) => {
-    const category = categories.find(cat => cat.id.toString() === id.toString());
+  const getCategoryName = (id: string | number): string => {
+    const category = categories.find((cat) => cat.id.toString() === id.toString());
     return category ? category.name : 'Category';
   };
 
   // Function to get dynamic name based on route and params
-  const getRouteName = (route, path) => {
-    const match = matchPath({ path: route.path }, path);
+  const getRouteName = (route: RouteType, path: string): string => {
+    const match = matchPath(route.path, path);
     
     if (route.path === '/category/:id' && match?.params.id) {
       return getCategoryName(match.params.id);
@@ -52,7 +58,7 @@ const Breadcrumbs = () => {
       {pathnames.map((value, index) => {
         const to = `/${pathnames.slice(0, index + 1).join('/')}`;
         const isLast = index === pathnames.length - 1;
-        const route = routes.find(route => matchPath({ path: route.path }, to));
+        const route = (routes as RouteType[]).find((route) => matchPath(route.path, to));
         
         if (!route) return null;
         

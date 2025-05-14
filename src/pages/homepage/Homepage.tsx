@@ -66,19 +66,19 @@ const Homepage = () => {
           />
         </div>
 
-        <div className="flex flex-col space-y-2 pt-3 md:pt-6 px-4 md:px-0">
-          <h1 className='text-xl md:text-6xl font-bold leading-tight lg:leading-[63px] text-black'>
-            Shop Smarter, Live Better - Find What You Love
-          </h1>
-          <p className='text-[#000000] font-medium text-base md:text-lg'>
-            Access exclusive deals, track orders and enjoy a seamless shopping experience
-          </p>
-          <Link to='/shoe-category'>
-            <button className="bg-customBlue text-white border rounded-full px-6 py-3 w-auto md:w-[210px] hover:brightness-90 transition-colors">
-              Shop Now
-            </button>
-          </Link>
-        </div>
+        <div className="flex flex-col items-center text-center md:text-left md:items-start space-y-2 pt-3 md:pt-6 px-4 md:px-0">
+  <h1 className='text-xl md:text-6xl font-bold leading-tight lg:leading-[63px] text-black'>
+    Shop Smarter, Live Better - Find What You Love
+  </h1>
+  <p className='text-[#000000] font-medium text-base md:text-lg '>
+    Access exclusive deals, track orders and enjoy a seamless shopping experience
+  </p>
+  <Link to='/shoe-category'>
+    <button className="bg-customBlue text-white border rounded-full px-6 py-3 w-auto md:w-[210px] hover:brightness-90 transition-colors">
+      Shop Now
+    </button>
+  </Link>
+</div>
         
         <div className="hidden md:block flex justify-center lg:justify-en ">
           <img 

@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
+
 
 
 // Define the schema for form validation

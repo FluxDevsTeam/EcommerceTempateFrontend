@@ -92,7 +92,7 @@ const Contact = () => {
     };
 
   return (
-    <div className="p-4 sm:p-14 relative">
+    <div className="w-full min-h-full flex flex-col px-6  md:px-24  py-12 md:py-0 relative">
       <h2 className="font-normal text-[32px] sm:text-[40px] tracking mb-8">Contact Us</h2>
       <div className="flex flex-col sm:flex-row gap-4 sm:gap-20 items-start mb-12">
         {successMessage && (

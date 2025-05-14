@@ -50,7 +50,7 @@ const Footer = () => {
             <h3 className="font-semibold">COMPANY</h3>
             <ul className="mt-2 space-y-2 text-gray-600">
               <li>Delivery Details</li>
-              <li>Orders</li>
+             <Link to='/orders'>Orders</Link> 
               <li>Payments</li>
               <li>My Account</li>
             </ul>
@@ -69,7 +69,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-10 flex justify-between items-center flex-wrap font-poppins ">
-          <p className="text-gray-600 text-sm">KidsDesignCompany © 2025, All Rights Reserved</p>
+          <p className="text-gray-600 text-sm">KidsDesignCompany  © {new Date().getFullYear()}, All Rights Reserved</p>
           <div className="flex gap-4">
             <SiVisa className="text-2xl text-gray-700" />
             <SiMastercard className="text-2xl text-gray-700" />
