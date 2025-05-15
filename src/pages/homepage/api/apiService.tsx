@@ -3,7 +3,7 @@ import { ProductItemsResponse } from "../types/data-types";
 
 
 export const fetchProducts = async () :Promise<ProductAPIResponse>   => {
-    const res = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/homepage/');
+    const res = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/homepage/?page=${currentPage}&page_size=${pageSize}');
     if (!res.ok) throw new Error('Failed to fetch');
     return res.json();
   };

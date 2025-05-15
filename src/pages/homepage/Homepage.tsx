@@ -14,12 +14,33 @@ import banner from '/images/banner.png'
 const Homepage = () => {
   const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
   const [wishlistLoading, setWishlistLoading] = useState(true);
-
+ const [currentPage, setCurrentPage] = useState(1);
+  const [allProducts, setAllProducts] = useState<ProductItem[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  
   // Fetch products
-  const { data, isLoading, isError } = useQuery<ProductAPIResponse>({
-    queryKey: ['myData'],
-    queryFn: fetchProducts
+  const { data, isLoading, isError, refetch } = useQuery<ProductAPIResponse>({
+    queryKey: ['myData', currentPage],
+    queryFn: () => fetchProducts(currentPage, 8),
+    onSuccess: (newData) => {
+      if (newData.latest_items?.results) {
+        if (currentPage === 1) {
+          setAllProducts(newData.latest_items.results);
+        } else {
+          setAllProducts(prev => [...prev, ...newData.latest_items.results]);
+        }
+        // Check if there's more data to load
+        setHasMore(
+          newData.latest_items.results.length > 0 && 
+          (currentPage * 8) < (newData.latest_items.count || 0)
+        );
+      }
+    }
   });
+
+  const handleLoadMore = () => {
+    setCurrentPage(prev => prev + 1);
+  };
 
   // Fetch wishlist data
   useEffect(() => {
