@@ -44,6 +44,7 @@ export interface CardProps {
       date_created: string;
       date_updated: string;
   }
+}
 
   interface WishProduct {
     id: number;
