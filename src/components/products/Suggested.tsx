@@ -91,7 +91,7 @@ const Suggested: React.FC<{ onSuggestedItemClick?: (image: string) => void }> = 
   return (
     <div className="px-2 md:px-4 py-4 md:py-6">
       <h2 className="text-2xl md:text-3xl font-medium text-center mb-4 md:mb-6">
-        You might also like
+        You might also Like
       </h2>
       
       <Slider {...settings} className="mb-6 sm:mb-8">
