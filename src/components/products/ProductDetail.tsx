@@ -46,7 +46,8 @@ interface Product {
   is_available: boolean;
   dimensional_size: string;
   weight: string;
-  unlimited: boolean; // Added the unlimited field
+  unlimited: boolean; 
+  production_days : number;
   sizes: Size[];
 }
 
@@ -57,9 +58,11 @@ interface ProductDetailParams {
 const fetchProduct = async (id: number): Promise<Product> => {
   const response = await fetch(
     `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${id}/`
+    
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");
+
   }
   return response.json();
 };
@@ -89,6 +92,7 @@ const ProductDetail = () => {
     queryKey: ["product", productId],
     queryFn: () => fetchProduct(productId),
     enabled: !!productId,
+    
   });
 
 
@@ -470,6 +474,7 @@ const ProductDetail = () => {
                   {product.colour}
                 </p>
               </div>
+                <p className="text-gray-700 text-medium font-semibold leading-relaxed"> Production Days : {product.production_days} </p>
 
               {/* Size Selector */}
               <div className="space-y-2">

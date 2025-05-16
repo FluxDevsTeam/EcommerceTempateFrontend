@@ -36,13 +36,14 @@ interface Product {
   image1: string;
   image2: string;
   image3: string;
-  discounted_price?: string;
-  price: string;
+  discounted_price?: number;
+  price: number;
   undiscounted_price?: number;
   is_available: boolean;
   dimensional_size: string;
   weight: string;
-  unlimited: boolean; // Added the unlimited field
+  unlimited: boolean;
+  production_days : number;
   sizes: Size[];
 }
 
@@ -153,8 +154,8 @@ const handleSuggestedItemClick = (image: string) => {
     Boolean
   );
 
-  const discountedPrice = parseFloat(product.price);
-  const undiscountedPrice = product.undiscounted_price || parseFloat(product.price);
+  const discountedPrice = product.price;
+  const undiscountedPrice = product.undiscounted_price || product.price;
   const discountPercentage = undiscountedPrice > 0 
     ? Math.round(((undiscountedPrice - discountedPrice) / undiscountedPrice) * 100) 
     : 0;
@@ -454,7 +455,7 @@ const handleSuggestedItemClick = (image: string) => {
                 {product.colour}
               </p>
             </div>
-
+  <p className="text-gray-700 text-medium font-semibold leading-relaxed"> Production Days : {product.production_days} </p>
             {/* Size Selector */}
             <div className="space-y-2">
               <p className="text-gray-600 text-sm sm:text-base">Size</p>
