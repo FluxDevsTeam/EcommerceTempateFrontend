@@ -43,7 +43,7 @@ const SuggestedCard: React.FC<CardProps> = ({
         <img
           src={product.image1}
           alt={product.name}
-          className="rounded-lg w-[90px] h-[90px] md:h-[180px] md::h-[300px] object-cover"
+          className="rounded-lg w-[90px] h-[120px] md:h-[180px] md:h-[300px] object-cover"
            onClick={() => {
             if (onItemClick) {
               onItemClick(product.image1); 
@@ -61,21 +61,35 @@ const SuggestedCard: React.FC<CardProps> = ({
         <p className="text-md font-medium line-clamp-1">
           {product.name}
         </p>
-        <div className="flex items-center gap-1 flex-wrap">
-          <span className="text-md font-medium">₦{product.price}</span>
-          {product.undiscounted_price > 0 && product.undiscounted_price > product.price && (
-            <>
-              <span className="text-md text-gray-400 line-through">
-                ₦{product.undiscounted_price}
-              </span>
-              <span className="text-red-600 bg-red-100 text-xs px-1 rounded">
-                -{Math.round(
-                  (product.undiscounted_price - product.price) / product.undiscounted_price * 100
-                )}%
-              </span>
-            </>
-          )}
-        </div>
+       <div className="flex items-center gap-2 sm:gap-4">
+  {typeof product.price === "number" && product.price > 0 && (
+    <span className="text-[14px] sm:text-[20px]">
+      ₦{product.price}
+    </span>
+  )}
+
+  {typeof product.undiscounted_price === "number" &&
+    product.undiscounted_price > 0 &&
+    product.undiscounted_price > product.price && (
+      <span className="text-[10px] sm:text-[20px] text-[#00000066] line-through">
+        ₦{product.undiscounted_price}
+      </span>
+  )}
+
+  {product.undiscounted_price > 0 &&
+    product.undiscounted_price > product.price && (
+      <span className="text-red-600 bg-red-100 font-semibold text-xs sm:text-sm flex items-center justify-center rounded-full px-2 py-1">
+        -
+        {Math.round(
+          (product.undiscounted_price - product.price) /
+            product.undiscounted_price *
+            100
+        )}
+        %
+      </span>
+  )}
+</div>
+
       </div>
     </div>
   );

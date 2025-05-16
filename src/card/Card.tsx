@@ -73,28 +73,35 @@ const handleToggle = async () => {
       <p className="text-[15px] font-medium sm:text-[20px] capitalize mb-2 line-clamp-1">
         {product.name}
       </p>
-      <div className="flex items-center gap-2 sm:gap-4">
-        {typeof product.price === "number" && product.price > 0 && (
-          <span className="text-[14px] sm:text-[20px]">
-            ₦{product.price}
-          </span>
-        )}
-        {typeof product.undiscounted_price === "number" && product.undiscounted_price > 0 && (
-          <span className="text-[10px] sm:text-[20px] text-[#00000066] line-through">
-            ₦{product.undiscounted_price}
-          </span>
-        )}
+    <div className="flex items-center gap-2 sm:gap-4">
+  {typeof product.price === "number" && product.price > 0 && (
+    <span className="text-[14px] sm:text-[20px]">
+      ₦{product.price}
+    </span>
+  )}
 
-        {product.undiscounted_price > 0 && product.undiscounted_price > product.price && (
-          <span className="text-red-600 bg-red-100 font-semibold text-xs sm:text-sm flex items-center justify-center rounded-full px-2 py-1">
-            -
-            {Math.round(
-              (product.undiscounted_price - product.price) / product.undiscounted_price * 100
-            )}
-            %
-          </span>
+  {typeof product.undiscounted_price === "number" &&
+    product.undiscounted_price > 0 &&
+    product.undiscounted_price > product.price && (
+      <span className="text-[10px] sm:text-[20px] text-[#00000066] line-through">
+        ₦{product.undiscounted_price}
+      </span>
+  )}
+
+  {product.undiscounted_price > 0 &&
+    product.undiscounted_price > product.price && (
+      <span className="text-red-600 bg-red-100 font-semibold text-xs sm:text-sm flex items-center justify-center rounded-full px-2 py-1">
+        -
+        {Math.round(
+          (product.undiscounted_price - product.price) /
+            product.undiscounted_price *
+            100
         )}
-      </div>
+        %
+      </span>
+  )}
+</div>
+
     </div>
   );
 };

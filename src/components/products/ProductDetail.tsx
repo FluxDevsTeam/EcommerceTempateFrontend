@@ -447,24 +447,24 @@ const ProductDetail = () => {
                   : `${availableQuantity} left in stock`}
               </span>
 
-              <div className="flex flex-col md:flex-row md:items-center gap-3">
-                <span className="text-xl md:text-3xl font-normal">
-                  {" "}
-                  ₦ {product.price}
-                </span>
-                <div className="flex space-x-2">
-                  {product.undiscounted_price && (
-                    <span className="text-gray-500 line-through text-3xl">
-                      ₦ {product.undiscounted_price}
-                    </span>
-                  )}
-                  {discountPercentage > 0 && (
-                    <span className="bg-red-200 text-[#FF3333] p-3 rounded-full text-sm">
-                      {discountPercentage}% off
-                    </span>
-                  )}
-                </div>
-              </div>
+             <div className="flex flex-col md:flex-row md:items-center gap-3"> 
+  <span className="text-xl md:text-3xl font-normal">
+    ₦ {product.price}
+  </span>
+  <div className="flex space-x-2">
+    {product.undiscounted_price &&
+      product.undiscounted_price !== product.price && (
+        <span className="text-gray-500 line-through text-3xl">
+          ₦ {product.undiscounted_price}
+        </span>
+    )}
+    {discountPercentage > 0 && (
+      <span className="bg-red-200 text-[#FF3333] p-3 rounded-full text-sm">
+        {discountPercentage}% off
+      </span>
+    )}
+  </div>
+</div>
 
               <p className="text-gray-700 text-base leading-relaxed line-clamp-2">
                 {product.description}

@@ -1,6 +1,6 @@
 import { ProductAPIResponse } from "../types/data-types";
 import { ProductItemsResponse } from "../types/data-types";
-import 
+
 
 
 export const fetchProducts = async (page = 1): Promise<ProductAPIResponse> => {
@@ -31,7 +31,7 @@ export const fetchProducts = async (page = 1): Promise<ProductAPIResponse> => {
     return res.json();
   };
 
-  export const fetchSuggestedProductsDetails = async (subCategoryId) => {
+  export const fetchSuggestedProductsDetails = async (subCategoryId: any)=> {
     try {
       const response = await fetch(
         `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/suggestions/?sub_category_id=${subCategoryId}`

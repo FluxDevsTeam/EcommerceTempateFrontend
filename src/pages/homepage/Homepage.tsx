@@ -27,21 +27,21 @@ const [isLoadingMoreTopSelling, setIsLoadingMoreTopSelling] = useState(false);
   const queryClient = useQueryClient();
 
   // Initial products fetch
-  const { data, isLoading, isError } = useQuery<ProductAPIResponse>({
-    queryKey: ['products', 1],
-    queryFn: () => fetchProducts(1),
-    onSuccess: (data) => {
-      if (data?.latest_items?.results) {
-        setLatestItems(data.latest_items.results);
-        setHasMoreItems(data.latest_items.results.length === 16);
-      }
-       if (data?.top_selling_items?.results) {
-    setTopSellingItems(data.top_selling_items.results);
-    setHasMoreTopSellingItems(data.top_selling_items.results.length === 16);
-  }
+  const { data, isLoading, isError } = useQuery({
+  queryKey: ['products', 1],
+  queryFn: () => fetchProducts(1),
+  onSuccess: (data: unknown) => {
+    const response = data as ProductAPIResponse; // Assert type
+    if (response?.latest_items?.results) {
+      setLatestItems(response.latest_items.results);
+      setHasMoreItems(response.latest_items.results.length === 16);
     }
-  });
-
+    if (response?.top_selling_items?.results) {
+      setTopSellingItems(response.top_selling_items.results);
+      setHasMoreTopSellingItems(response.top_selling_items.results.length === 16);
+    }
+  }
+});
   // Fetch wishlist data
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -60,15 +60,18 @@ const [isLoadingMoreTopSelling, setIsLoadingMoreTopSelling] = useState(false);
 
   // Make sure latestItems is populated from data if it's empty
   useEffect(() => {
-    if (data?.latest_items?.results && latestItems.length === 0) {
-      setLatestItems(data.latest_items.results);
-      setHasMoreItems(data.latest_items.results.length === 16);
-    }
-     if (data?.top_selling_items?.results && topSellingItems.length === 0) {
-      setTopSellingItems(data.top_selling_items.results);
-      setHasMoreItems(data.top_selling_items.results.length === 16);
-    }
-  }, [data, latestItems.length , topSellingItems.length] );
+  const latestResults = (data as any)?.latest_items?.results;
+  const topSellingResults = (data as any)?.top_selling_items?.results;
+
+  if (latestResults && latestItems.length === 0) {
+    setLatestItems(latestResults);
+    setHasMoreItems(latestResults.length === 16);
+  }
+  if (topSellingResults && topSellingItems.length === 0) {
+    setTopSellingItems(topSellingResults);
+    setHasMoreItems(topSellingResults.length === 16);
+  }
+}, [data, latestItems.length, topSellingItems.length]);
 
  
   // Function to load more items
