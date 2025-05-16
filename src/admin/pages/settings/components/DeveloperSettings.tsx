@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import axios from "axios"; // Missing axios import
 
 // Define interfaces for our data structures
 interface DeveloperSettingsData {
@@ -42,28 +43,29 @@ const DeveloperSettings: React.FC = () => {
     fetchDeveloperSettings();
   }, []);
 
-  const fetchDeveloperSettings = async (): Promise<void> => {
+  const fetchDeveloperSettings = async () => {
     try {
+      const token = localStorage.getItem('accessToken');
       setLoading(true);
-      const token = localStorage.getItem("accessToken");
-      // Simulating API call for demo purposes
-      setTimeout(() => {
-        const data: DeveloperSettingsData = {
-          brand_name: "Demo Company",
-          contact_us: "contact@demo.com",
-          terms_of_service: "https://demo.com/terms",
-          backend_base_route: "https://api.demo.com",
-          frontend_base_route: "https://demo.com",
-          order_route_frontend: "/orders",
-          payment_failed_url: "/payment/failed",
-        };
-        setFormData(data);
-        setInitialData(data);
-        setLoading(false);
-      }, 1000);
+      const response = await axios.get<DeveloperSettingsData>( // Changed from DeveloperSettings to DeveloperSettingsData
+        'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/developer-settings/',
+        {
+          headers: {
+            'Authorization': `JWT ${token}`,
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+      
+      if (response.data) {
+        setFormData(response.data);
+        setInitialData(response.data);
+      }
+      setError(null);
     } catch (err) {
-      setError("Failed to load developer settings");
-      console.error("Error fetching developer settings:", err);
+      setError('Failed to load Developer settings');
+      console.error(err);
+    } finally {
       setLoading(false);
     }
   };
@@ -108,26 +110,46 @@ const DeveloperSettings: React.FC = () => {
     handleSave();
   };
 
-  const handleSave = async (): Promise<void> => {
+  const handleSave = async () => {
     try {
       setLoading(true);
-      // Simulating API call for demo purposes
+      
+      const apiFormData = {
+        brand_name: formData.brand_name, // Fixed field names to match API expectations
+        contact_us: formData.contact_us,
+        terms_of_service: formData.terms_of_service,
+        backend_base_route: formData.backend_base_route,
+        frontend_base_route: formData.frontend_base_route,
+        order_route_frontend: formData.order_route_frontend,
+        payment_failed_url: formData.payment_failed_url,
+      };
+      const token = localStorage.getItem('accessToken');
+
+      await axios.patch(
+        'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/developer-settings/',
+        apiFormData,
+        {
+          headers: {
+            'Authorization': `JWT ${token}`,
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+      
+      setSuccessMessage('Developer settings updated successfully');
+      setError(null);
+      setInitialData(formData);
+      
       setTimeout(() => {
-        setSuccessMessage("Developer settings updated successfully");
-        setError(null);
-        setInitialData({...formData});
-        setLoading(false);
-        
-        setTimeout(() => {
-          setSuccessMessage(null);
-        }, 3000);
-      }, 1000);
+        setSuccessMessage(null);
+      }, 3000);
     } catch (err) {
-      setError("Failed to update developer settings");
-      console.error("Error updating developer settings:", err);
+      setError('Failed to update developer settings');
+      console.error('Error updating developer settings:', err);
+    } finally {
       setLoading(false);
     }
-  };
+  }
 
   const hasChanges = (): boolean => {
     if (!initialData) return false;
@@ -192,7 +214,7 @@ const DeveloperSettings: React.FC = () => {
           </svg>
         </div>
 
-        {isCollapsed && (
+        {isCollapsed && ( // Changed from isCollapsed to !isCollapsed to show content when not collapsed
           <div className="mt-4 transition-all duration-300 ease-in-out">
             <div className="mb-6 bg-gray-100 p-4 rounded-lg shadow border border-gray-200">
               <h3 className="font-medium text-lg mb-3">Current Developer Settings</h3>

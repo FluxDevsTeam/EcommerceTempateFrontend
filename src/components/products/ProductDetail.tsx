@@ -29,12 +29,6 @@ interface Size {
   price: string;
 }
 
-interface ProductSizesResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Size[];
-}
 
 interface Product {
   id: number;
@@ -46,13 +40,14 @@ interface Product {
   image1: string;
   image2: string;
   image3: string;
-  discounted_price?: string;
-  price: string;
+  discounted_price?: number;
+  price: number;
   undiscounted_price?: number;
   is_available: boolean;
   dimensional_size: string;
   weight: string;
-  unlimited: boolean; // Added the unlimited field
+  unlimited: boolean; 
+  production_days : number;
   sizes: Size[];
 }
 
@@ -63,9 +58,11 @@ interface ProductDetailParams {
 const fetchProduct = async (id: number): Promise<Product> => {
   const response = await fetch(
     `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${id}/`
+    
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");
+
   }
   return response.json();
 };
@@ -95,6 +92,7 @@ const ProductDetail = () => {
     queryKey: ["product", productId],
     queryFn: () => fetchProduct(productId),
     enabled: !!productId,
+    
   });
 
 
@@ -308,7 +306,7 @@ const ProductDetail = () => {
   }
 
   if (isLoading)
-    return <div className="text-center py-8">Loading product...</div>;
+    return <div className="text-center py-8 mt-[10%]">Loading product...</div>;
   if (error)
     return (
       <div className="text-center py-8 text-red-500">
@@ -325,9 +323,9 @@ const ProductDetail = () => {
 
   // Calculate discount percentage
 
-  const discountedPrice = parseFloat(product.price);
+  const discountedPrice = product.price;
   const undiscountedPrice =
-    product.undiscounted_price || parseFloat(product.price);
+    product.undiscounted_price || product.price;
   const discountPercentage =
     undiscountedPrice > 0
       ? Math.round(
@@ -447,24 +445,24 @@ const ProductDetail = () => {
                   : `${availableQuantity} left in stock`}
               </span>
 
-              <div className="flex flex-col md:flex-row md:items-center gap-3">
-                <span className="text-xl md:text-3xl font-normal">
-                  {" "}
-                  ₦ {product.price}
-                </span>
-                <div className="flex space-x-2">
-                  {product.undiscounted_price && (
-                    <span className="text-gray-500 line-through text-3xl">
-                      ₦ {product.undiscounted_price}
-                    </span>
-                  )}
-                  {discountPercentage > 0 && (
-                    <span className="bg-red-200 text-[#FF3333] p-3 rounded-full text-sm">
-                      {discountPercentage}% off
-                    </span>
-                  )}
-                </div>
-              </div>
+             <div className="flex flex-col md:flex-row md:items-center gap-3"> 
+  <span className="text-xl md:text-3xl font-normal">
+    ₦ {product.price}
+  </span>
+  <div className="flex space-x-2">
+    {product.undiscounted_price &&
+      product.undiscounted_price !== product.price && (
+        <span className="text-gray-500 line-through text-3xl">
+          ₦ {product.undiscounted_price}
+        </span>
+    )}
+    {discountPercentage > 0 && (
+      <span className="bg-red-200 text-[#FF3333] p-3 rounded-full text-sm">
+        {discountPercentage}% off
+      </span>
+    )}
+  </div>
+</div>
 
               <p className="text-gray-700 text-base leading-relaxed line-clamp-2">
                 {product.description}
@@ -476,6 +474,7 @@ const ProductDetail = () => {
                   {product.colour}
                 </p>
               </div>
+                <p className="text-gray-700 text-medium font-semibold leading-relaxed"> Production Days : {product.production_days} </p>
 
               {/* Size Selector */}
               <div className="space-y-2">

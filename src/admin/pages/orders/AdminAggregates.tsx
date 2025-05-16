@@ -33,7 +33,7 @@ const AdminAggregates = () => {
             <div className="border-r border-[#E6EDFF] basis-[40%] sm:basis-auto lg:pr-10 pr-5">
                 <div className="flex justify-between items-center mb-4 sm:mb-8">
                     <h4 className="font-semibold text-[20px] lg:text-[28px]">{aggregate.total_orders || 0}</h4>
-                    <FiShoppingBag size={18} className="text-[#7C8DB5]" />
+                    <FiShoppingBag size={18} className="text-[#347AE2]" />
                 </div>
                 <p className="lg:font-medium text-[14px] sm:text-[18px]">Total Orders</p>
                 {/* <p className="flex items-center">
@@ -46,7 +46,7 @@ const AdminAggregates = () => {
             <div className="border-r border-[#E6EDFF] basis-[40%] sm:basis-auto lg:px-5 px-2">
                 <div className="flex justify-between items-center mb-4 sm:mb-8">
                     <h4 className="font-semibold text-[20px] lg:text-[28px]">{aggregate.delivered_orders || 0}</h4>
-                    <FiShoppingBag size={20} className="text-[#7C8DB5]" />
+                    <FiShoppingBag size={20} className="text-[#347AE2]" />
                 </div>
                 <p className="lg:font-medium text-[14px] sm:text-[18px]">Delivered Orders</p>
                 {/* <p className="flex items-center">
@@ -59,12 +59,12 @@ const AdminAggregates = () => {
             <div className="border-r border-[#E6EDFF] basis-[40%] sm:basis-auto lg:px-5 px-2">
                 <div className="flex justify-between items-center mb-4 sm:mb-8">
                     <h4 className="font-semibold text-[20px] lg:text-[28px]">{aggregate.returned_orders || 0}</h4>
-                    <FiPackage size={20} className="text-[#7C8DB5]" />
+                    <FiPackage size={20} className="text-[#347AE2]" />
                 </div>
                 <p className="lg:font-medium text-[14px] sm:text-[18px]">Returned Orders</p>
                 {/* <p className="flex items-center">
                     <FiTrendingUp className="text-[#34C759] lg:mr-2.5 mr-1" />
-                    <span className="lg:text-[14px] text-[10px] text-[#7C8DB5] lg:mr-2.5 mr-1">3.1</span>
+                    <span className="lg:text-[14px] text-[10px] text-[#347AE2] lg:mr-2.5 mr-1">3.1</span>
                     <span className="lg:text-[14px] text-[10px]">+0.49% this week</span>
                 </p> */}
             </div>
@@ -72,7 +72,7 @@ const AdminAggregates = () => {
             <div className="border-r border-[#E6EDFF] basis-[40%] sm:basis-auto lg:px-5 px-2">
                 <div className="flex justify-between items-center mb-4 sm:mb-8">
                     <h4 className="font-semibold text-[20px] lg:text-[28px]">{aggregate.pending_orders || 0}</h4>
-                    <FiTruck size={20} className="text-[#7C8DB5]" />
+                    <FiTruck size={20} className="text-[#347AE2]" />
                 </div>
                 <p className="lg:font-medium text-[14px] sm:text-[18px]">Pending Orders</p>
                 {/* <p className="flex items-center">
@@ -87,7 +87,7 @@ const AdminAggregates = () => {
             <div className="border-r border-[#E6EDFF] basis-[40%] sm:basis-auto lg:pr-10 pr-5">
                 <div className="flex justify-between items-center mb-4 sm:mb-8">
                     <h4 className="font-semibold text-[20px] lg:text-[28px]">{aggregate.total_payment || 0}</h4>
-                    <FiShoppingBag size={18} className="text-[#7C8DB5]" />
+                    <FiShoppingBag size={18} className="text-[#347AE2]" />
                 </div>
                 <p className="lg:font-medium text-[14px] sm:text-[18px]">Total Payment</p>
                 {/* <p className="flex items-center">
@@ -100,7 +100,7 @@ const AdminAggregates = () => {
             <div className="border-r border-[#E6EDFF] basis-[40%] sm:basis-auto lg:px-5 px-2">
                 <div className="flex justify-between items-center mb-4 sm:mb-8">
                     <h4 className="font-semibold text-[20px] lg:text-[28px]">{aggregate.successful_payment || 0}</h4>
-                    <FiShoppingBag size={20} className="text-[#7C8DB5]" />
+                    <FiShoppingBag size={20} className="text-[#347AE2]" />
                 </div>
                 <p className="lg:font-medium text-[14px] sm:text-[18px]">Successful Payment</p>
                 {/* <p className="flex items-center">
@@ -113,12 +113,12 @@ const AdminAggregates = () => {
             <div className="border-r border-[#E6EDFF] basis-[40%] sm:basis-auto lg:px-5 px-2">
                 <div className="flex justify-between items-center mb-4 sm:mb-8">
                     <h4 className="font-semibold text-[20px] lg:text-[28px]">{aggregate.refunded_payment || 0}</h4>
-                    <FiPackage size={20} className="text-[#7C8DB5]" />
+                    <FiPackage size={20} className="text-[#347AE2]" />
                 </div>
                 <p className="lg:font-medium text-[14px] sm:text-[18px]">Refunded Payment</p>
                 {/* <p className="flex items-center">
                     <FiTrendingUp className="text-[#34C759] lg:lg:mr-2.5 mr-1" />
-                    <span className="lg:text-[14px] text-[10px] text-[#7C8DB5] lg:mr-2.5 mr-1">3.1</span>
+                    <span className="lg:text-[14px] text-[10px] text-[#347AE2] lg:mr-2.5 mr-1">3.1</span>
                     <span className="lg:text-[14px] text-[10px]">+0.49% this week</span>
                 </p> */}
             </div>

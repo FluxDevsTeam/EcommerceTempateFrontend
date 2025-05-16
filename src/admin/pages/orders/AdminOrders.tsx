@@ -104,14 +104,14 @@ const loadOrders = async (url?: string) => {
           />
         </div>
         <div
-          className={`p-2 rounded-lg cursor-pointer ${layout === "menu" ? "bg-black" : "border border-[#CACACA]"}`}
+          className={`p-2 rounded-lg cursor-pointer ${layout === "menu" ? "bg-[#184455]" : "border border-[#CACACA]"}`}
           onClick={() => setLayout("menu")}
         >
-          <FiMenu className={`${layout === "menu" ? "text-white" : "text-black"} sm:w-[24px] w-[12px] sm:h-[24px] h-[12px]`} />
+          <FiMenu className={`${layout === "menu" ? "text-white" : "text-[black]"} sm:w-[24px] w-[12px] sm:h-[24px] h-[12px]`} />
         </div>
 
         <div
-          className={`p-2 rounded-lg cursor-pointer ${layout === "grid" ? "bg-black" : "border border-[#CACACA]"}`}
+          className={`p-2 rounded-lg cursor-pointer ${layout === "grid" ? "bg-[#184455]" : "border border-[#CACACA]"}`}
           onClick={() => setLayout("grid")}
         >
           <FiGrid className={`${layout === "grid" ? "text-white" : "text-black"} sm:w-[24px] w-[16px] sm:h-[24px] h-[16px]`} />

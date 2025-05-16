@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+
 import { useQuery } from "@tanstack/react-query";
 import { fetchSuggestedProducts} from "@/pages/homepage/api/apiService";
 import Slider from "react-slick";
@@ -112,13 +112,7 @@ const Suggested: React.FC<{ onSuggestedItemClick?: (image: string) => void }> = 
         })}
       </Slider>
 
-      <div className="flex justify-center items-center mt-4 sm:mt-6">
-        <Link to="/categories">
-          <button className="text-sm font-semibold hover:text-primary cursor-pointer transition-colors duration-200 border-b-2 border-transparent hover:border-primary">
-            View All
-          </button>
-        </Link>
-      </div>
+      
     </div>
   );
 };

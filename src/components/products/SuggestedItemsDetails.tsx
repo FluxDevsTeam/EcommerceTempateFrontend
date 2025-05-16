@@ -36,13 +36,14 @@ interface Product {
   image1: string;
   image2: string;
   image3: string;
-  discounted_price?: string;
-  price: string;
+  discounted_price?: number;
+  price: number;
   undiscounted_price?: number;
   is_available: boolean;
   dimensional_size: string;
   weight: string;
-  unlimited: boolean; // Added the unlimited field
+  unlimited: boolean;
+  production_days : number;
   sizes: Size[];
 }
 
@@ -138,7 +139,7 @@ const SuggestedItemsDetails = () => {
   }
 
   if (isLoading)
-    return <div className="text-center py-8">Loading product...</div>;
+    return <div className="text-center py-8 mt-[10%]">Loading product...</div>;
   if (error)
     return (
       <div className="text-center py-8 text-red-500">
@@ -153,15 +154,11 @@ const SuggestedItemsDetails = () => {
     Boolean
   );
 
-  const discountedPrice = parseFloat(product.price);
-  const undiscountedPrice =
-    product.undiscounted_price || parseFloat(product.price);
-  const discountPercentage =
-    undiscountedPrice > 0
-      ? Math.round(
-          ((undiscountedPrice - discountedPrice) / undiscountedPrice) * 100
-        )
-      : 0;
+  const discountedPrice = product.price;
+  const undiscountedPrice = product.undiscounted_price || product.price;
+  const discountPercentage = undiscountedPrice > 0 
+    ? Math.round(((undiscountedPrice - discountedPrice) / undiscountedPrice) * 100) 
+    : 0;
 
   // Get available quantity for selected size
   const selectedSizeData = product.sizes.find(
@@ -456,11 +453,47 @@ const SuggestedItemsDetails = () => {
                 {product.description}
               </p>
 
-              <div className="space-y-1">
-                <p className="text-gray-600 text-sm sm:text-base">Color</p>
-                <p className="text-gray-900 font-bold capitalize">
-                  {product.colour}
-                </p>
+            </div>
+  <p className="text-gray-700 text-medium font-semibold leading-relaxed"> Production Days : {product.production_days} </p>
+            {/* Size Selector */}
+            <div className="space-y-2">
+              <p className="text-gray-600 text-sm sm:text-base">Size</p>
+              <div className="grid grid-cols-4 gap-2">
+
+                {isLoading ? (
+      <div className="col-span-4 text-center py-2">Loading sizes...</div>
+    ) : product.sizes && product.sizes.length > 0 ? (
+      product.sizes.map((item) => (
+        <button
+          type="button"
+          key={item.id}
+          onClick={() => {
+            setSelectedSize(item.size);
+            setQuantity(1); // Reset quantity when size changes
+          }}
+          disabled={!product.unlimited && item.quantity <= 0}
+          className={`p-3 text-sm sm:text-base border rounded-2xl transition-colors ${
+            item.size === selectedSize
+              ? "bg-customBlue text-white border-customBlue" // Selected state
+              : !product.unlimited && item.quantity <= 0
+              ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+              : "bg-gray-200 hover:bg-gray-300 border-gray-300 cursor-pointer"
+          }`}
+          title={
+            !product.unlimited && item.quantity <= 0 ? "Out of stock" : ""
+          }
+        >
+          {item.size.toUpperCase()}
+          {!product.unlimited && item.quantity <= 0 && (
+            <span className="block text-xs text-red-500">(Sold out)</span>
+          )}
+        </button>
+      ))
+    ) : (
+                  <div className="col-span-4 text-center py-2 text-red-500">
+                    No sizes available
+                  </div>
+                )}
               </div>
 
               {/* Size Selector */}

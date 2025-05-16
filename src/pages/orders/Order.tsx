@@ -108,7 +108,7 @@ const Order = () => {
                   <p className="font-semibold text-lg leading-[30px] text-right">₦{item.price}</p>
                   <p className="text-[#667085] text-right">Qty: {item.quantity}</p>
                 </div>
-                <Link to={`/orders/${order.id}`}className="basis-[50%] sm:basis-auto inline-block text-white bg-black px-4 sm:px-16 py-2 ml-5 sm:py-4 rounded-2xl">Track Order</Link>
+                <Link to={`/orders/${order.id}`}className="basis-[50%] sm:basis-auto inline-block text-white bg-customBlue px-4 sm:px-16 py-2 ml-5 sm:py-4 rounded-2xl">Track Order</Link>
                 {/* <div>
                   <p className="text-[20px] leading-[30px] mb-1.5">Expected Delivery</p>
                   <span>{formatEstimatedDelivery(order.estimated_delivery)}</span>
