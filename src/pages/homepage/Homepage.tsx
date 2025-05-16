@@ -159,7 +159,7 @@ const [isLoadingMoreTopSelling, setIsLoadingMoreTopSelling] = useState(false);
           <p className='text-[#000000] font-medium text-base md:text-lg '>
             Access exclusive deals, track orders and enjoy a seamless shopping experience
           </p>
-          <Link to='/shoe-category'>
+          <Link to='/new-arrivals'>
             <button className="bg-customBlue text-white border rounded-full px-6 py-3 w-auto md:w-[210px] hover:brightness-90 transition-colors">
               Shop Now
             </button>

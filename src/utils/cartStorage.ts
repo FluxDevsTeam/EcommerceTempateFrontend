@@ -3,8 +3,8 @@ interface LocalCartItem {
   sizeId: number;
   productName: string;
   productImage: string;
-  productPrice: string;
-  discountedPrice?: string | null; // Make discountedPrice optional
+  productPrice: number;
+  discountedPrice?: number | null; // Make discountedPrice optional
   sizeName: string;
   quantity: number;
   maxQuantity: number;

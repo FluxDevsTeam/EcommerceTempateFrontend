@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+
 import { useQuery } from "@tanstack/react-query";
 import { fetchSuggestedProducts} from "@/pages/homepage/api/apiService";
 import Slider from "react-slick";

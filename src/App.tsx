@@ -83,6 +83,7 @@ const AppContent: React.FC = () => {
         <Route path="/contact-us" element={<Contact />} />
         <Route path="/ade" element={<Producter />} />
          
+            <Route path="/orders/:id" element={<Confirm />} />
       </Route>
 
       {/* Protected routes */}

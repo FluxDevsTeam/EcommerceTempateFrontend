@@ -29,12 +29,6 @@ interface Size {
   price: string;
 }
 
-interface ProductSizesResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Size[];
-}
 
 interface Product {
   id: number;
@@ -46,8 +40,8 @@ interface Product {
   image1: string;
   image2: string;
   image3: string;
-  discounted_price?: string;
-  price: string;
+  discounted_price?: number;
+  price: number;
   undiscounted_price?: number;
   is_available: boolean;
   dimensional_size: string;
@@ -325,9 +319,9 @@ const ProductDetail = () => {
 
   // Calculate discount percentage
 
-  const discountedPrice = parseFloat(product.price);
+  const discountedPrice = product.price;
   const undiscountedPrice =
-    product.undiscounted_price || parseFloat(product.price);
+    product.undiscounted_price || product.price;
   const discountPercentage =
     undiscountedPrice > 0
       ? Math.round(

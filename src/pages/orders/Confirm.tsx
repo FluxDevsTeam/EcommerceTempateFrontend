@@ -126,7 +126,7 @@ const Confirm = () => {
         <hr className="mt-5 border-t border-t-gray-300" />
       </ul>
 
-      <div className="flex-col sm:flex items-start py-6 border-b border-b-gray-300 w-full sm:w-[80%]">
+      <div className="flex flex-col sm:flex-row justify-between items-start py-6 border-b border-b-gray-300 w-full sm:w-[80%]">
         <div className="basis-[50%] mb-8">
           <h6 className="font-medium text-[20px] leading-[30px] mb-2">Payment</h6>
           <p className="flex items-center gap-4">
