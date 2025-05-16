@@ -306,7 +306,7 @@ const ProductDetail = () => {
   }
 
   if (isLoading)
-    return <div className="text-center py-8">Loading product...</div>;
+    return <div className="text-center py-8 mt-[10%]">Loading product...</div>;
   if (error)
     return (
       <div className="text-center py-8 text-red-500">
