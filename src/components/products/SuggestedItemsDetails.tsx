@@ -407,7 +407,7 @@ const handleSuggestedItemClick = (image: string) => {
               <img
                 src={mainImage}
                 alt="Main Product"
-                className="w-[500px] h-[500px] aspect-square object-cover"
+                className="w-[500px] h-[500px] aspect-square object-contain"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = "https://via.placeholder.com/500";

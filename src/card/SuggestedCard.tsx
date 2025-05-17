@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
-import Wish from './Wish';
-import { addWishItem, deleteWishItem } from './api';
-import { CardProps, WishItem } from './types';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import Wish from "./Wish";
+import { addWishItem, deleteWishItem } from "./api";
+import { CardProps, WishItem } from "./types";
+import { useNavigate } from "react-router-dom";
 
 const SuggestedCard: React.FC<CardProps> = ({
   product,
   isInitiallyLiked,
   wishItemId: initialWishItemId,
   removeOnUnlike = false,
-  onItemClick 
-  
+  onItemClick,
 }) => {
   const [liked, setLiked] = useState(isInitiallyLiked);
-  const [wishItemId, setWishItemId] = useState<number | null>(initialWishItemId ?? null);
+  const [wishItemId, setWishItemId] = useState<number | null>(
+    initialWishItemId ?? null
+  );
   const [visible, setVisible] = useState(true);
   const navigate = useNavigate();
 
@@ -30,13 +31,12 @@ const SuggestedCard: React.FC<CardProps> = ({
         setLiked(true);
       }
     } catch (error) {
-      console.error('Error toggling wishlist:', error);
+      console.error("Error toggling wishlist:", error);
     }
   };
 
   if (!visible) return null;
 
- 
   return (
     <div className="mb-3 cursor-pointer w-full ">
       <div className="relative w-full  ">
@@ -44,52 +44,45 @@ const SuggestedCard: React.FC<CardProps> = ({
           src={product.image1}
           alt={product.name}
           className="max-w-full max-h-[500px] w-auto h-auto object-contain"
-           onClick={() => {
+          onClick={() => {
             if (onItemClick) {
-              onItemClick(product.image1); 
+              onItemClick(product.image1);
             }
             navigate(`/suggested/${product.id}`);
           }}
         />
-        <Wish
-          color="red"
-          liked={liked}
-          onToggle={handleToggle}
-        />
+        <Wish color="red" liked={liked} onToggle={handleToggle} />
       </div>
       <div className="space-y-0.5">
-        <p className="text-md font-medium line-clamp-1">
-          {product.name}
-        </p>
-       <div className="flex items-center">
-  {typeof product.price === "number" && product.price > 0 && (
-    <span className="">
-      ₦{product.price}
-    </span>
-  )}
+        <p className="text-md font-medium line-clamp-1">{product.name}</p>
+        <div className="">
+          {typeof product.price === "number" && product.price > 0 && (
+            <span className="pr-2">₦{product.price}</span>
+          )}
 
-  {typeof product.undiscounted_price === "number" &&
-    product.undiscounted_price > 0 &&
-    product.undiscounted_price > product.price && (
-      <span className=" text-[#00000066] line-through">
-        ₦{product.undiscounted_price}
-      </span>
-  )}
+          <br />
 
-  {product.undiscounted_price > 0 &&
-    product.undiscounted_price > product.price && (
-      <span className="text-red-600 bg-red-100 font-semibold text-xs sm:text-sm flex items-center justify-center rounded-full px-2 py-1">
-        -
-        {Math.round(
-          (product.undiscounted_price - product.price) /
-            product.undiscounted_price *
-            100
-        )}
-        %
-      </span>
-  )}
-</div>
+          {typeof product.undiscounted_price === "number" &&
+            product.undiscounted_price > 0 &&
+            product.undiscounted_price > product.price && (
+              <span className=" text-[#00000066] line-through pr-2">
+                ₦{product.undiscounted_price}
+              </span>
+            )}
 
+          {product.undiscounted_price > 0 &&
+            product.undiscounted_price > product.price && (
+              <span className="text-red-600 bg-red-100 font-semibold rounded-full px-2 text-sm py-1 w-fit">
+                -
+                {Math.round(
+                  ((product.undiscounted_price - product.price) /
+                    product.undiscounted_price) *
+                    100
+                )}
+                %
+              </span>
+            )}
+        </div>
       </div>
     </div>
   );

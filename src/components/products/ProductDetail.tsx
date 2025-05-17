@@ -29,7 +29,6 @@ interface Size {
   price: string;
 }
 
-
 interface Product {
   id: number;
   name: string;
@@ -46,8 +45,8 @@ interface Product {
   is_available: boolean;
   dimensional_size: string;
   weight: string;
-  unlimited: boolean; 
-  production_days : number;
+  unlimited: boolean;
+  production_days: number;
   sizes: Size[];
 }
 
@@ -58,11 +57,9 @@ interface ProductDetailParams {
 const fetchProduct = async (id: number): Promise<Product> => {
   const response = await fetch(
     `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${id}/`
-    
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");
-
   }
   return response.json();
 };
@@ -92,9 +89,7 @@ const ProductDetail = () => {
     queryKey: ["product", productId],
     queryFn: () => fetchProduct(productId),
     enabled: !!productId,
-    
   });
-
 
   // Group all useEffect hooks together
   useEffect(() => {
@@ -129,7 +124,7 @@ const ProductDetail = () => {
         phone_number: "",
       }),
     });
-  
+
     if (!response.ok) throw new Error("Failed to create cart");
     const data = await response.json();
     return data.id;
@@ -223,7 +218,7 @@ const ProductDetail = () => {
       });
 
       let cartUuid;
-      
+
       if (cartResponse.ok) {
         const cartData = await cartResponse.json();
         cartUuid = cartData.results[0]?.id;
@@ -324,8 +319,7 @@ const ProductDetail = () => {
   // Calculate discount percentage
 
   const discountedPrice = product.price;
-  const undiscountedPrice =
-    product.undiscounted_price || product.price;
+  const undiscountedPrice = product.undiscounted_price || product.price;
   const discountPercentage =
     undiscountedPrice > 0
       ? Math.round(
@@ -423,7 +417,7 @@ const ProductDetail = () => {
               <img
                 src={mainImage}
                 alt="Main Product"
-                className="w-[500px] h-[500px] aspect-square object-cover"
+                className="w-[500px] h-[500px] aspect-square object-contain"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = "https://via.placeholder.com/500";
@@ -445,29 +439,32 @@ const ProductDetail = () => {
                   : `${availableQuantity} left in stock`}
               </span>
 
-             <div className="flex flex-col md:flex-row md:items-center gap-3"> 
-  <span className="text-xl md:text-3xl font-normal">
-    ₦ {product.price}
-  </span>
-  <div className="flex space-x-2">
-    {product.undiscounted_price &&
-      product.undiscounted_price !== product.price && (
-        <span className="text-gray-500 line-through text-3xl">
-          ₦ {product.undiscounted_price}
-        </span>
-    )}
-    {discountPercentage > 0 && (
-      <span className="bg-red-200 text-[#FF3333] p-3 rounded-full text-sm">
-        {discountPercentage}% off
-      </span>
-    )}
-  </div>
-</div>
+              <div className="flex flex-col md:flex-row md:items-center gap-3">
+                <span className="text-xl md:text-3xl font-normal">
+                  ₦ {product.price}
+                </span>
+                <div className="flex space-x-2">
+                  {product.undiscounted_price &&
+                    product.undiscounted_price !== product.price && (
+                      <span className="text-gray-500 line-through text-3xl">
+                        ₦ {product.undiscounted_price}
+                      </span>
+                    )}
+                  {discountPercentage > 0 && (
+                    <span className="bg-red-200 text-[#FF3333] p-3 rounded-full text-sm">
+                      {discountPercentage}% off
+                    </span>
+                  )}
+                </div>
+              </div>
 
               <p className="text-gray-700 text-base leading-relaxed line-clamp-2">
                 {product.description}
               </p>
-              <p className="text-gray-700 text-medium font-semibold leading-relaxed"> Production Days : {product.production_days} </p>
+              <p className="text-gray-700 text-medium font-semibold leading-relaxed">
+                {" "}
+                Production Days : {product.production_days}{" "}
+              </p>
 
               <div className="space-y-1">
                 <p className="text-gray-600 text-sm sm:text-base">Color</p>
@@ -480,36 +477,42 @@ const ProductDetail = () => {
               <div className="space-y-2">
                 <p className="text-gray-600 text-sm sm:text-base">Size</p>
                 <div className="grid grid-cols-4 gap-2">
-                   {isLoading ? (
-      <div className="col-span-4 text-center py-2">Loading sizes...</div>
-    ) : product.sizes && product.sizes.length > 0 ? (
-      product.sizes.map((item) => (
-        <button
-          type="button"
-          key={item.id}
-          onClick={() => {
-            setSelectedSize(item.size);
-            setQuantity(1); // Reset quantity when size changes
-          }}
-          disabled={!product.unlimited && item.quantity <= 0}
-          className={`p-3 text-sm sm:text-base border rounded-2xl transition-colors ${
-            item.size === selectedSize
-              ? "bg-customBlue text-white border-customBlue" // Selected state
-              : !product.unlimited && item.quantity <= 0
-              ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-              : "bg-gray-200 hover:bg-gray-300 border-gray-300 cursor-pointer"
-          }`}
-          title={
-            !product.unlimited && item.quantity <= 0 ? "Out of stock" : ""
-          }
-        >
-          {item.size.toUpperCase()}
-          {!product.unlimited && item.quantity <= 0 && (
-            <span className="block text-xs text-red-500">(Sold out)</span>
-          )}
-        </button>
-      ))
-    ) : (
+                  {isLoading ? (
+                    <div className="col-span-4 text-center py-2">
+                      Loading sizes...
+                    </div>
+                  ) : product.sizes && product.sizes.length > 0 ? (
+                    product.sizes.map((item) => (
+                      <button
+                        type="button"
+                        key={item.id}
+                        onClick={() => {
+                          setSelectedSize(item.size);
+                          setQuantity(1); // Reset quantity when size changes
+                        }}
+                        disabled={!product.unlimited && item.quantity <= 0}
+                        className={`p-3 text-sm sm:text-base border rounded-2xl transition-colors ${
+                          item.size === selectedSize
+                            ? "bg-customBlue text-white border-customBlue" // Selected state
+                            : !product.unlimited && item.quantity <= 0
+                            ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                            : "bg-gray-200 hover:bg-gray-300 border-gray-300 cursor-pointer"
+                        }`}
+                        title={
+                          !product.unlimited && item.quantity <= 0
+                            ? "Out of stock"
+                            : ""
+                        }
+                      >
+                        {item.size.toUpperCase()}
+                        {!product.unlimited && item.quantity <= 0 && (
+                          <span className="block text-xs text-red-500">
+                            (Sold out)
+                          </span>
+                        )}
+                      </button>
+                    ))
+                  ) : (
                     <div className="col-span-4 text-center py-2 text-red-500">
                       No sizes available
                     </div>
