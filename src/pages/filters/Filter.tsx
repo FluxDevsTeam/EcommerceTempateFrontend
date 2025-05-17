@@ -8,8 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { SliderThumb } from '@radix-ui/react-slider';
-import { SliderThumbProps } from '@radix-ui/react-slider';
+
 
 // Define TypeScript interfaces for our data
 interface Category {
@@ -58,7 +57,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalItems, setTotalItems] = useState<number>(0);
-  const pageSize = 5;
+  const pageSize = 5; // Display 5 items per page
   
   // State for filter selections - initialized with initialFilters or defaults
   const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>(
@@ -71,14 +70,14 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
     initialFilters?.selectedSizes || []
   );
   
-  // Fetch data with pagination
+  // Fetch all subcategories at once
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch subcategories with pagination
+        // Fetch all subcategories
         const subCategoryResponse = await fetch(
-          `https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/?page=${currentPage}&page_size=${pageSize}`
+          `https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/?page_size=100`
         );
         
         if (!subCategoryResponse.ok) {
@@ -100,7 +99,14 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
     };
 
     fetchData();
-  }, [currentPage]);
+  }, []);
+
+  // Get current page items
+  const getCurrentPageItems = () => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return subCategories.slice(startIndex, endIndex);
+  };
 
   // Handle subcategory selection
   const handleSubCategoryClick = (id: number) => {
@@ -164,7 +170,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
           </button>
         </div>
         
-        {loading && currentPage === 1 ? (
+        {loading ? (
           <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
           </div>
@@ -178,78 +184,70 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
                 <span className="ml-2 text-sm text-gray-500">({totalItems})</span>
               </AccordionTrigger>
               <AccordionContent>
-                {loading && currentPage > 1 ? (
-                  <div className="flex justify-center items-center py-4">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black"></div>
-                  </div>
-                ) : (
-                  <>
-                    <ul className="space-y-3 py-1">
-                      {subCategories.map((subCategory) => (
-                        <li 
-                          key={subCategory.id} 
-                          className={`flex items-center gap-2 cursor-pointer ${
-                            selectedSubCategories.includes(subCategory.id) ? 'text-black font-medium' : 'text-gray-600'
-                          }`}
-                          onClick={() => handleSubCategoryClick(subCategory.id)}
-                        >
-                          <input 
-                            type="checkbox" 
-                            checked={selectedSubCategories.includes(subCategory.id)}
-                            onChange={() => {}}
-                            className="h-4 w-4"
-                          />
-                          <span>{subCategory.name} ({subCategory.category.name})</span>
-                        </li>
-                      ))}
-                    </ul>
+                <ul className="space-y-3 py-1">
+                  {getCurrentPageItems().map((subCategory) => (
+                    <li 
+                      key={subCategory.id} 
+                      className={`flex items-center gap-2 cursor-pointer ${
+                        selectedSubCategories.includes(subCategory.id) ? 'text-black font-medium' : 'text-gray-600'
+                      }`}
+                      onClick={() => handleSubCategoryClick(subCategory.id)}
+                    >
+                      <input 
+                        type="checkbox" 
+                        checked={selectedSubCategories.includes(subCategory.id)}
+                        onChange={() => {}}
+                        className="h-4 w-4"
+                      />
+                      <span>{subCategory.name} ({subCategory.category.name})</span>
+                    </li>
+                  ))}
+                </ul>
+                
+                {/* Pagination controls - always show if there are more than pageSize items */}
+                {totalItems > pageSize && (
+                  <div className="flex justify-between items-center mt-4 pt-2 border-t border-gray-100">
+                    <button 
+                      onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className="p-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 hover:text-gray-700"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
                     
-                    {/* Pagination controls */}
-                    {totalPages > 1 && (
-                      <div className="flex justify-between items-center mt-4 pt-2 border-t border-gray-100">
-                        <button 
-                          onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                          disabled={currentPage === 1}
-                          className="p-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 hover:text-gray-700"
-                        >
-                          <ChevronLeft size={16} />
-                        </button>
-                        
-                        <div className="text-xs text-gray-500">
-                          Page {currentPage} of {totalPages}
-                        </div>
-                        
-                        <button 
-                          onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                          disabled={currentPage === totalPages}
-                          className="p-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 hover:text-gray-700"
-                        >
-                          <ChevronRight size={16} />
-                        </button>
-                      </div>
-                    )}
-                  </>
+                    <div className="text-xs text-gray-500">
+                      Page {currentPage} of {totalPages}
+                    </div>
+                    
+                    <button 
+                      onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                      className="p-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 hover:text-gray-700"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
                 )}
               </AccordionContent>
             </AccordionItem>
             
             <AccordionItem value="price" className="border-b border-gray-200">
               <AccordionTrigger className="py-4 text-customBlue font-semibold cursor-pointer">Price</AccordionTrigger>
-        <AccordionContent>
-  <div className="pt-2 pb-6">
-    <Slider
-      value={priceRange}
-      max={10000}
-      step={100}
-      onValueChange={handlePriceChange}
-      className="mt-6 font-bold bg-customBlue cursor-pointer"
-    />          
-    <div className="flex justify-between mt-2">
-      <span className="text-gray-600 font-bold"> ₦{priceRange[0]}</span>
-      <span className="text-gray-600 font-bold"> ₦{priceRange[1]}</span>
-    </div>
-  </div>
-</AccordionContent>
+              <AccordionContent>
+                <div className="pt-2 pb-6">
+                  <Slider
+                    value={priceRange}
+                    max={10000}
+                    step={100}
+                    onValueChange={handlePriceChange}
+                    className="mt-6 font-bold bg-customBlue cursor-pointer"
+                  />          
+                  <div className="flex justify-between mt-2">
+                    <span className="text-gray-600 font-bold"> ₦{priceRange[0]}</span>
+                    <span className="text-gray-600 font-bold"> ₦{priceRange[1]}</span>
+                  </div>
+                </div>
+              </AccordionContent>
             </AccordionItem>
           </Accordion>
         )}
@@ -275,7 +273,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
           </Button>
           <Button 
             onClick={handleApplyFilter} 
-            className="w-1/2 bg-customBlue hover:brightness-90 text-white rounded-full font-medium cursor-pointer hover:bg-black/90"
+            className="w-1/2 bg-customBlue hover:brightness-90 text-white rounded-full font-medium cursor-pointer hover:bg-black/90 "
           >
             Apply Filter
           </Button>
