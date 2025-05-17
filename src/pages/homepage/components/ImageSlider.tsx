@@ -12,12 +12,12 @@ interface ImageSliderProps {
 const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
   const navigate = useNavigate();
   const [imageWidth, setImageWidth] = useState(
-    window.innerWidth >= 768 ? "70%" : "90%"
+    window.innerWidth >= 768 ? "60%" : "90%"
   );
 
   useEffect(() => {
     const handleResize = () => {
-      setImageWidth(window.innerWidth >= 768 ? "70%" : "100%");
+      setImageWidth(window.innerWidth >= 768 ? "60%" : "90%");
     };
 
     window.addEventListener("resize", handleResize);

@@ -57,11 +57,11 @@ const handleToggle = async () => {
   return (
     <div className="mb-10 cursor-pointer "    
    >
-      <div className="relative w-fit mb-4">
+      <div className="relative w-fit mb-4 rounded-lg">
         <img
           src={product.image1}
           alt={product.name}
-          className="rounded-2xl w-auto h-[200px] lg:h-[250px] "
+          className="rounded-2xl w-auto h-[200px] lg:h-[220px]"
           onClick={handleProductClick}
         />
         <Wish
@@ -73,12 +73,14 @@ const handleToggle = async () => {
       <p className="text-[15px] font-medium sm:text-[20px] capitalize mb-2 line-clamp-1">
         {product.name}
       </p>
-      <div className="flex items-center gap-2 sm:gap-4">
+      <div className="gap-2 sm:gap-4">
         {typeof product.price === "number" && product.price > 0 && (
           <span className="text-[14px] sm:text-[20px]">
             ₦{product.price}
           </span>
         )}
+
+        <br/>
 
         {typeof product.undiscounted_price === "number" &&
           product.undiscounted_price > product.price && (
@@ -86,7 +88,7 @@ const handleToggle = async () => {
               <span className="text-[10px] sm:text-[20px] text-[#00000066] line-through">
                 ₦{product.undiscounted_price}
               </span>
-              <span className="text-red-600 bg-red-100 font-semibold text-xs sm:text-sm flex items-center justify-center rounded-full px-2 py-1">
+              <span className="text-red-600 bg-red-100 font-semibold w-fit text-xs sm:text-sm rounded-full px-2 py-1 ml-2">
                 -
                 {Math.round(
                   ((product.undiscounted_price - product.price) /

@@ -35,6 +35,8 @@ const ConfirmOrder = () => {
   const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
   const [availableStates, setAvailableStates] = useState<string[]>([]);
 
+  const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -72,14 +74,12 @@ const ConfirmOrder = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        console.log(data)
-        
+        console.log(data);
       } else {
         console.log("Order summary fetched/refreshed:", data);
         setOrderSummary(data);
         setError(null);
       }
-
     } catch (err) {
       console.error("Failed to fetch order summary:", err);
       if (!error || error.includes("summary")) {
@@ -244,18 +244,20 @@ const ConfirmOrder = () => {
           )}`
         );
         throw new Error(`API error: ${response.status}`);
+        setIsOrderConfirmed(false);
       }
 
       const responseData = await response.json();
       console.log("Successfully patched customer details:", responseData);
 
-      console.log("Refreshing order summary after successful PATCH...");
+      setIsOrderConfirmed(true);
+
       await fetchOrderSummary();
 
       setShowSuccessModal(true);
       setTimeout(() => {
         setShowSuccessModal(false);
-      }, 3000);
+      }, 2000);
     } catch (error) {
       console.error("Error patching customer details:", error);
       if (!error) {
@@ -419,9 +421,8 @@ const ConfirmOrder = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 font-poppins relative">
-     
       <h1
-        className="font-bold mb-8"
+        className="mt-11 font-bold mb-8 md:mt-0"
         style={{ fontSize: "clamp(18px, 3vw, 24px)" }}
       >
         Confirm your Order
@@ -555,12 +556,12 @@ const ConfirmOrder = () => {
 
             <button
               type="submit"
-              className={`w-full bg-black text-white py-3 px-6 rounded-full ${
+              className={`w-full bg-customBlue text-white py-3 px-6 rounded-full ${
                 isSubmitting ? "opacity-50 cursor-not-allowed" : ""
               }`}
               disabled={isSubmitting || isLoadingSummary}
             >
-              {isSubmitting ? "Confirming..." : "Confirm Order"}
+              {isSubmitting ? "Confirming..." : "Confirm Details"}
             </button>
           </form>
 
@@ -626,7 +627,8 @@ const ConfirmOrder = () => {
 
                 {/* Payment Provider Selection */}
                 <div className="payProviders flex justify-center gap-x-6 py-3 border-t border-b border-gray-200 my-4">
-                  <div>
+                    <div className="flex justify-center items-center">
+                  {/* <div> */}
                     <input
                       type="radio"
                       name="paymentProvider"
@@ -636,56 +638,56 @@ const ConfirmOrder = () => {
                       onChange={(e) => setSelectedProvider(e.target.value)}
                       className="mr-1 cursor-pointer"
                     />
-                    <label htmlFor="paystack">PayStack</label>
-                  </div>
-                  <div>
-                    <input
-                      type="radio"
-                      name="paymentProvider"
-                      id="flutterwave"
-                      value="flutterwave"
-                      checked={selectedProvider === "flutterwave"}
-                      onChange={(e) => setSelectedProvider(e.target.value)}
-                      className="mr-1 cursor-pointer"
+                    <img
+                    src="https://th.bing.com/th/id/R.45adb7d2e08de3f29a8194c790a6d1f6?rik=tFgLQDy65jK5Sg&pid=ImgRaw&r=0"
+                      // src="https://leadership.ng/wp-content/uploads/2022/09/Flutterwave-New-Logo-2022-Transparent-1-2048x323.png"
+                      alt="Paystack logo"
+                      className="h-4 ml-1 object-contain"
                     />
-                    <label htmlFor="flutterwave">Flutterwave</label>
+                  </div>
+
+                  <div className="">
+                    <div className="flex justify-center items-center">
+                      {/* <div> */}
+                      <input
+                        type="radio"
+                        name="paymentProvider"
+                        id="flutterwave"
+                        value="flutterwave"
+                        checked={selectedProvider === "flutterwave"}
+                        onChange={(e) => setSelectedProvider(e.target.value)}
+                        className="mr-1 cursor-pointer"
+                      />
+                      <img
+                        src="https://leadership.ng/wp-content/uploads/2022/09/Flutterwave-New-Logo-2022-Transparent-1-2048x323.png"
+                        alt="Flutterwave logo"
+                        className="h-4 ml-1 object-contain"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 <button
                   onClick={initiatePayment}
-                  className={`paymentBtn w-full bg-black text-white py-3 px-6 rounded-full mt-4 flex items-center justify-center gap-2 ${
+                  className={`paymentBtn w-full bg-customBlue text-white py-3 px-6 rounded-full mt-4 flex items-center justify-center gap-2 ${
                     isSubmitting ||
                     isLoadingSummary ||
-                    !formData.city ||
-                    !formData.delivery_address ||
-                    !formData.email ||
-                    !formData.first_name ||
-                    !formData.last_name ||
-                    !formData.phone_number ||
-                    !formData.state
+                    isOrderConfirmed === false
                       ? "opacity-50 cursor-not-allowed"
                       : "hover:bg-gray-800"
                   }`}
                   disabled={
                     isSubmitting ||
                     isLoadingSummary ||
-                    !formData.city ||
-                    !formData.delivery_address ||
-                    !formData.email ||
-                    !formData.first_name ||
-                    !formData.last_name ||
-                    !formData.phone_number ||
-                    !formData.state
+                    isOrderConfirmed === false
                   }
                 >
-                  Proceed to Payment
+                  {/* Proceed to Payment */}
+                  {isOrderConfirmed
+                    ? "Proceed to payment"
+                    : "Confirm details to proceed"}
                   <FiArrowRight />
                 </button>
-                <p className="text-red-700 text-xs">
-                  Note: always fill in correct details and confirm order before
-                  proceeding to payment
-                </p>
               </div>
             )}
             {/* Show message if summary couldn't load but page is otherwise fine */}
@@ -733,7 +735,7 @@ const ConfirmOrder = () => {
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div
-            className="bg-green-100 border border-green-400 text-green-700 px-8 py-6 rounded-lg shadow-xl max-w-md w-full text-center"
+            className="bg-green-100 border border-blue-400 text-customBlue px-8 py-6 rounded-lg shadow-xl max-w-md w-full text-center"
             role="alert"
           >
             <strong className="font-bold text-xl block mb-2">Success!</strong>

@@ -78,6 +78,7 @@ const SuggestedItemsDetails: React.FC<ImageSliderProps> = ({ data }) => {
   });
 
     const [isAddingToCart, setIsAddingToCart] = useState(false);
+    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   
 
   // Fetch product data
@@ -538,9 +539,15 @@ const handleSuggestedItemClick = (image: string) => {
         <div className="mt-12 flex flex-col md:flex-row space-y-6">
           <div className="md:w-[60%] w-full gap-5 space-y-3">
             <h2 className="text-xl sm:text-2xl font-medium">Description</h2>
-            <p className="text-gray-700 text-sm sm:text-base">
+            <p className={`text-gray-700 text-sm sm:text-base ${!isDescriptionExpanded ? 'max-md:line-clamp-5' : ''}`}>
               {product.description}
             </p>
+            <button 
+              className="md:hidden text-blue-800 text-sm sm:text-base cursor-pointer" 
+              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+            >
+              {isDescriptionExpanded ? 'view less' : 'view more'}
+            </button>
           </div>
           <div className="md:w-[30%] mx-auto w-full flex justify-center items-center">
             <DescriptionList
