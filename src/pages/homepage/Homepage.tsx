@@ -6,13 +6,10 @@ import { fetchProducts } from "./api/apiService";
 import { WishData } from "@/card/wishListApi";
 import { WishItem } from "@/card/types";
 
-
 import { ProductAPIResponse, ProductItem } from "./types/data-types";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import banner from '/images/banner.png';
-
-
 
 const Homepage = () => {
   const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
@@ -53,7 +50,7 @@ const [isLoadingMoreTopSelling, setIsLoadingMoreTopSelling] = useState(false);
         const wishlistRes = await WishData();
         setWishlistItems(wishlistRes);
       } catch (err) {
-        console.error("Error loading wishlist:", err);
+        console.error('Error loading wishlist:', err);
       } finally {
         setWishlistLoading(false);
       }
@@ -61,8 +58,6 @@ const [isLoadingMoreTopSelling, setIsLoadingMoreTopSelling] = useState(false);
 
     fetchWishlist();
   }, []);
-
-// ################
 
   // Make sure latestItems is populated from data if it's empty
   useEffect(() => {
@@ -137,20 +132,18 @@ const [isLoadingMoreTopSelling, setIsLoadingMoreTopSelling] = useState(false);
   
   if (isError) return <div className="text-center py-10 text-red-500">Error loading data. Please try again.</div>;
 
-
   // Helper function to check if a product is in wishlist
   const getWishlistInfo = (productId: number) => {
-    const matchedWish = wishlistItems.find(
-      (item) => item.product.id === productId
-    );
+    const matchedWish = wishlistItems.find(item => item.product.id === productId);
     return {
       isInitiallyLiked: !!matchedWish,
-      wishItemId: matchedWish?.id,
+      wishItemId: matchedWish?.id
     };
   };
 
   return (
     <div className="w-full min-h-full px-4 md:px-12 py-4 lg:px-28">
+
       {" "}
       {/* Hero Section */}{" "}
       
@@ -185,11 +178,8 @@ const [isLoadingMoreTopSelling, setIsLoadingMoreTopSelling] = useState(false);
           </p>
         </div>
       </div>
-      
-      
 
       {/* Content Sections */}
-{/* ######################### */}
       <div className="md:mt-3 md:space-y-10">
         {latestItems.length > 0 && (
           <ImageGrid 
@@ -226,6 +216,7 @@ const [isLoadingMoreTopSelling, setIsLoadingMoreTopSelling] = useState(false);
         />
         <ImageSlider data={data?.latest_items?.results ?? []} /> */}
 {/* ################## */}
+
       </div>
     </div>
   );
