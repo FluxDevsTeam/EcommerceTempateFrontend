@@ -43,7 +43,7 @@ interface Product {
   dimensional_size: string;
   weight: string;
   unlimited: boolean;
-  production_days : number;
+  production_days: number;
   sizes: Size[];
 }
 
@@ -63,7 +63,6 @@ const fetchProduct = async (id: number): Promise<Product> => {
   return response.json();
 };
 
-
 const SuggestedItemsDetails: React.FC<ImageSliderProps> = ({ data }) => {
   const { id } = useParams<keyof ProductDetailParams>() as ProductDetailParams;
   const productId = parseInt(id);
@@ -77,9 +76,8 @@ const SuggestedItemsDetails: React.FC<ImageSliderProps> = ({ data }) => {
     type: "success" as "success" | "error",
   });
 
-    const [isAddingToCart, setIsAddingToCart] = useState(false);
-    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   // Fetch product data
   const {
@@ -89,7 +87,7 @@ const SuggestedItemsDetails: React.FC<ImageSliderProps> = ({ data }) => {
   } = useQuery<Product, Error>({
     queryKey: ["product", productId],
     queryFn: () => fetchProduct(productId),
-    enabled: !!productId && !isNaN(productId)
+    enabled: !!productId && !isNaN(productId),
   });
 
   // Initialize main image and selected size when product data is loaded
@@ -108,11 +106,11 @@ const SuggestedItemsDetails: React.FC<ImageSliderProps> = ({ data }) => {
     }
   }, [product, mainImage, selectedSize]);
 
-const handleSuggestedItemClick = (image: string) => {
-    setMainImage(image); 
+  const handleSuggestedItemClick = (image: string) => {
+    setMainImage(image);
   };
 
-    const createNewCart = async (accessToken: string) => {
+  const createNewCart = async (accessToken: string) => {
     const response = await fetch(`${baseURL}/api/v1/cart/`, {
       method: "POST",
       headers: {
@@ -129,14 +127,16 @@ const handleSuggestedItemClick = (image: string) => {
         phone_number: "",
       }),
     });
-  
+
     if (!response.ok) throw new Error("Failed to create cart");
     const data = await response.json();
     return data.id;
   };
 
   if (!id || isNaN(productId)) {
-    return <div className="text-center py-8">Invalid or missing product ID</div>;
+    return (
+      <div className="text-center py-8">Invalid or missing product ID</div>
+    );
   }
 
   if (isLoading)
@@ -157,12 +157,17 @@ const handleSuggestedItemClick = (image: string) => {
 
   const discountedPrice = product.price;
   const undiscountedPrice = product.undiscounted_price || product.price;
-  const discountPercentage = undiscountedPrice > 0 
-    ? Math.round(((undiscountedPrice - discountedPrice) / undiscountedPrice) * 100) 
-    : 0;
+  const discountPercentage =
+    undiscountedPrice > 0
+      ? Math.round(
+          ((undiscountedPrice - discountedPrice) / undiscountedPrice) * 100
+        )
+      : 0;
 
   // Get available quantity for selected size
-  const selectedSizeData = product.sizes.find(size => size.size === selectedSize);
+  const selectedSizeData = product.sizes.find(
+    (size) => size.size === selectedSize
+  );
   const availableQuantity = selectedSizeData?.quantity || 0;
 
   // Handle quantity changes
@@ -190,7 +195,6 @@ const handleSuggestedItemClick = (image: string) => {
     }
 
     setIsAddingToCart(true);
-
 
     if (!product) {
       setModalConfig({
@@ -267,7 +271,7 @@ const handleSuggestedItemClick = (image: string) => {
       });
 
       let cartUuid;
-      
+
       if (cartResponse.ok) {
         const cartData = await cartResponse.json();
         cartUuid = cartData.results[0]?.id;
@@ -328,7 +332,7 @@ const handleSuggestedItemClick = (image: string) => {
       });
     } catch (error) {
       console.error("Error adding to cart:", error);
-    }  finally {
+    } finally {
       setIsAddingToCart(false);
     }
   };
@@ -339,6 +343,15 @@ const handleSuggestedItemClick = (image: string) => {
   };
   // Determine if the item is in stock
   const isInStock = product.unlimited || availableQuantity > 0;
+
+  // Add new function to check if size is in cart
+  const isSizeInCart = (productId: number, sizeId: number) => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (!accessToken) {
+      return isItemInLocalCart(productId, sizeId);
+    }
+    return false; // For authenticated users, you'll need to implement cart checking logic
+  };
 
   return (
     <div>
@@ -425,17 +438,22 @@ const handleSuggestedItemClick = (image: string) => {
               </h1>
 
               <span className="inline-block bg-blue-100 text-sm md:text-base rounded-2xl p-2">
-                {product.unlimited ? "Unlimited stock" : `${availableQuantity} left in stock`}
+                {product.unlimited
+                  ? "Unlimited stock"
+                  : `${availableQuantity} left in stock`}
               </span>
 
               <div className="flex flex-col md:flex-row md:items-center gap-3">
-                <span className="text-xl md:text-3xl font-normal"> ₦ {product.price}</span>
-                <div className="flex space-x-2">  
-                  {product.undiscounted_price && (
-                    <span className="text-gray-500 line-through text-3xl"> 
-                      ₦ {product.undiscounted_price}
-                    </span>
-                  )}
+                <span className="text-xl md:text-3xl font-normal">
+                  {/* ₦ {product.price} */}
+                  ₦ {product.price}
+                </span>
+                <div className="flex space-x-2">
+                  {product?.undiscounted_price > product.price && (
+                      <span className="text-gray-500 line-through text-3xl">
+                        ₦ {product.undiscounted_price}
+                      </span>
+                    )}
                   {discountPercentage > 0 && (
                     <span className="bg-red-200 text-[#FF3333] p-3 rounded-full text-sm">
                       {discountPercentage}% off
@@ -464,7 +482,9 @@ const handleSuggestedItemClick = (image: string) => {
                 <p className="text-gray-600 text-sm sm:text-base">Size</p>
                 <div className="grid grid-cols-4 gap-2">
                   {isLoading ? (
-                    <div className="col-span-4 text-center py-2">Loading sizes...</div>
+                    <div className="col-span-4 text-center py-2">
+                      Loading sizes...
+                    </div>
                   ) : product.sizes && product.sizes.length > 0 ? (
                     product.sizes.map((item) => (
                       <button
@@ -483,20 +503,25 @@ const handleSuggestedItemClick = (image: string) => {
                             : "bg-gray-200 hover:bg-gray-300 border-gray-300 cursor-pointer"
                         }`}
                         title={
-                          !product.unlimited && item.quantity <= 0 ? "Out of stock" : ""
+                          !product.unlimited && item.quantity <= 0
+                            ? "Out of stock"
+                            : ""
                         }
                       >
                         {item.size.toUpperCase()}
                         {!product.unlimited && item.quantity <= 0 && (
-                          <span className="block text-xs text-red-500">(Sold out)</span>
+                          <span className="block text-xs text-red-500">
+                            (Sold out)
+                          </span>
                         )}
                       </button>
-                    ))) : (
+                    ))
+                  ) : (
                     <div className="col-span-4 text-center py-2 text-red-500">
                       No sizes available
                     </div>
                   )}
-                </div>  
+                </div>
               </div>
 
               {/* Quantity Selector */}
@@ -521,15 +546,21 @@ const handleSuggestedItemClick = (image: string) => {
               {/* Add to Cart */}
               <button
                 onClick={handleAddToCart}
-                className="w-full py-3 bg-customBlue text-white rounded-2xl hover:brightness-90 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`w-full py-3 text-white rounded-2xl transition-colors cursor-pointer ${
+                  !isInStock || isAddingToCart || (selectedSizeData && isSizeInCart(product.id, selectedSizeData.id))
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-customBlue hover:brightness-90"
+                }`}
                 type="button"
-                disabled={!isInStock || isAddingToCart}
+                disabled={!isInStock || isAddingToCart || (selectedSizeData && isSizeInCart(product.id, selectedSizeData.id))}
               >
                 {isAddingToCart
                   ? "Adding..."
-                  : isInStock
-                  ? "Add to Cart"
-                  : "Out of Stock"}
+                  : !isInStock
+                  ? "Out of Stock"
+                  : selectedSizeData && isSizeInCart(product.id, selectedSizeData.id)
+                  ? "Already in Cart"
+                  : "Add to Cart"}
               </button>
             </div>
           </div>
@@ -539,14 +570,18 @@ const handleSuggestedItemClick = (image: string) => {
         <div className="mt-12 flex flex-col md:flex-row space-y-6">
           <div className="md:w-[60%] w-full gap-5 space-y-3">
             <h2 className="text-xl sm:text-2xl font-medium">Description</h2>
-            <p className={`text-gray-700 text-sm sm:text-base ${!isDescriptionExpanded ? 'max-md:line-clamp-5' : ''}`}>
+            <p
+              className={`text-gray-700 text-sm sm:text-base ${
+                !isDescriptionExpanded ? "max-md:line-clamp-5" : ""
+              }`}
+            >
               {product.description}
             </p>
-            <button 
-              className="md:hidden text-blue-800 text-sm sm:text-base cursor-pointer" 
+            <button
+              className="md:hidden text-blue-800 text-sm sm:text-base cursor-pointer"
               onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
             >
-              {isDescriptionExpanded ? 'view less' : 'view more'}
+              {isDescriptionExpanded ? "view less" : "view more"}
             </button>
           </div>
           <div className="md:w-[30%] mx-auto w-full flex justify-center items-center">
@@ -562,7 +597,9 @@ const handleSuggestedItemClick = (image: string) => {
         </div>
       </div>
       <div className="px-0 md:px-12">
-        <SuggestedProductDetails onSuggestedItemClick={handleSuggestedItemClick} />
+        <SuggestedProductDetails
+          onSuggestedItemClick={handleSuggestedItemClick}
+        />
       </div>
     </div>
   );

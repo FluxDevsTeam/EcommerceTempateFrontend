@@ -79,6 +79,7 @@ const ProductDetail = () => {
     type: "success" as "success" | "error",
   });
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   // Fetch product data
   const {
@@ -263,7 +264,7 @@ const ProductDetail = () => {
         console.error("Error adding to cart:", errorData);
         setModalConfig({
           isOpen: true,
-          title: "Error",
+          title: "Notice",
           message: errorData.error || "Failed to add item to cart",
           type: "error",
         });
@@ -332,6 +333,7 @@ const ProductDetail = () => {
     (size) => size.size === selectedSize
   );
   const availableQuantity = selectedSizeData?.quantity || 0;
+  const availableSizePrice = selectedSizeData?.price || 0;
 
   // Handle quantity changes
   const handleQuantityIncrease = () => {
@@ -441,15 +443,14 @@ const ProductDetail = () => {
 
               <div className="flex flex-col md:flex-row md:items-center gap-3">
                 <span className="text-xl md:text-3xl font-normal">
-                  ₦ {product.price}
+                  ₦ {selectedSizeData?.price}
                 </span>
                 <div className="flex space-x-2">
-                  {product.undiscounted_price &&
-                    product.undiscounted_price !== product.price && (
-                      <span className="text-gray-500 line-through text-3xl">
-                        ₦ {product.undiscounted_price}
-                      </span>
-                    )}
+                  {product?.undiscounted_price > product.price && (
+                    <span className="text-gray-500 line-through text-3xl">
+                      ₦ {product.undiscounted_price}
+                    </span>
+                  )}
                   {discountPercentage > 0 && (
                     <span className="bg-red-200 text-[#FF3333] p-3 rounded-full text-sm">
                       {discountPercentage}% off
@@ -560,9 +561,19 @@ const ProductDetail = () => {
         <div className="mt-12 flex flex-col  md:flex-row  space-y-6">
           <div className="md:w-[60%] w-full gap-5 space-y-3">
             <h2 className="text-xl sm:text-2xl font-medium">Description</h2>
-            <p className="text-gray-700 text-sm sm:text-base">
+            <p
+              className={`text-gray-700 text-sm sm:text-base ${
+                !isDescriptionExpanded ? "max-md:line-clamp-5" : ""
+              }`}
+            >
               {product.description}
             </p>
+            <button
+              className="md:hidden text-blue-800 text-sm sm:text-base cursor-pointer"
+              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+            >
+              {isDescriptionExpanded ? "view less" : "view more"}
+            </button>
           </div>
           <div className="md:w-[30%] mx-auto w-full flex justify-center items-center">
             <DescriptionList

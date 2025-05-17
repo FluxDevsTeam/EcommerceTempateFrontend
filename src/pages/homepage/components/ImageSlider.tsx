@@ -3,6 +3,8 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { ProductItem } from "../types/data-types";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+
 import { useState, useEffect } from "react";
 
 interface ImageSliderProps {
@@ -12,12 +14,12 @@ interface ImageSliderProps {
 const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
   const navigate = useNavigate();
   const [imageWidth, setImageWidth] = useState(
-    window.innerWidth >= 768 ? "60%" : "90%"
+    window.innerWidth >= 768 ? "55%" : "90%"
   );
 
   useEffect(() => {
     const handleResize = () => {
-      setImageWidth(window.innerWidth >= 768 ? "60%" : "90%");
+      setImageWidth(window.innerWidth >= 768 ? "55%" : "90%");
     };
 
     window.addEventListener("resize", handleResize);
@@ -44,7 +46,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
   ]);
 
   const handleClick = (id: string) => {
-    navigate(`/product/${id}`);
+    navigate(`/product/item/${id}`);
   };
 
   return (
@@ -52,10 +54,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
       <Slider {...settings}>
         {allImages.map((image) => (
           <div key={image.id} className="slide-item relative px-2">
-            <div
-              className="relative w-full cursor-pointer overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 bg-gray-50"
-              onClick={() => handleClick(image.id.split("-")[0])}
-            >
+            <div className="relative w-full cursor-pointer overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 bg-gray-50">
               <div className="flex flex-col md:flex-row items-center min-h-[300px] md:min-h-[400px]">
                 {/* Mobile text overlay */}{" "}
                 <div className="absolute bottom-5 left-0 h-1/3 right-0 md:hidden z-10 rounded-b-lg bg-gradient-to-b from-white/0 to-black/80">
@@ -72,9 +71,14 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
                   <p className="text-gray-600 text-lg lg:text-xl">
                     Discover our exclusive collection
                   </p>
-                  <button className="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors w-fit">
+                  {/* <Link to="/new-arrivals"> */}
+                  <button
+                    className="bg-customBlue text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors w-fit"
+                    onClick={() => handleClick(image.id.split("-")[0])}
+                  >
                     Shop Now
                   </button>
+                  {/* </Link> */}
                 </div>
                 <div className="flex items-center justify-center p-4 md:w-1/2 order-1 md:order-2">
                   <img

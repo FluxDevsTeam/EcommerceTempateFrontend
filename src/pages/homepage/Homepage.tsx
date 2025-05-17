@@ -200,6 +200,7 @@ const Homepage = () => {
             onLoadMore={loadMoreItems}
           />
         )}
+        <ImageSlider data={latestItems} />
         {topSellingItems.length > 0 && (
           <TopSelling
             product={topSellingItems}
@@ -210,7 +211,6 @@ const Homepage = () => {
           />
         )}
 
-        <ImageSlider data={latestItems} />
 
         {/* ################### */}
         {/* <div className="container mx-auto px-4 space-y-16 py-12">

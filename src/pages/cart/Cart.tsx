@@ -413,9 +413,26 @@ const Cart = () => {
                       <p className="text-sm text-gray-500">
                         Size: {item.size.size.toUpperCase()}
                       </p>
-                      <p className="font-bold mt-1">
-                        ₦ {formatPrice(Number(item.size.price || 0))}
-                      </p>
+                      <div className="mt-1">
+                        {item.size.undiscounted_price && 
+                         Number(item.size.undiscounted_price) > Number(item.size.price) ? (
+                          <div className="flex items-center gap-2">
+                            <span className="line-through text-gray-500">
+                              ₦ {formatPrice(Number(item.size.undiscounted_price))}
+                            </span>
+                            <span className="font-bold text-green-600">
+                              ₦ {formatPrice(Number(item.size.price))}
+                            </span>
+                            <span className="text-sm text-green-600">
+                              ({Math.round((1 - Number(item.size.price) / Number(item.size.undiscounted_price)) * 100)}% off)
+                            </span>
+                          </div>
+                        ) : (
+                          <p className="font-bold">
+                            ₦ {formatPrice(Number(item.size.price || 0))}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
 

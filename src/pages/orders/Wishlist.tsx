@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Card from "@/card/Card";
 import { WishData } from "./api";
+import Suggested from "../../components/products/Suggested";
 
 interface WishItem {
   id: number;
@@ -75,6 +76,9 @@ const Wishlist = () => {
           ))}
         </div>
       )}
+
+        <Suggested />
+
     </div>
   );
 };
