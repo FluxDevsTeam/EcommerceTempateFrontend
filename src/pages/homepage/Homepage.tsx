@@ -169,7 +169,7 @@ const Homepage = () => {
               className="w-full max-w-[280px] sm:max-w-xs lg:max-w-md object-contain mx-auto"
             />
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <Link to="/shoe-category">
+              <Link to="/new-arrivals">
                 <button className="bg-customBlue text-white rounded-md px-6 py-3 hover:brightness-90 transition-all duration-300 opacity-75">
                   Shop Now
                 </button>
