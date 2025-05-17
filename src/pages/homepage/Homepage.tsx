@@ -5,10 +5,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchProducts } from "./api/apiService";
 import { WishData } from "@/card/wishListApi";
 import { WishItem } from "@/card/types";
+
+
 import { ProductAPIResponse, ProductItem } from "./types/data-types";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import banner from '/images/banner.png';
+
+
 
 const Homepage = () => {
   const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
@@ -49,7 +53,7 @@ const [isLoadingMoreTopSelling, setIsLoadingMoreTopSelling] = useState(false);
         const wishlistRes = await WishData();
         setWishlistItems(wishlistRes);
       } catch (err) {
-        console.error('Error loading wishlist:', err);
+        console.error("Error loading wishlist:", err);
       } finally {
         setWishlistLoading(false);
       }
@@ -57,6 +61,8 @@ const [isLoadingMoreTopSelling, setIsLoadingMoreTopSelling] = useState(false);
 
     fetchWishlist();
   }, []);
+
+// ################
 
   // Make sure latestItems is populated from data if it's empty
   useEffect(() => {
@@ -131,51 +137,59 @@ const [isLoadingMoreTopSelling, setIsLoadingMoreTopSelling] = useState(false);
   
   if (isError) return <div className="text-center py-10 text-red-500">Error loading data. Please try again.</div>;
 
+
   // Helper function to check if a product is in wishlist
   const getWishlistInfo = (productId: number) => {
-    const matchedWish = wishlistItems.find(item => item.product.id === productId);
+    const matchedWish = wishlistItems.find(
+      (item) => item.product.id === productId
+    );
     return {
       isInitiallyLiked: !!matchedWish,
-      wishItemId: matchedWish?.id
+      wishItemId: matchedWish?.id,
     };
   };
 
   return (
     <div className="w-full min-h-full px-4 md:px-12 py-4 lg:px-28">
-      {/* Hero Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-        <div className="block md:hidden flex justify-center lg:justify-end mt-[20px]">
-          <img 
-            src={banner} 
-            alt="Banner image" 
-            className="w-full max-w-[280px] sm:max-w-xs md:max-w-md lg:max-w-lg object-contain"
-          />
+      {" "}
+      {/* Hero Section */}{" "}
+      
+      <div className="flex flex-col md:grid md:grid-cols-2 gap-6 container mx-auto mb-6 mt-10 md:mt-6 md:place-items-center">
+        {/* Image*/}
+        <div className="w-full md:col-start-2 md:row-start-1 flex items-center justify-center">
+          <div className="relative w-full flex justify-center">
+            <img
+              src={banner}
+              alt="Banner image"
+              className="w-full max-w-[280px] sm:max-w-xs lg:max-w-md object-contain mx-auto"
+            />
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+              <Link to="/shoe-category">
+                <button className="bg-customBlue text-white rounded-md px-6 py-3 hover:brightness-90 transition-all duration-300 opacity-75">
+                  Shop Now
+                </button>
+              </Link>
+            </div>
+          </div>
         </div>
 
-        <div className="flex flex-col items-center text-center md:text-left md:items-start space-y-2 pt-3 md:pt-6 px-4 md:px-0">
-          <h1 className='text-xl md:text-6xl font-bold leading-tight lg:leading-[63px] text-black'>
-            Shop Smarter, Live Better - Find What You Love
+
+
+        <div className="flex flex-col justify-center items-center md:items-center space-y-4 max-w-lg w-full px-4 md:col-start-1 ">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
+            Kids Design Company, 
           </h1>
-          <p className='text-[#000000] font-medium text-base md:text-lg '>
-            Access exclusive deals, track orders and enjoy a seamless shopping experience
+          <p className="text-[#000000] font-medium text-sm md:text-base">
+            Access exclusive deals, track orders and enjoy a seamless shopping
+            experience
           </p>
-          <Link to='/new-arrivals'>
-            <button className="bg-customBlue text-white border rounded-full px-6 py-3 w-auto md:w-[210px] hover:brightness-90 transition-colors">
-              Shop Now
-            </button>
-          </Link>
-        </div>
-        
-        <div className="hidden md:block flex justify-center lg:justify-end">
-          <img 
-            src={banner} 
-            alt="Banner image" 
-            className="w-full max-w-[280px] sm:max-w-xs md:max-w-md lg:max-w-lg object-contain"
-          />
         </div>
       </div>
+      
+      
 
       {/* Content Sections */}
+{/* ######################### */}
       <div className="md:mt-3 md:space-y-10">
         {latestItems.length > 0 && (
           <ImageGrid 
@@ -200,6 +214,18 @@ const [isLoadingMoreTopSelling, setIsLoadingMoreTopSelling] = useState(false);
     data={latestItems} 
           />
     
+{/* ################### */}
+      {/* <div className="container mx-auto px-4 space-y-16 py-12">
+        <ImageGrid
+          product={data?.latest_items?.results ?? []}
+          getWishlistInfo={getWishlistInfo}
+        />
+        <TopSelling
+          product={data?.top_selling_items?.results ?? []}
+          getWishlistInfo={getWishlistInfo}
+        />
+        <ImageSlider data={data?.latest_items?.results ?? []} /> */}
+{/* ################## */}
       </div>
     </div>
   );

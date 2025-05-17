@@ -139,7 +139,7 @@ const ProductDetail = () => {
     if (!selectedSize) {
       setModalConfig({
         isOpen: true,
-        title: "Error",
+        title: "",
         message: "Please select a size",
         type: "error",
       });
@@ -151,7 +151,7 @@ const ProductDetail = () => {
     if (!product) {
       setModalConfig({
         isOpen: true,
-        title: "Error",
+        title: "",
         message: "Product data not available",
         type: "error",
       });
@@ -268,7 +268,7 @@ const ProductDetail = () => {
         console.error("Error adding to cart:", errorData);
         setModalConfig({
           isOpen: true,
-          title: "Error",
+          title: "",
           message: errorData.error || "Failed to add item to cart",
           type: "error",
         });
@@ -364,14 +364,14 @@ const ProductDetail = () => {
             <div
               className={`bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 border-t-4 ${
                 modalConfig.type === "success"
-                  ? "border-green-500"
+                  ? "border-customBlue"
                   : "border-red-500"
               }`}
             >
               <h2
                 className={`text-2xl font-bold mb-4 ${
                   modalConfig.type === "success"
-                    ? "text-green-600"
+                    ? "text-customBlue"
                     : "text-red-600"
                 }`}
               >
@@ -382,7 +382,7 @@ const ProductDetail = () => {
                 onClick={handleCloseModal}
                 className={`w-full py-2 px-4 text-white rounded ${
                   modalConfig.type === "success"
-                    ? "bg-green-600 hover:bg-green-700"
+                    ? "bg-customBlue hover:bg-blue-700"
                     : "bg-red-500 hover:bg-red-600"
                 }`}
               >
@@ -393,7 +393,7 @@ const ProductDetail = () => {
         )}
 
         {/* Product Main Section */}
-        <div className="flex flex-col lg:flex-row justify-center items-start gap-8">
+        <div className="flex flex-col lg:flex-row justify-center items-start gap-8 mt-8 md:mt-0">
           {/* Thumbnail Images (Left Column) */}
           <div className="flex mx-auto md:flex-col gap-5 order-1">
             {images.map((img, index) => (
@@ -418,12 +418,12 @@ const ProductDetail = () => {
           </div>
 
           {/* Main Product Image (Middle Column) */}
-          <div className="rounded-lg max-w-md lg:order-2">
+          <div className="rounded-lg max-w-md lg:order-2 w-full flex items-center justify-center">
             {mainImage && (
               <img
                 src={mainImage}
                 alt="Main Product"
-                className="w-[500px] h-[500px] aspect-square object-cover"
+                className="max-w-full max-h-[500px] w-auto h-auto object-contain"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = "https://via.placeholder.com/500";
@@ -467,6 +467,7 @@ const ProductDetail = () => {
               <p className="text-gray-700 text-base leading-relaxed line-clamp-2">
                 {product.description}
               </p>
+              <p className="text-gray-700 text-medium font-semibold leading-relaxed"> Production Days : {product.production_days} </p>
 
               <div className="space-y-1">
                 <p className="text-gray-600 text-sm sm:text-base">Color</p>
@@ -474,7 +475,6 @@ const ProductDetail = () => {
                   {product.colour}
                 </p>
               </div>
-                <p className="text-gray-700 text-medium font-semibold leading-relaxed"> Production Days : {product.production_days} </p>
 
               {/* Size Selector */}
               <div className="space-y-2">

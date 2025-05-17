@@ -74,7 +74,7 @@ const TopSelling: React.FC<LatestItemsProps> = ({
             )}
           </button>
         ) : (
-          <p className="text-gray-500">You've reached the end of products</p>
+          <p className="text-gray-500"></p>
         )}
       </div>
     </div>

@@ -83,7 +83,7 @@ const SuggestedProductDetails: React.FC<SuggestedProductDetailsProps> = ({
           slidesToShow: 1.8, 
           arrows: false,
           centerMode: true,
-          centerPadding: '10%', 
+          // centerPadding: '10%', 
           swipeToSlide: true,
           draggable: true,
           touchThreshold: 10,

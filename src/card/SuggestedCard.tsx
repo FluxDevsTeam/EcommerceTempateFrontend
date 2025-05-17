@@ -43,7 +43,7 @@ const SuggestedCard: React.FC<CardProps> = ({
         <img
           src={product.image1}
           alt={product.name}
-          className="rounded-lg w-[90px] h-[120px] md:h-[180px]  object-cover"
+          className="max-w-full max-h-[500px] w-auto h-auto object-contain"
            onClick={() => {
             if (onItemClick) {
               onItemClick(product.image1); 
