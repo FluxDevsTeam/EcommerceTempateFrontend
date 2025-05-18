@@ -24,10 +24,10 @@ const Footer = () => {
           {/* Shop Info */}
           <div className="font-poppins ">
            <img src={logo} alt="logo" />
-            <p className="text-gray-600 mt-2">
+            {/* <p className="text-gray-600 mt-2">
               We have clothes that suit your style and which you’re proud to wear.
               From women to men.
-            </p>
+            </p> */}
             <div className="flex gap-4 mt-4">
               <FaTwitter className="text-xl cursor-pointer" />
               <FaFacebookF className="text-xl cursor-pointer" />

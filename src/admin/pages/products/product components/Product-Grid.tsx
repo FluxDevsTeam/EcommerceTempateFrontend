@@ -38,6 +38,7 @@ interface Product {
   date_created: string;
   date_updated: string;
   unlimited: boolean;
+  production_days: number;
 }
 
 interface ApiResponse {
@@ -60,7 +61,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 }) => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage] = useState<number>(18); // Changed from 30 to 18
+  const [itemsPerPage] = useState<number>(20); // Changed from 30 to 18
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
   const [openPopoverId, setOpenPopoverId] = useState<number | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -154,7 +155,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
         // Always use fixed page size of 18 for paginated results
         const paginatedResponse = await fetch(
-          `${baseURL}/api/v1/product/item/?page=${page}&page_size=18${baseQueryParams}`,
+          `${baseURL}/api/v1/product/item/?page=${page}&page_size=20${baseQueryParams}`,
           {
             headers: {
               Authorization: `JWT ${accessToken}`,
@@ -754,22 +755,16 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                     </h3>
                   </div>
 
-                  <div className="flex justify-center">
-                    {/* <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-blue-600">
-                        ₦{Number(product.price).toLocaleString()}
-                      </span>
-                      {product.discounted_price && (
-                        <span className="text-xs text-gray-400 line-through">
-                          ₦{Number(product.discounted_price).toLocaleString()}
-                        </span>
-                      )}
-                    </div> */}
-                    <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                  <div className="flex flex-col items-center">
+                    <span className="text-xs px-2 py-1 bg-gray-100 w-fit mb-1 rounded-full">
                       {product.unlimited
                         ? "∞ Unlimited"
                         : `${product.total_quantity || "0"} in stock`}
                     </span>
+                    <span className="text-xs px-2 py-1 bg-gray-100 w-fit rounded-full">
+                      {`${product.production_days || "0"} production days`}
+                    </span>
+
                   </div>
                 </div>
               </div>

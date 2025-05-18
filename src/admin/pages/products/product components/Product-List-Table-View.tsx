@@ -44,6 +44,7 @@ interface Product {
   top_selling_position: number | null;
   date_created: string;
   date_updated: string;
+  production_days: number;
   unlimited: false;
 }
 
@@ -705,6 +706,9 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                     Price
                   </th>
                   <th className="px-4 py-3">
+                    Production Days
+                  </th>
+                  <th className="px-4 py-3">
                     <select
                       value={selectedStatus}
                       onChange={(e) => setSelectedStatus(e.target.value)}
@@ -721,7 +725,9 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
               </thead>
               <tbody>
                 {filteredProducts.map((product, index) => (
-                  <tr key={product.id} className="border-b hover:bg-gray-50">
+                  <tr key={product.id} className="border-b hover:bg-gray-50 cursor-pointer"  onClick={() =>
+                        navigate(`/admin/admin-products-details/${product.id}`)
+                      }>
                     <td className="px-4 py-3">
                       {(currentPage - 1) * itemsPerPage + index + 1}
                     </td>
@@ -744,6 +750,9 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                     </td>
                     <td className="px-4 py-3 min-w-[120px] whitespace-nowrap">
                       ₦ {product.price}
+                    </td>
+                    <td className="px-4 py-3 min-w-[120px] whitespace-nowrap">
+                      {product.production_days} days
                     </td>
                     <td className="px-4 py-3">
                       <span
