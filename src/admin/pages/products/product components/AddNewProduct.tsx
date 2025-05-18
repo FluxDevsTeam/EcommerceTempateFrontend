@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Modal from "../../../../components/ui/Modal";
 import { IoChevronBack, IoSearch, IoClose } from "react-icons/io5";
-import PaginatedDropdown from '../components/PaginatedDropdown';
+import PaginatedDropdown from "../components/PaginatedDropdown";
 
 interface SubCategory {
   id: number;
@@ -103,7 +103,7 @@ const AddNewProduct: React.FC = () => {
       try {
         // First fetch to get total count
         const initialResponse = await fetch(
-          "https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/",
+          "https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/?page_size=100",
           {
             headers: {
               Authorization: `JWT ${accessToken}`,
@@ -118,7 +118,7 @@ const AddNewProduct: React.FC = () => {
 
         const initialData = await initialResponse.json();
         const totalItems = initialData.count;
-        const itemsPerPage = 10;
+        const itemsPerPage = 100; // Increased page size
         const totalPages = Math.ceil(totalItems / itemsPerPage);
 
         // Fetch all pages
@@ -126,7 +126,7 @@ const AddNewProduct: React.FC = () => {
         for (let page = 1; page <= totalPages; page++) {
           fetchPromises.push(
             fetch(
-              `https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/?page=${page}`,
+              `https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/?page=${page}&page_size=${itemsPerPage}`,
               {
                 headers: {
                   Authorization: `JWT ${accessToken}`,
@@ -140,10 +140,14 @@ const AddNewProduct: React.FC = () => {
         // Wait for all requests to complete
         const responses = await Promise.all(fetchPromises);
 
-        // Combine all results
-        const allCategories = responses.reduce((acc, response) => {
-          return [...acc, ...response.results];
-        }, []);
+        // Combine all results and sort by name
+        const allCategories = responses
+          .reduce((acc, response) => {
+            return [...acc, ...response.results];
+          }, [])
+          .sort((a: SubCategory, b: SubCategory) =>
+            a.name.localeCompare(b.name)
+          );
 
         setCategories(allCategories);
       } catch (error) {
@@ -237,7 +241,10 @@ const AddNewProduct: React.FC = () => {
         key !== "image2" &&
         key !== "image3"
       ) {
-        formDataToSend.append(key, String(formData[key as keyof typeof formData]));
+        formDataToSend.append(
+          key,
+          String(formData[key as keyof typeof formData])
+        );
       }
     });
 
@@ -267,7 +274,7 @@ const AddNewProduct: React.FC = () => {
 
       const data = await response.json();
       console.log("Product added successfully:", data);
-      
+
       setNewProductId(data.id);
       setModalConfig({
         isOpen: true,
@@ -349,7 +356,7 @@ const AddNewProduct: React.FC = () => {
                     </label>
                     <button
                       type="button"
-                      onClick={() => navigate('/admin/admin-categories')}
+                      onClick={() => navigate("/admin/admin-categories")}
                       className="text-sm text-blue-600 hover:text-blue-700"
                     >
                       Manage Categories
@@ -357,8 +364,10 @@ const AddNewProduct: React.FC = () => {
                   </div>
                   <PaginatedDropdown
                     options={categories}
-                    value={formData.sub_category || ''}
-                    onChange={(value) => setFormData(prev => ({ ...prev, sub_category: value }))}
+                    value={formData.sub_category || ""}
+                    onChange={(value) =>
+                      setFormData((prev) => ({ ...prev, sub_category: value }))
+                    }
                     placeholder="Select Category"
                     required
                   />
@@ -438,8 +447,6 @@ const AddNewProduct: React.FC = () => {
                     ))}
                   </select>
                 </div>
-
-
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -751,7 +758,11 @@ const AddNewProduct: React.FC = () => {
               onClick={() => setViewProductPreviewModal(true)}
               disabled={!isFormValid()}
               className={`px-6 py-3 border border-transparent text-base font-medium rounded-md text-white
-                ${isFormValid() ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}
+                ${
+                  isFormValid()
+                    ? "bg-blue-600 hover:bg-blue-700"
+                    : "bg-gray-400 cursor-not-allowed"
+                }
                 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
             >
               Preview Product
@@ -761,7 +772,11 @@ const AddNewProduct: React.FC = () => {
               onClick={handleSaveChanges}
               disabled={loading || !isFormValid()}
               className={`px-6 py-3 border border-transparent text-base font-medium rounded-md text-white
-                ${loading || !isFormValid() ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
+                ${
+                  loading || !isFormValid()
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }
                 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
             >
               {loading ? (
@@ -897,7 +912,6 @@ const AddNewProduct: React.FC = () => {
                         <span className="text-2xl font-bold text-gray-900">
                           ₦{formData.price || "0.00"}
                         </span>
-                        
                       </div>
                     </div>
 

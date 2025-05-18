@@ -272,7 +272,6 @@ const ProductDetail = () => {
         return;
       }
 
-      // Success case
       setModalConfig({
         isOpen: true,
         title: "Success",
