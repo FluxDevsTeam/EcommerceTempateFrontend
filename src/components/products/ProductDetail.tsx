@@ -359,14 +359,14 @@ const ProductDetail = () => {
             <div
               className={`bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 border-t-4 ${
                 modalConfig.type === "success"
-                  ? "border-green-500"
+                  ? "border-customBlue"
                   : "border-red-500"
               }`}
             >
               <h2
                 className={`text-2xl font-bold mb-4 ${
                   modalConfig.type === "success"
-                    ? "text-green-600"
+                    ? "text-customBlue"
                     : "text-red-600"
                 }`}
               >
@@ -377,7 +377,7 @@ const ProductDetail = () => {
                 onClick={handleCloseModal}
                 className={`w-full py-2 px-4 text-white rounded ${
                   modalConfig.type === "success"
-                    ? "bg-green-600 hover:bg-green-700"
+                    ? "bg-customBlue hover:bg-blue-700"
                     : "bg-red-500 hover:bg-red-600"
                 }`}
               >
@@ -549,7 +549,7 @@ const ProductDetail = () => {
                 {isAddingToCart
                   ? "Adding..."
                   : isInStock
-                  ? "Add to Cart"
+                  ? "Add to Caeeerrt"
                   : "Out of Stock"}
               </button>
             </div>
@@ -577,10 +577,10 @@ const ProductDetail = () => {
           <div className="md:w-[30%] mx-auto w-full flex justify-center items-center">
             <DescriptionList
               details={{
-                Category: product.sub_category.category.name,
-                Subcategory: product.sub_category.name,
-                Weight: product.weight,
-                Color: product.colour,
+                Category: product.sub_category?.category?.name || "N/A",
+                Subcategory: product.sub_category?.name || 'N/A',
+                Weight: product.weight || 'N/A',
+                Color: product.colour || 'N/A',
               }}
             />
           </div>

@@ -40,12 +40,12 @@ const TermsOfService = () => {
     {
       title: "Intellectual Property",
       content:
-        "All content on this website, including but not limited to logos, designs, text, images, graphics, and software (including product images sourced from third-party retailers or suppliers), is the property of ASL ORIGINALS or its licensors. This content is protected by copyright and intellectual property laws. Unauthorized use, reproduction, or distribution of any material from this site, including product images, is prohibited without prior written permission.",
+        "All content on this website, including but not limited to logos, designs, text, images, graphics, and software (including product images sourced from third-party retailers or suppliers), is the property of KIDS DESIGN COMPANY or its licensors. This content is protected by copyright and intellectual property laws. Unauthorized use, reproduction, or distribution of any material from this site, including product images, is prohibited without prior written permission.",
     },
     {
       title: "Limitation of Liability",
       content:
-        "To the fullest extent permitted by law, ASL ORIGINALS is not liable for any indirect, incidental, special, or consequential damages arising from your use of the Site or the purchase of our products. Our total liability is limited to the amount you paid for the product(s) in question.",
+        "To the fullest extent permitted by law, KIDS DESIGN COMPANY is not liable for any indirect, incidental, special, or consequential damages arising from your use of the Site or the purchase of our products. Our total liability is limited to the amount you paid for the product(s) in question.",
     },
     {
       title: "Disclaimers",
@@ -55,7 +55,7 @@ const TermsOfService = () => {
     {
       title: "Indemnification",
       content:
-        "You agree to indemnify and hold harmless ASL ORIGINALS, its officers, directors, employees, and affiliates from any claims, damages, or liabilities arising from your use of the Site, your breach of these Terms, or your violation of any applicable laws.",
+        "You agree to indemnify and hold harmless KIDS DESIGN COMPANY, its officers, directors, employees, and affiliates from any claims, damages, or liabilities arising from your use of the Site, your breach of these Terms, or your violation of any applicable laws.",
     },
     {
       title: "Modifications to Terms",

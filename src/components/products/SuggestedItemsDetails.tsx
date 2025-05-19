@@ -587,10 +587,10 @@ const SuggestedItemsDetails: React.FC<ImageSliderProps> = ({ data }) => {
           <div className="md:w-[30%] mx-auto w-full flex justify-center items-center">
             <DescriptionList
               details={{
-                Category: product.sub_category.category.name,
-                Subcategory: product.sub_category.name,
-                Weight: product.weight,
-                Color: product.colour,
+                Category: product.sub_category?.category?.name || 'N/A',
+                Subcategory: product.sub_category?.name || 'N/A',
+                Weight: product.weight || 'N/A',
+                Color: product.colour || 'N/A',
               }}
             />
           </div>
