@@ -157,20 +157,19 @@ const Homepage = () => {
 
   return (
     <div className="w-full min-h-full px-4 md:px-12 py-4 lg:px-28">
-      {" "}
-      {/* Hero Section */}{" "}
-      <div className="flex flex-col md:grid md:grid-cols-2 gap-6 container mx-auto mb-6 mt-10 md:mt-6 md:place-items-center">
-        {/* Image*/}
+      {/* Hero Section */}
+      <div className="flex flex-col md:grid md:grid-cols-2 gap-8 lg:gap-12 container mx-auto mb-8 mt-12 md:mt-8 md:place-items-center">
+        {/* Image Column */}
         <div className="w-full md:col-start-2 md:row-start-1 flex items-center justify-center">
           <div className="relative w-full flex justify-center">
             <img
               src={banner}
               alt="Banner image"
-              className="w-full max-w-[280px] sm:max-w-xs lg:max-w-md object-contain mx-auto"
+              className="w-full max-w-[320px] sm:max-w-xs lg:max-w-md object-contain mx-auto"
             />
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
               <Link to="/new-arrivals">
-                <button className="bg-customBlue text-white rounded-md px-6 py-3 hover:brightness-90 transition-all duration-300 opacity-75">
+                <button className="bg-customBlue text-white text-sm md:text-base font-medium rounded-md px-8 py-3 hover:brightness-90 transition-all duration-300 shadow-lg hover:shadow-xl opacity-70">
                   Shop Now
                 </button>
               </Link>
@@ -178,17 +177,27 @@ const Homepage = () => {
           </div>
         </div>
 
-        <div className="flex flex-col justify-center items-start space-y-4 max-w-lg w-full px-4 md:col-start-1">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold max-md:text-center">
-            Kids Design Company,
-          </h1>
-          <p className="text-[#000000] font-medium text-sm md:text-base max-md:text-center">
-            At Kids Design Company, we don’t just create beautiful spaces — we
-            craft inspiring environments that nurture creativity, spark
-            imagination, and shape the dreams and destinies of children.
-          </p>
+        {/* Text Content Column */}
+        <div className="flex flex-col justify-center items-start space-y-6 max-w-xl w-full px-4 md:px-0 md:col-start-1">
+          <div className="w-full space-y-4">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight tracking-tight max-md:text-center">
+              Kids Design{' '}
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-customBlue to-blue-600">
+                Company
+              </span>
+            </h1>
+            <p className="text-gray-700 text-base md:text-lg lg:text-xl leading-relaxed max-md:text-center">
+              At Kids Design Company, we don't just create beautiful spaces — we
+              craft inspiring environments that{' '}
+              <span className="font-medium text-gray-900">nurture creativity</span>,{' '}
+              <span className="font-medium text-gray-900">spark imagination</span>, and{' '}
+              <span className="font-medium text-gray-900">shape the dreams</span> and
+              destinies of children.
+            </p>
+          </div>
         </div>
       </div>
+
       {/* Content Sections */}
       <div className="md:mt-3 md:space-y-10">
         {latestItems.length > 0 && (
