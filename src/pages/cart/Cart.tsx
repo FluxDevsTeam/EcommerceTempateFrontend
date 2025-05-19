@@ -337,14 +337,20 @@ const Cart = () => {
 
   const undiscountedTotal = cartItems.reduce(
     (total: number, item: CartItem) => {
-      const undiscountedPrice =
-        item.size.undiscounted_price || Number(item.size.price);
-      return total + undiscountedPrice * item.quantity;
+      const itemPrice = Number(item.size.price);
+      const undiscountedPrice = item.size.undiscounted_price
+        ? Number(item.size.undiscounted_price)
+        : itemPrice;
+      // Use the higher of undiscounted_price or price
+      return (
+        total +
+        (undiscountedPrice > itemPrice ? undiscountedPrice : itemPrice) *
+          item.quantity
+      );
     },
     0
   );
 
-  // Calculate total savings from product discounts
   const totalSavings = undiscountedTotal - subtotal;
   const discountPercentage =
     Math.round((totalSavings / undiscountedTotal) * 100) || 0;
@@ -414,17 +420,30 @@ const Cart = () => {
                         Size: {item.size.size.toUpperCase()}
                       </p>
                       <div className="mt-1">
-                        {item.size.undiscounted_price && 
-                         Number(item.size.undiscounted_price) > Number(item.size.price) ? (
+                        {item.size.undiscounted_price &&
+                        Number(item.size.undiscounted_price) >
+                          Number(item.size.price) ? (
                           <div className="">
                             <span className="line-through text-gray-500">
-                              ₦ {formatPrice(Number(item.size.undiscounted_price))}
-                            </span> <br/>
+                              ₦{" "}
+                              {formatPrice(
+                                Number(item.size.undiscounted_price)
+                              )}
+                            </span>{" "}
+                            <br />
                             <span className="font-bold text-green-600">
                               ₦ {formatPrice(Number(item.size.price))}
-                            </span> <br className="md:hidden"/>
+                            </span>{" "}
+                            <br className="md:hidden" />
                             <span className="text-xs text-green-600">
-                              ({Math.round((1 - Number(item.size.price) / Number(item.size.undiscounted_price)) * 100)}% off)
+                              (
+                              {Math.round(
+                                (1 -
+                                  Number(item.size.price) /
+                                    Number(item.size.undiscounted_price)) *
+                                  100
+                              )}
+                              % off)
                             </span>
                           </div>
                         ) : (

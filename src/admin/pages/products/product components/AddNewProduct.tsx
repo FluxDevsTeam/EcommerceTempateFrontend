@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Modal from "../../../../components/ui/Modal";
 import { IoChevronBack, IoSearch, IoClose } from "react-icons/io5";
-import PaginatedDropdown from "../components/PaginatedDropdown";
+import PaginatedDropdown from "./PaginatedDropdown";
 
 interface SubCategory {
   id: number;

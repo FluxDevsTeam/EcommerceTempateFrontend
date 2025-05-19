@@ -30,7 +30,7 @@ const AdminSubCategories = () => {
   const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 18;
+  const ITEMS_PER_PAGE = 5;
   const [totalSubCategories, setTotalSubCategories] = useState(0);
   const navigate = useNavigate();
 
@@ -66,10 +66,11 @@ const AdminSubCategories = () => {
       });
       if (!response.ok) throw new Error('Failed to fetch subcategories');
       const data = await response.json();
-      setSubCategories(data.results);
-      setTotalSubCategories(data.count);
+      setSubCategories(data.results || []); // Ensure we set an empty array if results is null
+      setTotalSubCategories(data.count || 0); // Ensure we set 0 if count is null
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch subcategories');
+      setSubCategories([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -77,8 +78,11 @@ const AdminSubCategories = () => {
 
   useEffect(() => {
     fetchCategories();
+  }, []); // Only fetch categories once
+
+  useEffect(() => {
     fetchSubCategories();
-  }, [currentPage]);
+  }, [currentPage, ITEMS_PER_PAGE]); // Re-fetch subcategories when page changes
 
   const handleAdd = async () => {
     if (!newSubCategoryName.trim() || !selectedCategory) return;
@@ -96,9 +100,8 @@ const AdminSubCategories = () => {
           category: selectedCategory,
           name: newSubCategoryName
         }),
-      });
-
-      if (!response.ok) throw new Error('Failed to add subcategory');
+      });      if (!response.ok) throw new Error('Failed to add subcategory');
+      setCurrentPage(1); // Go back to first page
       await fetchSubCategories();
       setNewSubCategoryName('');
       setSelectedCategory(0);
@@ -126,9 +129,8 @@ const AdminSubCategories = () => {
           category: selectedCategory,
           name: newSubCategoryName
         }),
-      });
-
-      if (!response.ok) throw new Error('Failed to update subcategory');
+      });      if (!response.ok) throw new Error('Failed to update subcategory');
+      // Stay on current page after edit
       await fetchSubCategories();
       setNewSubCategoryName('');
       setSelectedCategory(0);
@@ -152,10 +154,16 @@ const AdminSubCategories = () => {
         headers: {
           Authorization: `JWT ${accessToken}`,
         },
-      });
-
-      if (!response.ok) throw new Error('Failed to delete subcategory');
-      await fetchSubCategories();
+      });      if (!response.ok) throw new Error('Failed to delete subcategory');
+      
+      // If we're on a page > 1 and the current page is empty after deletion,
+      // go back one page
+      const remainingItems = (totalSubCategories - 1) % ITEMS_PER_PAGE;
+      if (currentPage > 1 && remainingItems === 0) {
+        setCurrentPage(prev => prev - 1);
+      } else {
+        await fetchSubCategories();
+      }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to delete subcategory');
     } finally {

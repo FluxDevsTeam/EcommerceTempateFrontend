@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  // FaSearch,
   FaPlus,
   FaThList,
   FaTh,
@@ -9,56 +8,55 @@ import {
 } from "react-icons/fa";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
-import PaginatedDropdown from '../components/PaginatedDropdown';
+import PaginatedDropdown from "./PaginatedDropdown";
+import type { Product } from "../utils/productUtils";
+import { fetchProducts } from "../utils/productUtils";
 
-// Define interfaces for the product data structure based on the API response
+// Define interfaces for auxiliary data structures
 interface Category {
   id: number;
   name: string;
 }
 
-interface SubCategory {
-  id: number;
-  category: Category;
-  name: string;
-}
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  total_quantity: number;
-  sub_category: SubCategory;
-  colour: string;
-  image1: string;
-  image2: string | null;
-  image3: string | null;
-  discounted_price: string | null;
-  price: string;
-  is_available: boolean;
-  latest_item: boolean;
-  latest_item_position: number | null;
-  dimensional_size: string | null;
-  weight: string | null;
-  top_selling_items: boolean;
-  top_selling_position: number | null;
-  date_created: string;
-  date_updated: string;
-  production_days: number;
-  unlimited: false;
-}
-
-interface ApiResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Product[];
-}
-
-interface ProductTableProps {
+interface ProductTableProps{
   isVisible: boolean;
   onViewChange: (mode: "grid" | "list") => void;
   currentView: "grid" | "list";
+}
+
+// Helper functions that were previously imported
+function getStatusColor(product: Product) {
+  if (!product.is_available) {
+    return "text-gray-600 bg-gray-50"; // Unavailable items are gray
+  }
+  if (product.unlimited || product.total_quantity > 0) {
+    return "text-green-600 bg-green-50"; // Available items are green
+  }
+  return "text-orange-600 bg-orange-50"; // Out of stock items are orange
+}
+
+function getStatusText(product: Product) {
+  if (!product.is_available) {
+    return "Unavailable";
+  }
+  if (product.unlimited || product.total_quantity > 0) {
+    return "Available";
+  }
+  return "Out of Stock";
+}
+
+function formatDate(dateString: string) {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } catch (e) {
+    console.error("Error formatting date:", e);
+    return "Invalid Date";
+  }
 }
 
 const ProductListTableView: React.FC<ProductTableProps> = ({
@@ -68,7 +66,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
 }) => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage] = useState<number>(18); // Changed from 30 to 18
+  const [itemsPerPage] = useState<number>(20);
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
   const [openPopoverId, setOpenPopoverId] = useState<number | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -83,10 +81,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
     productName: "",
   });
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [sortBy, setSortBy] = useState<string>("");
-  const [categories, setCategories] = useState<{ id: number; name: string }[]>(
-    []
-  );
+  const [sortBy, setSortBy] = useState<string>("");  const [categories, setCategories] = useState<Category[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [showPriceFilter, setShowPriceFilter] = useState(false);
   const [dbPriceRange, setDbPriceRange] = useState<[number, number]>([0, 0]);
@@ -100,115 +95,39 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
   } | null>(null);
   const [editCategoryName, setEditCategoryName] = useState("");
   const [editingCategory, setEditingCategory] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
 
-  // Fetch products from the API
   useEffect(() => {
-    const fetchProducts = async (page: number) => {
-      setLoading(true);
-      setError(null);
-      const accessToken = localStorage.getItem("accessToken");
-
-      if (!accessToken) {
-        setError("Authentication error: No access token found.");
-        setLoading(false);
-        return;
-      }
-
+    const loadProducts = async () => {
       try {
-        // Build base URL with filters
-        let baseQueryParams = "";
-        if (selectedCategory) {
-          baseQueryParams += `&sub_category=${selectedCategory}`;
-        }
-        if (sortBy) {
-          if (sortBy === "price_range") {
-            baseQueryParams += `&min_price=${priceRange[0]}&max_price=${priceRange[1]}`;
-          } else if (sortBy === "out_of_stock") {
-            // Don't add any params here - we'll filter after fetching
-          } else {
-            const [param, value] = sortBy.split("=");
-            baseQueryParams += `&${param}=${value}`;
-          }
-        }
+        setLoading(true);
+        const filters = {
+          sub_category: selectedCategory,
+          ...(sortBy === "price_range"
+            ? {
+                min_price: String(priceRange[0]),
+                max_price: String(priceRange[1]),
+              }
+            : sortBy !== "out_of_stock"
+            ? Object.fromEntries([sortBy.split("=")])
+            : {}),
+        };
 
-        // For price range calculation, use a separate endpoint or larger page size
-        const priceRangeResponse = await fetch(
-          `${baseURL}/api/v1/product/item/?page_size=1000${baseQueryParams}`,
-          {
-            headers: {
-              Authorization: `JWT ${accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
+        const data = await fetchProducts(
+          searchQuery,
+          currentPage,
+          itemsPerPage,
+          filters
         );
-
-        if (!priceRangeResponse.ok) throw new Error("Failed to fetch products");
-
-        const priceRangeData: ApiResponse = await priceRangeResponse.json();
-
-        // Calculate price range from all filtered products
-        const prices = priceRangeData.results.map((product) =>
-          Number(product.price)
-        );
-        const minPrice = Math.min(...prices);
-        const maxPrice = Math.max(...prices);
-
-        setDbPriceRange([minPrice, maxPrice]);
-        if (priceRange[0] === 0 && priceRange[1] === 0) {
-          setPriceRange([minPrice, maxPrice]);
-        }
-
-        // Always use fixed page size of 18 for paginated results
-        const paginatedResponse = await fetch(
-          `${baseURL}/api/v1/product/item/?page=${page}&page_size=18${baseQueryParams}`,
-          {
-            headers: {
-              Authorization: `JWT ${accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!paginatedResponse.ok) {
-          let errorBody;
-          try {
-            errorBody = await paginatedResponse.json();
-          } catch (e) {
-            errorBody = await paginatedResponse.text();
-          }
-          console.error(
-            `HTTP error fetching products! status: ${paginatedResponse.status}, body:`,
-            errorBody
-          );
-          setError(`Failed to load products: ${paginatedResponse.statusText}`);
-          throw new Error(`HTTP error! status: ${paginatedResponse.status}`);
-        }
-
-        const paginatedData: ApiResponse = await paginatedResponse.json();
-
-        // Filter for out of stock items if that option is selected
-        let filteredResults = paginatedData.results;
-        if (sortBy === "out_of_stock") {
-          filteredResults = paginatedData.results.filter(
-            (product) =>
-              !product.unlimited &&
-              (!product.total_quantity || product.total_quantity === 0) &&
-              product.is_available // Only include available items that have 0 quantity
-          );
-        }
-
-        setProducts(filteredResults || []);
-        setTotalProducts(filteredResults.length || 0);
-        setNextPageUrl(paginatedData.next);
-        setPrevPageUrl(paginatedData.previous);
+        setProducts(data.results);
+        setTotalProducts(data.count);
+        setNextPageUrl(data.next);
+        setPrevPageUrl(data.previous);
       } catch (err) {
-        console.error("Failed to fetch price range:", err);
         setError(
-          err instanceof Error
-            ? err.message
-            : "An unknown error occurred while fetching products."
+          err instanceof Error ? err.message : "Failed to fetch products"
         );
       } finally {
         setLoading(false);
@@ -216,9 +135,17 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
     };
 
     if (isVisible) {
-      fetchProducts(currentPage);
+      if (searchQuery) setCurrentPage(1);
+      loadProducts();
     }
-  }, [isVisible, currentPage, selectedCategory, sortBy, priceRange, baseURL]); // Remove priceRange from dependencies
+  }, [
+    isVisible,
+    currentPage,
+    selectedCategory,
+    sortBy,
+    priceRange,
+    searchQuery,
+  ]);
 
   // Fetch categories from the API
   const fetchCategories = async () => {
@@ -253,15 +180,12 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
       const fetchPromises = [];
       for (let page = 1; page <= totalPages; page++) {
         fetchPromises.push(
-          fetch(
-            `${baseURL}/api/v1/product/sub-category/?page=${page}`,
-            {
-              headers: {
-                Authorization: `JWT ${accessToken}`,
-                "Content-Type": "application/json",
-              },
-            }
-          ).then((response) => response.json())
+          fetch(`${baseURL}/api/v1/product/sub-category/?page=${page}`, {
+            headers: {
+              Authorization: `JWT ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }).then((response) => response.json())
         );
       }
 
@@ -297,47 +221,18 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
   }, [dbPriceRange]);
 
   // Filter products based on selected status
-  const filteredProducts = products.filter((product) => {
-    if (selectedStatus === "All") return true;
-    return getStatusText(product) === selectedStatus;
-  });
-
-  // Updated getStatusColor function
-  const getStatusColor = (product: Product) => {
-    if (!product.is_available) {
-      return "text-gray-600 bg-gray-50"; // Unavailable items are gray
-    }
-    if (product.unlimited || product.total_quantity > 0) {
-      return "text-green-600 bg-green-50"; // Available items are green
-    }
-    return "text-orange-600 bg-orange-50"; // Out of stock items are orange
+  const filterProducts = (products: Product[]) => {
+    return products.filter((product) => {
+      const matchesSearch = product.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesStatus =
+        selectedStatus === "All" || getStatusText(product) === selectedStatus;
+      return matchesSearch && matchesStatus;
+    });
   };
 
-  // New getStatusText function
-  const getStatusText = (product: Product) => {
-    if (!product.is_available) {
-      return "Unavailable";
-    }
-    if (product.unlimited || product.total_quantity > 0) {
-      return "Available";
-    }
-    return "Out of Stock";
-  };
-
-  // Format date string
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
-    } catch (e) {
-      console.error("Error formatting date:", e);
-      return "Invalid Date";
-    }
-  };
+  const filteredProducts = filterProducts(products);
 
   if (!isVisible) return null;
 
@@ -465,7 +360,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
             >
               <span className="text-sm whitespace-nowrap">Category</span>
             </button>
-            <button 
+            <button
               className="flex items-center justify-center space-x-2 bg-gray-700 text-white px-2 py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit"
               onClick={() => navigate("/admin/add-new-product")}
             >
@@ -488,15 +383,36 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
 
         {/* Top Controls */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0">
-          {/* Category Dropdown */}
-          <div className="relative w-full sm:max-w-xs mr-0 sm:mr-4">
-            <PaginatedDropdown
-              options={categories}
-              value={selectedCategory}
-              onChange={(value) => setSelectedCategory(String(value))}
-              placeholder="All Categories"
-              className="w-full"
-            />
+          <div className="flex flex-col sm:flex-row w-full gap-4">
+            {/* Category Dropdown */}
+            <div className="relative w-full sm:max-w-xs">
+              <PaginatedDropdown
+                options={categories}
+                value={selectedCategory}
+                onChange={(value) => setSelectedCategory(String(value))}
+                placeholder="All Categories"
+                className="w-full"
+              />
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative w-full sm:max-w-xs">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products..."
+                className="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  ×
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Right Controls */}
@@ -705,9 +621,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                   <th className="px-4 py-3 min-w-[120px] whitespace-nowrap">
                     Price
                   </th>
-                  <th className="px-4 py-3">
-                    Production Days
-                  </th>
+                  <th className="px-4 py-3">Production Days</th>
                   <th className="px-4 py-3">
                     <select
                       value={selectedStatus}
@@ -725,9 +639,13 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
               </thead>
               <tbody>
                 {filteredProducts.map((product, index) => (
-                  <tr key={product.id} className="border-b hover:bg-gray-50 cursor-pointer"  onClick={() =>
-                        navigate(`/admin/admin-products-details/${product.id}`)
-                      }>
+                  <tr
+                    key={product.id}
+                    className="border-b hover:bg-gray-50 cursor-pointer"
+                    onClick={() =>
+                      navigate(`/admin/admin-products-details/${product.id}`)
+                    }
+                  >
                     <td className="px-4 py-3">
                       {(currentPage - 1) * itemsPerPage + index + 1}
                     </td>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaEdit, FaTrash, FaPlus, FaTh, FaThList } from "react-icons/fa";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
-import PaginatedDropdown from "../components/PaginatedDropdown";
+import PaginatedDropdown from "./PaginatedDropdown";
 
 // Use the same interfaces from Product-List-Table-View
 interface Category {
@@ -93,125 +93,97 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   } | null>(null);
   const [editCategoryName, setEditCategoryName] = useState("");
   const [editingCategory, setEditingCategory] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
 
+  const fetchProducts = async (page: number) => {
+    setLoading(true);
+    setError(null);
+    const accessToken = localStorage.getItem("accessToken");
+
+    if (!accessToken) {
+      setError("Authentication error: No access token found.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Build URL params
+      let params = new URLSearchParams({
+        page: page.toString(),
+        page_size: itemsPerPage.toString(),
+      });
+
+      if (selectedCategory) {
+        params.append("sub_category", selectedCategory);
+      }
+
+      if (sortBy) {
+        if (sortBy === "price_range") {
+          params.append("min_price", priceRange[0].toString());
+          params.append("max_price", priceRange[1].toString());
+        } else if (sortBy !== "out_of_stock") {
+          const [param, value] = sortBy.split("=");
+          params.append(param, value);
+        }
+      }
+
+      // Build API URL
+      const apiUrl = searchQuery
+        ? `${baseURL}/api/v1/product/item/search/?search=${encodeURIComponent(
+            searchQuery
+          )}&${params}`
+        : `${baseURL}/api/v1/product/item/?${params}`;
+
+      const response = await fetch(apiUrl, {
+        headers: {
+          Authorization: `JWT ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) throw new Error(response.statusText);
+
+      const data: ApiResponse = await response.json();
+
+      let results = data.results;
+      if (sortBy === "out_of_stock") {
+        results = results.filter(
+          (p) =>
+            !p.unlimited &&
+            (!p.total_quantity || p.total_quantity === 0) &&
+            p.is_available
+        );
+      }
+
+      setProducts(results);
+      setTotalProducts(data.count);
+      setNextPageUrl(data.next);
+      setPrevPageUrl(data.previous);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch products");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch products from the API
   useEffect(() => {
-    const fetchProducts = async (page: number) => {
-      setLoading(true);
-      setError(null);
-      const accessToken = localStorage.getItem("accessToken");
-
-      if (!accessToken) {
-        setError("Authentication error: No access token found.");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // Build base URL with filters
-        let baseQueryParams = "";
-        if (selectedCategory) {
-          baseQueryParams += `&sub_category=${selectedCategory}`;
-        }
-        if (sortBy) {
-          if (sortBy === "price_range") {
-            baseQueryParams += `&min_price=${priceRange[0]}&max_price=${priceRange[1]}`;
-          } else if (sortBy === "out_of_stock") {
-            // Don't add any params here - we'll filter after fetching
-          } else {
-            const [param, value] = sortBy.split("=");
-            baseQueryParams += `&${param}=${value}`;
-          }
-        }
-
-        // For price range calculation, use a separate endpoint or larger page size
-        const priceRangeResponse = await fetch(
-          `${baseURL}/api/v1/product/item/?page_size=1000${baseQueryParams}`,
-          {
-            headers: {
-              Authorization: `JWT ${accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!priceRangeResponse.ok) throw new Error("Failed to fetch products");
-
-        const priceRangeData: ApiResponse = await priceRangeResponse.json();
-
-        // Calculate price range from all filtered products
-        const prices = priceRangeData.results.map((product) =>
-          Number(product.price)
-        );
-        const minPrice = Math.min(...prices);
-        const maxPrice = Math.max(...prices);
-
-        setDbPriceRange([minPrice, maxPrice]);
-        if (priceRange[0] === 0 && priceRange[1] === 0) {
-          setPriceRange([minPrice, maxPrice]);
-        }
-
-        // Always use fixed page size of 18 for paginated results
-        const paginatedResponse = await fetch(
-          `${baseURL}/api/v1/product/item/?page=${page}&page_size=20${baseQueryParams}`,
-          {
-            headers: {
-              Authorization: `JWT ${accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!paginatedResponse.ok) {
-          let errorBody;
-          try {
-            errorBody = await paginatedResponse.json();
-          } catch (e) {
-            errorBody = await paginatedResponse.text();
-          }
-          console.error(
-            `HTTP error fetching products! status: ${paginatedResponse.status}, body:`,
-            errorBody
-          );
-          setError(`Failed to load products: ${paginatedResponse.statusText}`);
-          throw new Error(`HTTP error! status: ${paginatedResponse.status}`);
-        }
-
-        const paginatedData: ApiResponse = await paginatedResponse.json();
-
-        // Filter for out of stock items if that option is selected
-        let filteredResults = paginatedData.results;
-        if (sortBy === "out_of_stock") {
-          filteredResults = paginatedData.results.filter(
-            (product) =>
-              !product.unlimited &&
-              (!product.total_quantity || product.total_quantity === 0) &&
-              product.is_available // Only include available items that have 0 quantity
-          );
-        }
-
-        setProducts(filteredResults || []);
-        setTotalProducts(filteredResults.length || 0);
-        setNextPageUrl(paginatedData.next);
-        setPrevPageUrl(paginatedData.previous);
-      } catch (err) {
-        console.error("Failed to fetch price range:", err);
-        setError(
-          err instanceof Error
-            ? err.message
-            : "An unknown error occurred while fetching products."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (isVisible) {
+      if (searchQuery) setCurrentPage(1);
       fetchProducts(currentPage);
     }
-  }, [isVisible, currentPage, selectedCategory, sortBy, priceRange, baseURL]); // Remove priceRange from dependencies
+  }, [
+    isVisible,
+    currentPage,
+    selectedCategory,
+    sortBy,
+    priceRange,
+    searchQuery,
+    baseURL,
+  ]); // Add searchQuery to dependencies
 
   // Fetch categories from the API
   const fetchCategories = async () => {
@@ -287,10 +259,15 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   }, [dbPriceRange]);
 
   // Filter products based on selected status
-  const filteredProducts = products.filter((product) => {
-    if (selectedStatus === "All") return true;
-    return getStatusText(product) === selectedStatus;
-  });
+  const filterProducts = (products: Product[]) => {
+    return products.filter((product) => {
+      return (
+        selectedStatus === "All" || getStatusText(product) === selectedStatus
+      );
+    });
+  };
+
+  const filteredProducts = filterProducts(products);
 
   const getStatusColor = (product: Product) => {
     if (!product.is_available) {
@@ -450,15 +427,20 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               className="flex items-center justify-center space-x-2 bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit"
               onClick={() => navigate("/admin/admin-categories")}
             >
-              <span className="text-sm whitespace-nowrap">Category</span>
+              <span
+                className="text-xs md:text-sm whitespace-nowrap"
+                style={{ fontSize: "clamp(8px, 3vw, 14px)" }}
+              >
+                Category
+              </span>
             </button>
             <button
               className="flex items-center justify-center space-x-2 bg-gray-700 text-white px-2 py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit"
               onClick={() => navigate("/admin/add-new-product")}
             >
-              <FaPlus style={{ fontSize: "clamp(1px, 3vw, 15px)" }} />
+              <FaPlus style={{ fontSize: "clamp(0.5px, 3vw, 15px)" }} />
               <span
-                style={{ fontSize: "clamp(9px, 3vw, 14px)" }}
+                style={{ fontSize: "clamp(7px, 3vw, 14px)" }}
                 className="hidden md:inline-block"
               >
                 Add New Product
@@ -475,15 +457,36 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
         {/* Top Controls */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0">
-          {/* Category Dropdown */}
-          <div className="relative w-full sm:max-w-xs mr-0 sm:mr-4">
-            <PaginatedDropdown
-              options={categories}
-              value={selectedCategory}
-              onChange={(value) => setSelectedCategory(String(value))}
-              placeholder="All Categories"
-              className="w-full"
-            />
+          <div className="flex flex-col sm:flex-row w-full gap-4">
+            {/* Category Dropdown */}
+            <div className="relative w-full sm:max-w-xs">
+              <PaginatedDropdown
+                options={categories}
+                value={selectedCategory}
+                onChange={(value) => setSelectedCategory(String(value))}
+                placeholder="All Categories"
+                className="w-full"
+              />
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative w-full sm:max-w-xs">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products..."
+                className="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none place focus:ring-2 focus:ring-blue-500"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  ×
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Right Controls */}
@@ -676,7 +679,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         ) : error ? (
           <div className="text-center p-4 text-red-500">Error: {error}</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
@@ -761,10 +764,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                         ? "∞ Unlimited"
                         : `${product.total_quantity || "0"} in stock`}
                     </span>
-                    <span className="text-xs px-2 py-1 bg-gray-100 w-fit rounded-full">
+                    <span className="text-xs px-2 py-1 bg-gray-100 w-fit rounded-full text-center">
                       {`${product.production_days || "0"} production days`}
                     </span>
-
                   </div>
                 </div>
               </div>
