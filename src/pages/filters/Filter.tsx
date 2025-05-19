@@ -60,7 +60,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
     initialFilters?.selectedSubCategories || []
   );
   const [priceRange, setPriceRange] = useState<[number, number]>(
-    initialFilters?.priceRange || [0, 100000000] 
+    initialFilters?.priceRange || [0, 10000000] 
   );
   const [selectedSizes, setSelectedSizes] = useState<string[]>(
     initialFilters?.selectedSizes || []
