@@ -47,7 +47,7 @@ const Sidebar = ({
     `}>
       {/* Top section with logo and close button for mobile */}
       <div className="flex justify-between items-center p-6">
-        <h1 className="text-2xl font-bold text-white">SHOP.CO</h1>
+        <h1 className="text-2xl font-bold text-white">KIDS DESIGN COMPANY</h1>
         {isMobileMenuOpen && (
           <button onClick={toggleMobileMenu} className="md:hidden text-white">
             <X size={24} />

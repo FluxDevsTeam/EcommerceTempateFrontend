@@ -70,7 +70,7 @@ const TermsOfService = () => {
       <h1 className="text-3xl font-bold mb-8">Terms of Service</h1>
 
       <p className="mb-6">
-        Welcome to <span className="font-bold">SHOP.CO</span>. By accessing or using our website or
+        Welcome to <span className="font-bold">KIDS DESIGN COMPANY</span>. By accessing or using our website or
         purchasing our products, you agree to comply with and be bound by these
         Terms of Service. Please read them carefully before using the Site. If
         you do not agree with any part of these Terms, you may not use the Site.
@@ -86,15 +86,12 @@ const TermsOfService = () => {
 
         <div>
           <h2 className="text-xl font-semibold mb-3">Contact Information</h2>
-          <p>Email: customerservice@shop.co</p>
-          <p>Phone: +2349186900555</p>
-          <p>WhatsApp: +2348196800888</p>
-          <p>
-            Address: Lekki Town Square, 8B The Providence Street, Lekki Phase 1,
-            Lagos
-          </p>
+          <p>Email: kidsdesigncompanyng@gmail.com</p>
+          <p>Phone: +234 806 322 4027</p>
+          <p>WhatsApp: +234 806 322 4027</p>
+          <p>Address: Surulere, Lagos State, Nigeria.</p>
           <p className="mt-4">
-            By using our Site or purchasing from <span className="font-bold">SHOP.CO</span>, you
+            By using our Site or purchasing from <span className="font-bold">KIDS DESIGN COMPANY</span>, you
             acknowledge that you have read, understood, and agreed to these
             Terms of Service.
           </p>
