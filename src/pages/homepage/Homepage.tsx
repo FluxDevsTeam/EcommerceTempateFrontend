@@ -158,7 +158,7 @@ const Homepage = () => {
   return (
     <div className="w-full min-h-full px-4 md:px-12 py-4 lg:px-28">
       {/* Hero Section */}
-      <div className="flex flex-col md:grid md:grid-cols-2 gap-8 lg:gap-12 container mx-auto mb-8 mt-12 md:mt-8 md:place-items-center">
+      <div className="flex flex-col md:grid md:grid-cols-2 gap-8 lg:gap-12 container mx-auto mb-4 mt-8 md:mt-8 md:place-items-center">
         {/* Image Column */}
         <div className="w-full md:col-start-2 md:row-start-1 flex items-center justify-center">
           <div className="relative w-full flex justify-center">
@@ -180,19 +180,11 @@ const Homepage = () => {
         {/* Text Content Column */}
         <div className="flex flex-col justify-center items-start space-y-6 max-w-xl w-full px-4 md:px-0 md:col-start-1">
           <div className="w-full space-y-4">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight tracking-tight max-md:text-center">
-              Kids Design{' '}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-customBlue to-blue-600">
-                Company
-              </span>
+            <h1 className="text-xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight tracking-tight">
+              Furnish with Fun, Discover What Your Little Ones Love!
             </h1>
-            <p className="text-gray-700 text-base md:text-lg lg:text-xl leading-relaxed max-md:text-center">
-              At Kids Design Company, we don't just create beautiful spaces — we
-              craft inspiring environments that{' '}
-              <span className="font-medium text-gray-900">nurture creativity</span>,{' '}
-              <span className="font-medium text-gray-900">spark imagination</span>, and{' '}
-              <span className="font-medium text-gray-900">shape the dreams</span> and
-              destinies of children.
+            <p className="text-gray-700 text-base md:text-lg lg:text-xl leading-relaxed">
+              Exclusive Deals. Stress-Free Shopping for Your Kids’ Perfect Space.
             </p>
           </div>
         </div>
