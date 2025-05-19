@@ -7,7 +7,7 @@ import { WishData } from '@/card/wishListApi';
 import { WishItem } from '@/card/types';
 
 // Full search API endpoint
-const SEARCH_API_URL = "https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/search/";
+const SEARCH_API_URL = "https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/search/?page=${page}";
 
 export interface Category {
   id: number;
@@ -171,7 +171,7 @@ const SearchResults = () => {
     setSearchParams(prev => {
       const newParams = new URLSearchParams(prev);
       newParams.set('ordering', newOrdering);
-      newParams.delete('page'); // Reset to page 1 when changing ordering
+      newParams.delete('page');
       return newParams;
     });
   };

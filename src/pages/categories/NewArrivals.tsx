@@ -1,6 +1,6 @@
 // Categories.tsx
 import { useState } from 'react';
-import NewProductsList from "./NewProductsList";
+import NewProductsList from './NewProductsList.tsx';
 import SortDropdown from "./SortButton"; 
 
 const NewArrivals = () => {

@@ -9,8 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-
-// Define TypeScript interfaces for our data
 interface Category {
   id: number;
   name: string;
@@ -48,47 +46,48 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
   onApplyFilters,
   initialFilters 
 }) => {
-  // State for our fetched data
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
+  const [nextUrl, setNextUrl] = useState<string | null>(null);
+  const [prevUrl, setPrevUrl] = useState<string | null>(null);
   const [totalItems, setTotalItems] = useState<number>(0);
-  const pageSize = 5; // Display 5 items per page
-  
-  // State for filter selections - initialized with initialFilters or defaults
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [displayedItems, setDisplayedItems] = useState<SubCategory[]>([]);
+
+  // State for filter selections
   const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>(
     initialFilters?.selectedSubCategories || []
   );
   const [priceRange, setPriceRange] = useState<[number, number]>(
-    initialFilters?.priceRange || [0, 5000]
+    initialFilters?.priceRange || [0, 100000000] 
   );
   const [selectedSizes, setSelectedSizes] = useState<string[]>(
     initialFilters?.selectedSizes || []
   );
-  
-  // Fetch all subcategories at once
+
+  // Fetch initial data
   useEffect(() => {
     const fetchData = async () => {
+      if (!isOpen) return;
+      
       setLoading(true);
       try {
-        // Fetch all subcategories
-        const subCategoryResponse = await fetch(
-          `https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/?page_size=100`
+        const response = await fetch(
+          `https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/?page=1`
         );
         
-        if (!subCategoryResponse.ok) {
+        if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
 
-        const subCategoryData: ApiResponse<SubCategory> = await subCategoryResponse.json();
+        const data: ApiResponse<SubCategory> = await response.json();
         
-        setSubCategories(subCategoryData.results);
-        setTotalItems(subCategoryData.count);
-        setTotalPages(Math.ceil(subCategoryData.count / pageSize));
+        setSubCategories([...data.results]);
+        setDisplayedItems(data.results);
+        setNextUrl(data.next);
+        setPrevUrl(data.previous);
+        setTotalItems(data.count);
         setLoading(false);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load filter data';
@@ -99,13 +98,61 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
     };
 
     fetchData();
-  }, []);
+  }, [isOpen]);
 
-  // Get current page items
-  const getCurrentPageItems = () => {
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    return subCategories.slice(startIndex, endIndex);
+  // Handle fetching next page
+  const fetchNextPage = async () => {
+    if (!nextUrl) return;
+    
+    setLoading(true);
+    try {
+      const response = await fetch(nextUrl);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch next page');
+      }
+
+      const data: ApiResponse<SubCategory> = await response.json();
+      
+      setSubCategories(prev => [...prev, ...data.results]);
+      setDisplayedItems(data.results);
+      setNextUrl(data.next);
+      setPrevUrl(data.previous);
+      setCurrentPage(prev => prev + 1);
+      setLoading(false);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load next page';
+      setError(errorMessage);
+      setLoading(false);
+      console.error('Error fetching next page:', err);
+    }
+  };
+
+  // Handle fetching previous page
+  const fetchPreviousPage = async () => {
+    if (!prevUrl) return;
+    
+    setLoading(true);
+    try {
+      const response = await fetch(prevUrl);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch previous page');
+      }
+
+      const data: ApiResponse<SubCategory> = await response.json();
+      
+      setDisplayedItems(data.results);
+      setNextUrl(data.next);
+      setPrevUrl(data.previous);
+      setCurrentPage(prev => prev - 1);
+      setLoading(false);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load previous page';
+      setError(errorMessage);
+      setLoading(false);
+      console.error('Error fetching previous page:', err);
+    }
   };
 
   // Handle subcategory selection
@@ -119,11 +166,6 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
     });
   };
   
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-  
   // Handle price range changes
   const handlePriceChange = (value: [number, number]) => {
     setPriceRange(value);
@@ -131,32 +173,23 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
   
   // Apply filters
   const handleApplyFilter = () => {
-    if (typeof onApplyFilters !== 'function') {
-      console.error('onApplyFilters is not a function');
-      return;
-    }
-
     const filters: FilterState = {
       selectedSubCategories,
       priceRange,
       selectedSizes
     };
     
-    try {
-      onApplyFilters(filters);
-      onClose();
-    } catch (err) {
-      console.error('Error applying filters:', err);
-    }
+    onApplyFilters(filters);
+    onClose();
   };
   
   // Reset filters
   const handleResetFilters = () => {
     setSelectedSubCategories([]);
-    setPriceRange([0, 10000]);
+    setPriceRange([0, 10000000]); 
     setSelectedSizes([]);
   };
-  
+
   return (
     <div className={`fixed min-h-screen top-0 left-0 h-full bg-white shadow-lg w-80 transform transition-transform duration-300 ease-in-out z-50 ${isOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto`}>
       <div className="p-6">
@@ -170,7 +203,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
           </button>
         </div>
         
-        {loading ? (
+        {loading && subCategories.length === 0 ? (
           <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
           </div>
@@ -181,70 +214,80 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
             <AccordionItem value="subcategory" className="border-b border-gray-200">
               <AccordionTrigger className="py-4 font-semibold cursor-pointer">
                 Subcategory
-                <span className="ml-2 text-sm text-gray-500">({totalItems})</span>
+                <span className="ml-2 text-sm text-gray-500">({totalItems} per page)</span>
               </AccordionTrigger>
               <AccordionContent>
-                <ul className="space-y-3 py-1">
-                  {getCurrentPageItems().map((subCategory) => (
-                    <li 
+                {/* Horizontal scrolling container */}
+                <div className="flex flex-col ">
+                  {displayedItems.map((subCategory) => (
+                    <div 
                       key={subCategory.id} 
-                      className={`flex items-center gap-2 cursor-pointer ${
-                        selectedSubCategories.includes(subCategory.id) ? 'text-black font-medium' : 'text-gray-600'
+                      className={`flex-shrink-0  cursor-pointer ${
+                        selectedSubCategories.includes(subCategory.id) 
+                          ? 'border-black bg-gray-100' 
+                          : 'border-gray-200'
                       }`}
                       onClick={() => handleSubCategoryClick(subCategory.id)}
                     >
-                      <input 
-                        type="checkbox" 
-                        checked={selectedSubCategories.includes(subCategory.id)}
-                        onChange={() => {}}
-                        className="h-4 w-4"
-                      />
-                      <span>{subCategory.name} ({subCategory.category.name})</span>
-                    </li>
-                  ))}
-                </ul>
-                
-                {/* Pagination controls - always show if there are more than pageSize items */}
-                {totalItems > pageSize && (
-                  <div className="flex justify-between items-center mt-4 pt-2 border-t border-gray-100">
-                    <button 
-                      onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                      disabled={currentPage === 1}
-                      className="p-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 hover:text-gray-700"
-                    >
-                      <ChevronLeft size={16} />
-                    </button>
-                    
-                    <div className="text-xs text-gray-500">
-                      Page {currentPage} of {totalPages}
+                      <div className="flex items-center gap-2">
+                        <input 
+                          type="checkbox" 
+                          checked={selectedSubCategories.includes(subCategory.id)}
+                          onChange={() => {}}
+                          className="h-4 w-4"
+                        />
+                        <span className="whitespace-nowrap">
+                          {subCategory.name} ({subCategory.category.name})
+                        </span>
+                      </div>
                     </div>
-                    
-                    <button 
-                      onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                      disabled={currentPage === totalPages}
-                      className="p-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 hover:text-gray-700"
-                    >
-                      <ChevronRight size={16} />
-                    </button>
+                  ))}
+                </div>
+                
+                {/* Pagination controls */}
+                <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+                  <button 
+                    onClick={fetchPreviousPage}
+                    disabled={!prevUrl || loading}
+                    className="flex items-center gap-1 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 hover:text-gray-700"
+                  >
+                    <ChevronLeft size={16} />
+                    <span>Previous</span>
+                  </button>
+                  
+               
+                  
+                  <button 
+                    onClick={fetchNextPage}
+                    disabled={!nextUrl || loading}
+                    className="flex items-center gap-1 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 hover:text-gray-700"
+                  >
+                    <span>Next</span>
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+                {loading && subCategories.length > 0 && (
+                  <div className="flex justify-center py-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black"></div>
                   </div>
                 )}
               </AccordionContent>
             </AccordionItem>
             
             <AccordionItem value="price" className="border-b border-gray-200">
-              <AccordionTrigger className="py-4 text-customBlue font-semibold cursor-pointer">Price</AccordionTrigger>
+              <AccordionTrigger className="py-4 font-semibold cursor-pointer">Price</AccordionTrigger>
               <AccordionContent>
                 <div className="pt-2 pb-6">
                   <Slider
                     value={priceRange}
-                    max={10000}
-                    step={100}
+                    max={10000000} 
+                    step={10} 
                     onValueChange={handlePriceChange}
-                    className="mt-6 font-bold bg-customBlue cursor-pointer"
+                    className="mt-6 bg-customBlue cursor-pointer"
                   />          
                   <div className="flex justify-between mt-2">
-                    <span className="text-gray-600 font-bold"> ₦{priceRange[0]}</span>
-                    <span className="text-gray-600 font-bold"> ₦{priceRange[1]}</span>
+                    <span className="text-gray-600 font-bold">₦{priceRange[0].toLocaleString()}</span>
+                    <span className="text-gray-600 font-bold">₦{priceRange[1].toLocaleString()}</span>
                   </div>
                 </div>
               </AccordionContent>
@@ -273,7 +316,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
           </Button>
           <Button 
             onClick={handleApplyFilter} 
-            className="w-1/2 bg-customBlue hover:brightness-90 text-white rounded-full font-medium cursor-pointer hover:bg-black/90 "
+            className="w-1/2 bg-customBlue hover:brightness-90 text-white rounded-full font-medium cursor-pointer hover:bg-black/90"
           >
             Apply Filter
           </Button>
