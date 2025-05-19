@@ -407,7 +407,7 @@ const Cart = () => {
                       />
                     </div>
                     <div>
-                      <h3 className="font-semibold line-clamp-2">
+                      <h3 className="font-semibold line-clamp-1">
                         {item.product.name}
                       </h3>
                       <p className="text-sm text-gray-500">
@@ -416,14 +416,14 @@ const Cart = () => {
                       <div className="mt-1">
                         {item.size.undiscounted_price && 
                          Number(item.size.undiscounted_price) > Number(item.size.price) ? (
-                          <div className="flex items-center gap-2">
+                          <div className="">
                             <span className="line-through text-gray-500">
                               ₦ {formatPrice(Number(item.size.undiscounted_price))}
-                            </span>
+                            </span> <br/>
                             <span className="font-bold text-green-600">
                               ₦ {formatPrice(Number(item.size.price))}
-                            </span>
-                            <span className="text-sm text-green-600">
+                            </span> <br className="md:hidden"/>
+                            <span className="text-xs text-green-600">
                               ({Math.round((1 - Number(item.size.price) / Number(item.size.undiscounted_price)) * 100)}% off)
                             </span>
                           </div>
