@@ -211,20 +211,6 @@ const Homepage = () => {
             onLoadMore={loadMoreTopSellingItems}
           />
         )}
-
-
-        {/* ################### */}
-        {/* <div className="container mx-auto px-4 space-y-16 py-12">
-        <ImageGrid
-          product={data?.latest_items?.results ?? []}
-          getWishlistInfo={getWishlistInfo}
-        />
-        <TopSelling
-          product={data?.top_selling_items?.results ?? []}
-          getWishlistInfo={getWishlistInfo}
-        />
-        <ImageSlider data={data?.latest_items?.results ?? []} /> */}
-        {/* ################## */}
       </div>
     </div>
   );

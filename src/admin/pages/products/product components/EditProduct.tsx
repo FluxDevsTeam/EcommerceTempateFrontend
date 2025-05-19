@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { IoChevronBack, IoSearch, IoClose } from "react-icons/io5";
 import Modal from "../../../../components/ui/Modal";
-import PaginatedDropdown from '../components/PaginatedDropdown';
+import PaginatedDropdown from "./PaginatedDropdown";
 
 interface SubCategory {
   id: number;
@@ -147,7 +147,7 @@ const EditProduct: React.FC = () => {
                 headers: {
                   Authorization: `JWT ${accessToken}`,
                   "Content-Type": "application/json",
-                }
+                },
               }
             ).then((response) => response.json())
           );
@@ -167,7 +167,10 @@ const EditProduct: React.FC = () => {
         setModalConfig({
           isOpen: true,
           title: "Error",
-          message: error instanceof Error ? error.message : "Failed to fetch categories",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to fetch categories",
           type: "error",
         });
       }
@@ -232,7 +235,11 @@ const EditProduct: React.FC = () => {
       setInitialFormData(formattedData);
       setFormData(formattedData);
       setIndividualProductCategory(data.sub_category.name);
-      setPreviewImages([data.image1 || "", data.image2 || "", data.image3 || ""]);
+      setPreviewImages([
+        data.image1 || "",
+        data.image2 || "",
+        data.image3 || "",
+      ]);
     } catch (error) {
       console.error("Error fetching product:", error);
       setModalConfig({
@@ -252,8 +259,9 @@ const EditProduct: React.FC = () => {
 
   // Add effect to check for changes
   useEffect(() => {
-    const hasFormChanges = JSON.stringify(formData) !== JSON.stringify(initialFormData);
-    const hasImageChanges = selectedImages.some(img => img !== null);
+    const hasFormChanges =
+      JSON.stringify(formData) !== JSON.stringify(initialFormData);
+    const hasImageChanges = selectedImages.some((img) => img !== null);
     setHasChanges(hasFormChanges || hasImageChanges);
   }, [formData, selectedImages, initialFormData]);
 
@@ -279,11 +287,14 @@ const EditProduct: React.FC = () => {
     }
 
     const changedFields = new FormData();
-  
+
     // Compare and only add changed fields
-    Object.keys(formData).forEach(key => {
+    Object.keys(formData).forEach((key) => {
       const typedKey = key as keyof typeof formData;
-      if (JSON.stringify(formData[typedKey]) !== JSON.stringify(initialFormData[typedKey])) {
+      if (
+        JSON.stringify(formData[typedKey]) !==
+        JSON.stringify(initialFormData[typedKey])
+      ) {
         changedFields.append(key, String(formData[typedKey]));
       }
     });
@@ -461,13 +472,13 @@ const EditProduct: React.FC = () => {
                 </div>
 
                 <div>
-                    <div className="flex justify-between items-center mb-2">
+                  <div className="flex justify-between items-center mb-2">
                     <label className="block text-sm font-medium text-gray-700">
                       Category
                     </label>
                     <button
                       type="button"
-                      onClick={() => navigate('/admin/admin-categories')}
+                      onClick={() => navigate("/admin/admin-categories")}
                       className="text-sm text-blue-600 hover:text-blue-700"
                     >
                       Manage Categories
@@ -476,7 +487,9 @@ const EditProduct: React.FC = () => {
                   <PaginatedDropdown
                     options={categories}
                     value={formData.sub_category}
-                    onChange={(value) => setFormData(prev => ({ ...prev, sub_category: value }))}
+                    onChange={(value) =>
+                      setFormData((prev) => ({ ...prev, sub_category: value }))
+                    }
                     placeholder="Select Category"
                     required
                   />
@@ -853,7 +866,9 @@ const EditProduct: React.FC = () => {
               onClick={handleSaveChanges}
               disabled={!hasChanges || isSaving}
               className={`px-6 py-3 border border-transparent text-base font-medium rounded-md text-white ${
-                hasChanges ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
+                hasChanges
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : "bg-gray-400 cursor-not-allowed"
               } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50`}
             >
               {isSaving ? (
@@ -1052,13 +1067,11 @@ const EditProduct: React.FC = () => {
                     <div className="space-y-4">
                       <div className="flex items-center space-x-2">
                         <span className="text-gray-700">
-                          {formData.is_available ? (
-                            formData.unlimited ? 
-                              "Unlimited Stock" : 
-                              `${formData.total_quantity ?? 0} in Stock`
-                          ) : (
-                            "Out of Stock"
-                          )}
+                          {formData.is_available
+                            ? formData.unlimited
+                              ? "Unlimited Stock"
+                              : `${formData.total_quantity ?? 0} in Stock`
+                            : "Out of Stock"}
                         </span>
                       </div>
 
