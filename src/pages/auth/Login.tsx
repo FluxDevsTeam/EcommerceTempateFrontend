@@ -50,9 +50,19 @@ const Login = () => {
       // Call login service
       await login(data.email, data.password);
       
-      // If successful, redirect to dashboard or home
-      toast.success('Login successful!');
-      navigate('/dashboard'); // or whatever your main app route is
+      // Modified toast with blue theme
+      toast.success('Login successful!', {
+        style: {
+          background: '#ffffff', // Brighter blue
+          color: '#000000'       
+        },
+        progressStyle: {
+          background: '#0057b7'  
+        },
+        icon: "🗸",
+        position: "top-right",
+      });
+      navigate('/dashboard');
     } catch (err: any) {
       console.error('Login error:', err);
       toast.error(error || 'Login failed. Please check your credentials.');
@@ -125,7 +135,7 @@ const Login = () => {
           
           <Button 
             type="submit" 
-            className="w-full bg-black text-white hover:bg-gray-800"
+            className="w-full bg-[#0057b7] text-white hover:bg-[#004494]"
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Logging in...' : 'Login'}

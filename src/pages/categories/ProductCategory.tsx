@@ -53,7 +53,7 @@ interface ApiResponse {
 // Fetch functions
 const fetchCategoryProducts = async (categoryId: number, page = 1): Promise<ApiResponse> => {
   const response = await fetch(
-    `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?category=${categoryId}&page=${page}`
+    `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?category=${categoryId}&page_size=12&page=${page}`
   );
   if (!response.ok) throw new Error('Failed to fetch products.');
   return response.json();
@@ -160,7 +160,7 @@ const ProductCategory = () => {
     return new Date(b.date_created).getTime() - new Date(a.date_created).getTime();
   });
 
-  const itemsPerPage = 10;
+  const itemsPerPage = 12;
   const totalPages = Math.ceil(productsData.count / itemsPerPage);
 
   return (

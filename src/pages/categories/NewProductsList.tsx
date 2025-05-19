@@ -54,7 +54,7 @@ interface NewProductsListProps {
 }
 
 const fetchProducts = async (page = 1): Promise<ApiResponse> => {
-  const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?page=${page}`);
+  const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?page_size=12&page=${page}`);
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
@@ -127,7 +127,7 @@ const NewProductsList = ({ sortOption }: NewProductsListProps) => {
   });
 
   // Calculate total pages
-  const itemsPerPage = 10; // Adjust this based on your API's default page size
+  const itemsPerPage = 12; // Adjust this based on your API's default page size
   const totalPages = data?.count ? Math.ceil(data.count / itemsPerPage) : 1;
 
   // Determine if there are next and previous pages

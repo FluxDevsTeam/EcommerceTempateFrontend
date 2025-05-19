@@ -65,7 +65,7 @@ const TermsOfService = () => {
   ];
 
   return (
-    <div className="w-full min-h-full flex flex-col px-6  md:px-24  py-12 md:py-0 font-poppins">
+    <div className="w-full min-h-full flex flex-col px-6 md:px-32 lg:px-64 py-12 md:py-0 font-poppins">
 
       <h1 className="text-3xl font-bold mb-8">Terms of Service</h1>
 
@@ -76,7 +76,7 @@ const TermsOfService = () => {
         you do not agree with any part of these Terms, you may not use the Site.
       </p>
 
-      <div className="space-y-6">
+      <div className="space-y pb-30 sm:pb-10">
         {termsSection.map((section, index) => (
           <div key={index}>
             <h2 className="text-xl font-semibold mb-3">{section.title}</h2>

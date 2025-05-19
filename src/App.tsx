@@ -71,13 +71,12 @@ const AppContent: React.FC = () => {
         <Route path="/search" element={<SearchResults />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<Orders />} />
-        <Route path="//verify-reset-otp" element={<VerifyForgotPassword />} />
+        <Route path="/verify-reset-otp" element={<VerifyForgotPassword />} />
         <Route path="/new-arrivals" element={<NewArrivals />} />
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/filtered-products" element={<ProductsPage />} />
         <Route path="/faqs" element={<FAQs />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
-        <Route path="/confirm-order" element={<ConfirmOrder />} />
         <Route path="/contact-us" element={<Contact />} />
         <Route path="/ade" element={<Producter />} />
         {/* <Route path="/orders/:id" element={<Confirm />} /> */}
@@ -90,6 +89,7 @@ const AppContent: React.FC = () => {
           <Route path="/cart/error/" element={<PaymentFailed />} />
           <Route path="/orders/:id" element={<Confirm />} />
           <Route path="/general-settings" element={<GeneralSettings />} />
+          <Route path="/confirm-order" element={<ConfirmOrder />} />  
         </Route>
       </Route>
 

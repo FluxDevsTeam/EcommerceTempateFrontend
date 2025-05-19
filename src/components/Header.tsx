@@ -24,6 +24,10 @@ interface Category {
 }
 
 const Header = () => {
+  // Add new state for logout modal
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false);
@@ -58,7 +62,7 @@ const Header = () => {
           setCategories(JSON.parse(cachedCategories));
         }
 
-        const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/category/');
+        const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/category/?page_size=20');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setCategories(data.results);
@@ -151,12 +155,20 @@ const Header = () => {
   
   const handleLogout = async () => {
     try {
-      await logout();
-      navigate('/');
-      setIsUserDropdownOpen(false);
-      setIsMobileMenuOpen(false);
+      setIsLoggingOut(true);
+      setShowLogoutModal(true);
+      
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      
+      window.location.href = '/';
     } catch (error) {
       console.error("Logout failed", error);
+    } finally {
+      setIsLoggingOut(false);
     }
   };
   
@@ -331,184 +343,236 @@ const Header = () => {
   };
 
   return (
-    <div 
-      ref={navbarRef}
-      className={`w-full bg-white fixed top-0 left-0 z-50 md:px-24 pt-4 p-0 md:p-4 
-        ${scrolled ? 'shadow-md' : ''}
-        transition-all duration-300 ease-in-out
-        ${showNavbar ? 'translate-y-0' : '-translate-y-full'}`}
-    >
-      {/* Desktop Navigation */}
-      <div className="hidden md:block">
-        <div className="flex justify-between items-center">
-          <Link to='/'><img src={logo} alt="logo" /></Link>  
-          <div className="flex space-x-6 items-center">
-            <div className="relative">
+    <>
+      <div 
+        ref={navbarRef}
+        className={`w-full bg-white fixed top-0 left-0 z-50 md:px-24 pt-4 p-0 md:p-4 
+          ${scrolled ? 'shadow-md' : ''}
+          transition-all duration-300 ease-in-out
+          ${showNavbar ? 'translate-y-0' : '-translate-y-full'}`}
+      >
+        {/* Desktop Navigation */}
+        <div className="hidden md:block">
+          <div className="flex justify-between items-center">
+            <Link to='/'><img src={logo} alt="logo" /></Link>  
+            <div className="flex space-x-6 items-center">
+              <div className="relative">
+                {isUserAuthenticated ? (
+                  <div className="flex items-center gap-3 cursor-pointer">
+                    <span className="text-sm font-medium bg-blue-200 px-3 py-1 rounded-md">
+                      Welcome, {displayName}
+                    </span>
+                    <span onClick={toggleUserDropdown}><FaUserCheck size={24} /></span>  
+                  
+                  </div>
+                ) : (
+                  <Link to="/login" className="flex items-center gap-2">
+                    <span className="text-sm font-medium">Sign In</span>
+                    <IoPersonCircleOutline size={28} />
+                  </Link>
+                )}
+                
+                {isUserAuthenticated && isUserDropdownOpen && (
+                  <div className="absolute right-0 top-10 z-10 w-auto rounded-lg border border-gray-300 bg-white shadow-md transition-all duration-200 ease-out">
+                    <Link 
+                      to="/orders" 
+                      className="block w-full px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                    >
+                      Orders
+                    </Link>
+                    <Link 
+                      to="/contact-us" 
+                      className="block w-full px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                    >
+                      Contact us
+                    </Link>
+                    <Link 
+                      to="/faqs" 
+                      className="block w-full px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                    >
+                      FAQs
+                    </Link>
+                    <Link 
+                      to="/terms-of-service" 
+                      className="block w-full px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                    >
+                      Terms of Service
+                    </Link>
+                    <Link 
+                      to="/general-settings" 
+                      className="block w-full px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                    >
+                      Account Settings
+                    </Link>
+                    <div className="border-t border-gray-200 my-1"></div>
+                    <button
+                      onClick={handleLogout}
+                      disabled={isLoggingOut}
+                      className={`flex w-full items-center px-4 py-2 text-xs text-red-600 hover:bg-red-50 transition-colors ${
+                        isLoggingOut ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      <FiLogOut className="mr-2" />
+                      {isLoggingOut ? 'Logging out...' : 'Logout'}
+                    </button>
+                  </div>
+                )}
+              </div>
+              <span>
+                  <Link to="/wishlist" className="hover:text-gray-600 transition-colors">
+                        <FaRegHeart size={24} />
+                  </Link>
+                    </span>
+              <Link to="/cart" className="hover:text-gray-600 transition-colors">
+                <BsCart size={26} />
+              </Link>
+            </div>
+          </div>
+          
+          <div className="flex justify-between items-center mt-4">
+            <ul className="flex space-x-6 text-[16px] font-medium font-poppins items-center">
+              {renderDesktopCategoryLinks()}
+            </ul>
+            <SearchInput onItemSelect={handleSearchItemSelect}/>
+            <button 
+              onClick={toggleFilter}
+              className="cursor-pointer hover:text-gray-600 transition-colors"
+              aria-label="Open filters"
+            >
+              <RiEqualizerLine size={30}/>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        <div className="block md:hidden">
+          <div className="flex justify-between items-center px-4">
+            <div className="flex space-x-3 items-center">
+              <button 
+                className="focus:outline-none hover:text-gray-600 transition-colors"
+                onClick={toggleMobileMenu}
+                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              >
+                {isMobileMenuOpen ? <AiOutlineClose size={28} /> : <AiOutlineMenu size={28} />}
+              </button>
+              <Link to='/'><img src={logo} alt="logo" /></Link>
+            </div>
+            
+            <div className="flex items-center space-x-4">
               {isUserAuthenticated ? (
-                <div className="flex items-center gap-3 cursor-pointer">
-                  <span className="text-sm font-medium bg-blue-200 px-3 py-1 rounded-md">
-                    Welcome, {displayName}
-                  </span>
-                  <span onClick={toggleUserDropdown}><FaUserCheck size={24} /></span>  
-                 
+                <div className="flex space-x-3">
+                  <button 
+                    onClick={toggleUserDropdown}
+                    className="hover:text-gray-600 transition-colors" 
+                    aria-label="User account"
+                  >
+                    <FaUserCheck size={24} />
+                  </button>
+              
                 </div>
               ) : (
-                <Link to="/login" className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Sign In</span>
+                <Link to="/login" className="hover:text-gray-600 transition-colors" aria-label="Sign in">
                   <IoPersonCircleOutline size={28} />
                 </Link>
               )}
-              
-              {isUserAuthenticated && isUserDropdownOpen && (
-                <div className="absolute right-0 top-10 z-10 w-auto rounded-lg border border-gray-300 bg-white shadow-md transition-all duration-200 ease-out">
-                  <Link 
-                    to="/orders" 
-                    className="block w-full px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-                    onClick={() => setIsUserDropdownOpen(false)}
-                  >
-                    Orders
-                  </Link>
-                  <Link 
-                    to="/general-settings" 
-                    className="block w-full px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-                    onClick={() => setIsUserDropdownOpen(false)}
-                  >
-                    Account Settings
-                  </Link>
-                  <div className="border-t border-gray-200 my-1"></div>
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 w-full text-left transition-colors"
-                  >
-                    <FiLogOut className="mr-2" /> Logout
-                  </button>
-                </div>
-              )}
-            </div>
-             <span>
                 <Link to="/wishlist" className="hover:text-gray-600 transition-colors">
-                      <FaRegHeart size={24} />
-                </Link>
-                  </span>
-            <Link to="/cart" className="hover:text-gray-600 transition-colors">
-              <BsCart size={26} />
-            </Link>
-          </div>
-        </div>
-        
-        <div className="flex justify-between items-center mt-4">
-          <ul className="flex space-x-6 text-[16px] font-medium font-poppins items-center">
-            {renderDesktopCategoryLinks()}
-          </ul>
-          <SearchInput onItemSelect={handleSearchItemSelect}/>
-          <button 
-            onClick={toggleFilter}
-            className="cursor-pointer hover:text-gray-600 transition-colors"
-            aria-label="Open filters"
-          >
-            <RiEqualizerLine size={30}/>
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Navigation */}
-      <div className="block md:hidden">
-        <div className="flex justify-between items-center px-4">
-          <div className="flex space-x-3 items-center">
-            <button 
-              className="focus:outline-none hover:text-gray-600 transition-colors"
-              onClick={toggleMobileMenu}
-              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-            >
-              {isMobileMenuOpen ? <AiOutlineClose size={28} /> : <AiOutlineMenu size={28} />}
-            </button>
-            <Link to='/'><img src={logo} alt="logo" /></Link>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            {isUserAuthenticated ? (
-              <div className="flex space-x-3">
-                <button 
-                  onClick={toggleUserDropdown}
-                  className="hover:text-gray-600 transition-colors" 
-                  aria-label="User account"
-                >
-                  <FaUserCheck size={24} />
-                </button>
-              
-              </div>
-            ) : (
-              <Link to="/login" className="hover:text-gray-600 transition-colors" aria-label="Sign in">
-                <IoPersonCircleOutline size={28} />
+                    <FaRegHeart size={24} />
+                  </Link>
+              <Link to="/cart" className="hover:text-gray-600 transition-colors" aria-label="Cart">
+                <BsCart size={24} />
               </Link>
-            )}
-              <Link to="/wishlist" className="hover:text-gray-600 transition-colors">
-                  <FaRegHeart size={24} />
-                </Link>
-            <Link to="/cart" className="hover:text-gray-600 transition-colors" aria-label="Cart">
-              <BsCart size={24} />
-            </Link>
+            </div>
           </div>
-        </div>
 
-        {isUserAuthenticated && isUserDropdownOpen && (
-          <div onClick={(e) => e.stopPropagation()} className="absolute right-6 top-12 z-50 w-auto rounded-md border border-gray-300 bg-white shadow-lg transition-all duration-200 ease-out">
-            <Link 
-              to="/general-settings"
-              onClick={() => setIsUserDropdownOpen(false)}
-              className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Account Settings
-            </Link>
-            <Link 
-              to="/orders"
-              onClick={() => setIsUserDropdownOpen(false)}
-              className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Orders
-            </Link>
-            <div className="border-t border-gray-200 my-1"></div>
-            <button
-              onClick={handleLogout}
-              className="flex w-full items-center px-4 py-2 text-xs text-red-600 hover:bg-red-50 transition-colors"
-            >
-              <FiLogOut className="mr-2" /> Logout
-            </button>
-          </div>
-        )}
-        <div className="p-4">
-          <SearchInput onItemSelect={handleSearchItemSelect}/>
-        </div>
-
-        {isMobileMenuOpen && (
-          <div className="block bg-white md:hidden p-4 border-t ">
-            <div className="flex flex-col w-full space-y-1">
-              {isUserAuthenticated && (
-                <div className="bg-blue-50 rounded-md p-2 mb-2">
-                  <p className="text-sm text-blue-700">Welcome back, {displayName}!</p>
-                </div>
-              )}
-              <ul className="flex flex-col space-y-1 text-4 font-medium">
-                {renderMobileCategoryLinks()}
-              </ul>
-              
-              <button 
-                onClick={toggleFilter}
-                className="flex items-center space-x-2 cursor-pointer hover:text-gray-600 transition-colors  py-2 border-t border-gray-200"
+          {isUserAuthenticated && isUserDropdownOpen && (
+            <div onClick={(e) => e.stopPropagation()} className="absolute right-6 top-14 py-2 z-50 w-auto rounded-md border border-gray-300 bg-white shadow-lg transition-all duration-200 ease-out">
+              <Link 
+                to="/orders"
+                onClick={() => setIsUserDropdownOpen(false)}
+                className="block px-4 py-2 text-s text-gray-700 hover:bg-gray-50 transition-colors"
               >
-                <RiEqualizerLine size={24}/>
-                <span>Filter Products</span>
+                Orders
+              </Link>
+              <Link 
+                to="/contact-us"
+                onClick={() => setIsUserDropdownOpen(false)}
+                className="block px-4 py-2 text-s text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Contact us
+              </Link>
+              <Link 
+                to="/faqs"
+                onClick={() => setIsUserDropdownOpen(false)}
+                className="block px-4 py-2 text-s text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                FAQs
+              </Link>
+              <Link 
+                to="/terms-of-service"
+                onClick={() => setIsUserDropdownOpen(false)}
+                className="block px-4 py-2 text-s text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Terms of Service
+              </Link>
+              <Link 
+                to="/general-settings"
+                onClick={() => setIsUserDropdownOpen(false)}
+                className="block px-4 py-2 text-s text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Account Settings
+              </Link>
+              <div className="border-t border-gray-200 my-1"></div>
+              <button
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className={`flex w-full items-center px-4 py-2 text-xs text-red-600 hover:bg-red-50 transition-colors ${
+                  isLoggingOut ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                <FiLogOut className="mr-2" />
+                {isLoggingOut ? 'Logging out...' : 'Logout'}
               </button>
             </div>
+          )}
+          <div className="p-4">
+            <SearchInput onItemSelect={handleSearchItemSelect}/>
           </div>
-        )}
-      </div>
 
-      <FiltersComponent 
-        isOpen={showFilter}
-        onClose={toggleFilter}
-        onApplyFilters={handleApplyFilters} initialFilters={undefined}      />
-    </div>
+          {isMobileMenuOpen && (
+            <div className="block bg-white md:hidden p-4 border-t ">
+              <div className="flex flex-col w-full space-y-1">
+                {isUserAuthenticated && (
+                  <div className="bg-blue-50 rounded-md p-2 mb-2">
+                    <p className="text-sm text-blue-700">Welcome back, {displayName}!</p>
+                  </div>
+                )}
+                <ul className="flex flex-col space-y-1 text-4 font-medium">
+                  {renderMobileCategoryLinks()}
+                </ul>
+                
+                <button 
+                  onClick={toggleFilter}
+                  className="flex items-center space-x-2 cursor-pointer hover:text-gray-600 transition-colors  py-2 border-t border-gray-200"
+                >
+                  <RiEqualizerLine size={24}/>
+                  <span>Filter Products</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <FiltersComponent 
+          isOpen={showFilter}
+          onClose={toggleFilter}
+          onApplyFilters={handleApplyFilters} initialFilters={undefined}      />
+      </div>
+    </>
   );
 };
 
