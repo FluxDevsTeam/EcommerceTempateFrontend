@@ -40,20 +40,34 @@ const statusColors: { [key: string]: { dot: string; bg: string } } = {
     setIsOpen(false);
   };
 
-  const getPageUrl = (page: number) => `https://ecommercetemplate.pythonanywhere.com/api/v1/admin/order/?page=${page}`;
+  
+const getPageUrl = (page: number, status = statusFilter) => {
+  const baseUrl = 'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/order/';
+  const statusQuery = status !== "All Categories" ? `&status=${status}` : "";
+  return `${baseUrl}?page=${page}${statusQuery}`;
+};
 
-const loadOrders = async (url?: string) => {
+const loadOrders = async (url?: string, status = statusFilter) => {
   try {
     const data = await fetchData(url);
     const urlParams = new URLSearchParams(url?.split('?')[1]);
     const page = parseInt(urlParams.get("page") || "1", 10);
 
-    // 👇 Update the URL in the browser
     const newUrl = new URL(window.location.href);
     newUrl.searchParams.set("page", page.toString());
+    if (status !== "All Categories") {
+      newUrl.searchParams.set("status", status);
+    } else {
+      newUrl.searchParams.delete("status");
+    }
     window.history.pushState({}, "", newUrl.toString());
 
-    setOrders(data.results);
+    const normalizedResults = data.results.map((order: Order) => ({
+      ...order,
+      status: order.status.toUpperCase(),
+    }));
+
+    setOrders(normalizedResults);
     setNextUrl(data.next);
     setPrevUrl(data.previous);
     setCurrentPage(page);
@@ -63,29 +77,10 @@ const loadOrders = async (url?: string) => {
   }
 };
 
-
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const page = parseInt(urlParams.get("page") || "1", 10);
     loadOrders(getPageUrl(page));
-  }, []);
-
-
-  useEffect(() => {
-    const getOrders = async () => {
-      try {
-        const data = await fetchData();
-        const normalizedResults = data.results.map((order: Order) => ({
-          ...order,
-          status: order.status.toUpperCase()
-        }));
-        setOrders(normalizedResults);
-      } catch (error) {
-        console.error("Error loading orders:", error);
-      }
-    };
-  
-    getOrders();
   }, []);
 
   return (
@@ -97,11 +92,14 @@ const loadOrders = async (url?: string) => {
           <SearchInput onItemSelect={handleSearchItemSelect} />
         </div>
         <div>
-          <Dropdown
-            label="Sort by"
-            options={["All Categories", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"]}
-            onSelect={(value) => setStatusFilter(value)}
-          />
+      <Dropdown
+        label="Sort by"
+        options={["All Categories", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"]}
+        onSelect={(status) => {
+          setStatusFilter(status);
+          loadOrders(getPageUrl(1, status), status); // Reload page 1 with selected status
+        }}
+      />
         </div>
         <div
           className={`p-2 rounded-lg cursor-pointer ${layout === "menu" ? "bg-[#184455]" : "border border-[#CACACA]"}`}
@@ -146,7 +144,7 @@ const loadOrders = async (url?: string) => {
                 <p className="w-[20%] text-[12px] hidden sm:block">{formatEstimatedDelivery(order.estimated_delivery)}</p>
                 <p className={`items-center gap-3 w-[120px] px-4 py-1 hidden sm:flex rounded-lg`} style={{ backgroundColor: statusData.bg }}>
                   <span className={`w-2 h-2 rounded-full`} style={{ backgroundColor: statusData.dot }}></span>
-                  <span className="">{order.status}</span>
+                  <span className="">{order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}</span>
                 </p>
               </li>
             );
@@ -194,7 +192,7 @@ const loadOrders = async (url?: string) => {
         totalPages={totalPages}
         nextPageUrl={nextUrl}
         prevPageUrl={prevUrl}
-        onPageChange={loadOrders}
+        onPageChange={(url) => loadOrders(url, statusFilter)}
         getPageUrl={getPageUrl}
       />
 
