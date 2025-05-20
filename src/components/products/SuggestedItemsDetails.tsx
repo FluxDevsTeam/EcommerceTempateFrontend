@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import SuggestedProductDetails from "./SuggestedProductDetail";
 import DescriptionList from "./DescriptionList";
-import { addToLocalCart, isItemInLocalCart } from "../../utils/cartStorage";
+import { addToLocalCart, isItemInLocalCart, isItemInUserCart } from "../../utils/cartStorage";
 
 // Define TypeScript interfaces for the API responses
 interface Category {
@@ -337,20 +337,42 @@ const SuggestedItemsDetails: React.FC<ImageSliderProps> = ({ data }) => {
     }
   };
 
-  // Add modal close handler
   const handleCloseModal = () => {
     setModalConfig({ ...modalConfig, isOpen: false });
   };
-  // Determine if the item is in stock
   const isInStock = product.unlimited || availableQuantity > 0;
 
-  // Add new function to check if size is in cart
-  const isSizeInCart = (productId: number, sizeId: number) => {
+  // State to track items in cart
+  const [itemsInCart, setItemsInCart] = useState<{[key: string]: boolean}>({});
+
+  // Check if items are in cart when component mounts or when product/selectedSize changes
+  useEffect(() => {
+    const checkCartItems = async () => {
+      if (product && selectedSize) {
+        const selectedSizeData = product.sizes.find(size => size.size === selectedSize);
+        if (selectedSizeData) {
+          const key = `${product.id}-${selectedSizeData.id}`;
+          const isInCart = await isItemInUserCart(product.id, selectedSizeData.id);
+          setItemsInCart(prev => ({ ...prev, [key]: isInCart }));
+        }
+      }
+    };
+    
+    checkCartItems();
+  }, [product, selectedSize]);
+
+  // Function to check if size is in cart
+  const isSizeInCart = (productId: number, sizeId: number): boolean => {
+    const key = `${productId}-${sizeId}`;
     const accessToken = localStorage.getItem("accessToken");
+    
+    // For guest users, check local storage directly
     if (!accessToken) {
       return isItemInLocalCart(productId, sizeId);
     }
-    return false; // For authenticated users, you'll need to implement cart checking logic
+    
+    // For authenticated users, use the cached result from state
+    return itemsInCart[key] || false;
   };
 
   return (

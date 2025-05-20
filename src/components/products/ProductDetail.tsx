@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import Suggested from "./Suggested";
-import { addToLocalCart, isItemInLocalCart } from "../../utils/cartStorage";
+import { addToLocalCart, isItemInLocalCart, isItemInUserCart } from "../../utils/cartStorage";
 
 import DescriptionList from "./DescriptionList";
 
@@ -350,6 +350,38 @@ const ProductDetail = () => {
   // Determine if the item is in stock
   const isInStock = product.unlimited || availableQuantity > 0;
 
+  // State to track items in cart
+  const [itemsInCart, setItemsInCart] = useState<{[key: string]: boolean}>({});
+
+  // Check if items are in cart when component mounts or when product/selectedSize changes
+  useEffect(() => {
+    const checkCartItems = async () => {
+      if (product && selectedSize) {
+        const selectedSizeData = product.sizes.find(size => size.size === selectedSize);
+        if (selectedSizeData) {
+          const key = `${product.id}-${selectedSizeData.id}`;
+          const isInCart = await isItemInUserCart(product.id, selectedSizeData.id);
+          setItemsInCart(prev => ({ ...prev, [key]: isInCart }));
+        }
+      }
+    };
+    
+    checkCartItems();
+  }, [product, selectedSize]);
+
+  const isSizeInCart = (productId: number, sizeId: number): boolean => {
+    const key = `${productId}-${sizeId}`;
+    const accessToken = localStorage.getItem("accessToken");
+    
+    // For guest users, check local storage directly
+    if (!accessToken) {
+      return isItemInLocalCart(productId, sizeId);
+    }
+    
+    // For authenticated users, use the cached result from state
+    return itemsInCart[key] || false;
+  };
+
   return (
     <div>
       <div className="w-full min-h-screen md:mt-8 px-6 md:px-12 py-4 lg:px-20">
@@ -542,15 +574,21 @@ const ProductDetail = () => {
               {/* Add to Cart */}
               <button
                 onClick={handleAddToCart}
-                className="w-full py-3 bg-customBlue text-white rounded-2xl hover:brightness-90  transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`w-full py-3 text-white rounded-2xl transition-colors cursor-pointer ${
+                  !isInStock || isAddingToCart || (selectedSizeData && isSizeInCart(product.id, selectedSizeData.id))
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-customBlue hover:brightness-90"
+                }`}
                 type="button"
-                disabled={!isInStock || isAddingToCart}
+                disabled={!isInStock || isAddingToCart || (selectedSizeData && isSizeInCart(product.id, selectedSizeData.id))}
               >
                 {isAddingToCart
                   ? "Adding..."
-                  : isInStock
-                  ? "Add to Caeeerrt"
-                  : "Out of Stock"}
+                  : !isInStock
+                  ? "Out of Stock"
+                  : selectedSizeData && isSizeInCart(product.id, selectedSizeData.id)
+                  ? "Already in Cart"
+                  : "Add to Cart"}
               </button>
             </div>
           </div>

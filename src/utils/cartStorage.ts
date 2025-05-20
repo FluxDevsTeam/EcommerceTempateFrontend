@@ -58,6 +58,43 @@ export const isItemInLocalCart = (productId: number, sizeId: number): boolean =>
   return cart.some(item => item.productId === productId && item.sizeId === sizeId);
 };
 
+export const isItemInUserCart = async (productId: number, sizeId: number): Promise<boolean> => {
+  const accessToken = localStorage.getItem('accessToken');
+  if (!accessToken) {
+    return isItemInLocalCart(productId, sizeId);
+  }
+
+  try {
+    const response = await fetch(`${baseURL}/api/v1/cart/`, {
+      method: "GET",
+      headers: {
+        Authorization: `JWT ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      console.error('Failed to fetch cart data:', response.status);
+      return false;
+    }
+
+    const data = await response.json();
+    
+    // Check if there's a cart and it has items
+    if (data.results && data.results.length > 0 && data.results[0].cart_items) {
+      // Check if any cart item matches the product and size
+      return data.results[0].cart_items.some(
+        (item: any) => item.product.id === productId && item.size.id === sizeId
+      );
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error checking if item is in cart:', error);
+    return false;
+  }
+};
+
 const baseURL = "https://ecommercetemplate.pythonanywhere.com";
 
 export const migrateLocalCartToUserCart = async (accessToken: string): Promise<boolean> => {
