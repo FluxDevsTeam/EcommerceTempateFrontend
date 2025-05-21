@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { FaEdit, FaTrash } from 'react-icons/fa';
-import { IoChevronBack } from 'react-icons/io5';
-import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import { IoChevronBack } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
+import { debounce } from "lodash";
 
 interface Category {
   id: number;
@@ -16,43 +22,72 @@ const AdminCategories = () => {
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null
+  );
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 18;
+  const ITEMS_PER_PAGE = 15;
   const [totalCategories, setTotalCategories] = useState(0);
+  const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
+  const [prevPageUrl, setPrevPageUrl] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
 
   const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
 
-  const fetchCategories = async () => {
+  // Debounce the search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  const fetchCategories = async (
+    page = currentPage,
+    search = debouncedSearch
+  ) => {
     setLoading(true);
     const accessToken = localStorage.getItem("accessToken");
 
     try {
-      const response = await fetch(`${baseURL}/api/v1/product/category/?page=${currentPage}&page_size=${ITEMS_PER_PAGE}`, {
+      const url = `${baseURL}/api/v1/product/category/?page=${page}&page_size=${ITEMS_PER_PAGE}&search=${encodeURIComponent(
+        search
+      )}`;
+      const response = await fetch(url, {
         headers: {
           Authorization: `JWT ${accessToken}`,
           "Content-Type": "application/json",
         },
       });
 
-      if (!response.ok) throw new Error('Failed to fetch categories');
-      
+      if (!response.ok) throw new Error("Failed to fetch categories");
+
       const data = await response.json();
       setCategories(data.results);
       setTotalCategories(data.count);
+      setNextPageUrl(data.next);
+      setPrevPageUrl(data.previous);
     } catch (error) {
-      console.error('Error:', error);
-      setError(error instanceof Error ? error.message : 'Failed to fetch categories');
+      console.error("Error:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to fetch categories"
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  // Fetch categories when page or debounced search changes
   useEffect(() => {
-    fetchCategories();
-  }, [currentPage]);
+    fetchCategories(currentPage, debouncedSearch);
+    // eslint-disable-next-line
+  }, [currentPage, debouncedSearch]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCategories / ITEMS_PER_PAGE));
 
   const handleAdd = async () => {
     if (!newCategoryName.trim()) return;
@@ -61,21 +96,23 @@ const AdminCategories = () => {
 
     try {
       const response = await fetch(`${baseURL}/api/v1/product/category/`, {
-        method: 'POST',
+        method: "POST",
         headers: {
           Authorization: `JWT ${accessToken}`,
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ name: newCategoryName }),
       });
 
-      if (!response.ok) throw new Error('Failed to add category');
-      
+      if (!response.ok) throw new Error("Failed to add category");
+
       await fetchCategories();
-      setNewCategoryName('');
+      setNewCategoryName("");
       setShowAddModal(false);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to add category');
+      setError(
+        error instanceof Error ? error.message : "Failed to add category"
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -87,23 +124,28 @@ const AdminCategories = () => {
     const accessToken = localStorage.getItem("accessToken");
 
     try {
-      const response = await fetch(`${baseURL}/api/v1/product/category/${selectedCategory.id}/`, {
-        method: 'PATCH',
-        headers: {
-          Authorization: `JWT ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: newCategoryName }),
-      });
+      const response = await fetch(
+        `${baseURL}/api/v1/product/category/${selectedCategory.id}/`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `JWT ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name: newCategoryName }),
+        }
+      );
 
-      if (!response.ok) throw new Error('Failed to update category');
-      
+      if (!response.ok) throw new Error("Failed to update category");
+
       await fetchCategories();
-      setNewCategoryName('');
+      setNewCategoryName("");
       setShowEditModal(false);
       setSelectedCategory(null);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to update category');
+      setError(
+        error instanceof Error ? error.message : "Failed to update category"
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -111,32 +153,42 @@ const AdminCategories = () => {
 
   const handleDelete = async (category: Category) => {
     if (!confirm(`Are you sure you want to delete "${category.name}"?`)) return;
-    
+
     setIsProcessing(true);
     const accessToken = localStorage.getItem("accessToken");
 
     try {
-      const response = await fetch(`${baseURL}/api/v1/product/category/${category.id}/`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `JWT ${accessToken}`,
-        },
-      });
+      const response = await fetch(
+        `${baseURL}/api/v1/product/category/${category.id}/`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `JWT ${accessToken}`,
+          },
+        }
+      );
 
-      if (!response.ok) throw new Error('Failed to delete category');
-      
+      if (!response.ok) throw new Error("Failed to delete category");
+
       await fetchCategories();
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to delete category');
+      setError(
+        error instanceof Error ? error.message : "Failed to delete category"
+      );
     } finally {
       setIsProcessing(false);
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
+  };
 
-  const totalPages = Math.max(1, Math.ceil(totalCategories / ITEMS_PER_PAGE));
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setCurrentPage(1);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
@@ -144,7 +196,7 @@ const AdminCategories = () => {
         {/* Back button and header */}
         <div className="mb-6">
           <button
-            onClick={() => navigate('/admin/products')}
+            onClick={() => navigate("/admin/products")}
             className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
           >
             <IoChevronBack className="w-5 h-5 mr-1" />
@@ -154,7 +206,9 @@ const AdminCategories = () => {
             <div className="w-full flex justify-between items-center">
               <h1 className="text-2xl font-bold text-gray-900">Categories</h1>
               <button
-                onClick={() => navigate('/admin/admin-categories/subcategories')}
+                onClick={() =>
+                  navigate("/admin/admin-categories/subcategories")
+                }
                 className="sm:hidden bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-center"
               >
                 Subcategory
@@ -162,7 +216,9 @@ const AdminCategories = () => {
             </div>
             <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
               <button
-                onClick={() => navigate('/admin/admin-categories/subcategories')}
+                onClick={() =>
+                  navigate("/admin/admin-categories/subcategories")
+                }
                 className="hidden sm:block bg-green-600 text-white px-4 py-1.5 text-sm rounded hover:bg-green-700 text-center"
               >
                 Subcategory
@@ -177,91 +233,150 @@ const AdminCategories = () => {
           </div>
         </div>
 
-        {/* Table Section */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {categories.map((category) => (
-                  <tr key={category.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {category.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end gap-3">
-                        <button
-                          onClick={() => {
-                            setSelectedCategory(category);
-                            setNewCategoryName(category.name);
-                            setShowEditModal(true);
-                          }}
-                          className="text-blue-600 hover:text-blue-900 transition-colors"
-                        >
-                          <FaEdit className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(category)}
-                          className="text-red-600 hover:text-red-900 transition-colors"
-                        >
-                          <FaTrash className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* Search Section */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0">
+          <div className="flex flex-col sm:flex-row w-full gap-4">
+            {/* Search Bar */}
+            <div className="relative w-full sm:max-w-xs">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search categories..."
+                className="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {searchQuery && (
+                <button
+                  onClick={handleClearSearch}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  ×
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Add Pagination Controls */}
+        {/* Table Section */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            {error && (
+              <div className="text-center p-4 text-red-500">Error: {error}</div>
+            )}
+            {loading ? (
+              <div className="text-center p-4">Loading...</div>
+            ) : (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {categories.map((category) => (
+                    <tr key={category.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {category.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end gap-3">
+                          <button
+                            onClick={() => {
+                              setSelectedCategory(category);
+                              setNewCategoryName(category.name);
+                              setShowEditModal(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-900 transition-colors"
+                          >
+                            <FaEdit className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(category)}
+                            className="text-red-600 hover:text-red-900 transition-colors"
+                          >
+                            <FaTrash className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+
+        {/* Pagination Controls */}
         <div className="mt-6 flex justify-between items-center">
           <div className="text-sm text-gray-700">
-            Showing {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, totalCategories)} to{" "}
-            {Math.min(currentPage * ITEMS_PER_PAGE, totalCategories)} of {totalCategories} categories
+            Showing{" "}
+            {totalCategories === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1}{" "}
+            to {Math.min(currentPage * ITEMS_PER_PAGE, totalCategories)} of{" "}
+            {totalCategories} categories
           </div>
-          
-          <div className="flex border rounded">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1}
-              className="p-2 border-r hover:bg-gray-100 disabled:opacity-50"
+              disabled={currentPage === 1 || !prevPageUrl}
+              className="px-3 py-1 rounded border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ChevronsLeft className="h-4 w-4" />
+              First
             </button>
             <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="p-2 border-r hover:bg-gray-100 disabled:opacity-50"
+              onClick={() => setCurrentPage((curr) => Math.max(curr - 1, 1))}
+              disabled={currentPage === 1 || !prevPageUrl}
+              className="px-3 py-1 rounded border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ChevronLeft className="h-4 w-4" />
+              Previous
             </button>
-            <span className="px-4 py-2 border-r">
-              Page {currentPage} of {totalPages}
-            </span>
+            {/* Page Numbers */}
+            <div className="flex gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((pageNum) => {
+                  const currentPageRange = 2;
+                  return (
+                    pageNum === 1 ||
+                    pageNum === totalPages ||
+                    (pageNum >= currentPage - currentPageRange &&
+                      pageNum <= currentPage + currentPageRange)
+                  );
+                })
+                .map((pageNum, index, array) => (
+                  <React.Fragment key={pageNum}>
+                    {index > 0 && array[index - 1] !== pageNum - 1 && (
+                      <span className="px-2">...</span>
+                    )}
+                    <button
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`px-3 py-1 rounded ${
+                        currentPage === pageNum
+                          ? "bg-blue-500 text-white"
+                          : "border hover:bg-gray-50"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  </React.Fragment>
+                ))}
+            </div>
             <button
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="p-2 border-r hover:bg-gray-100 disabled:opacity-50"
+              onClick={() => setCurrentPage((curr) => curr + 1)}
+              disabled={!nextPageUrl}
+              className="px-3 py-1 rounded border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ChevronRight className="h-4 w-4" />
+              Next
             </button>
             <button
               onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
-              className="p-2 hover:bg-gray-100 disabled:opacity-50"
+              disabled={!nextPageUrl}
+              className="px-3 py-1 rounded border hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ChevronsRight className="h-4 w-4" />
+              Last
             </button>
           </div>
         </div>
@@ -285,7 +400,7 @@ const AdminCategories = () => {
               <button
                 onClick={() => {
                   setShowAddModal(false);
-                  setNewCategoryName('');
+                  setNewCategoryName("");
                 }}
                 className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
               >
@@ -296,7 +411,7 @@ const AdminCategories = () => {
                 disabled={isProcessing}
                 className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
               >
-                {isProcessing ? 'Adding...' : 'Add Category'}
+                {isProcessing ? "Adding..." : "Add Category"}
               </button>
             </div>
           </div>
@@ -321,7 +436,7 @@ const AdminCategories = () => {
               <button
                 onClick={() => {
                   setShowEditModal(false);
-                  setNewCategoryName('');
+                  setNewCategoryName("");
                   setSelectedCategory(null);
                 }}
                 className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
@@ -333,7 +448,7 @@ const AdminCategories = () => {
                 disabled={isProcessing}
                 className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
               >
-                {isProcessing ? 'Saving...' : 'Save Changes'}
+                {isProcessing ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </div>
