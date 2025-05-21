@@ -215,6 +215,10 @@ const ProductDetail = () => {
         maxQuantity: selectedSizeData.quantity,
       });
 
+      // Update itemsInCart state
+      const key = `${product.id}-${selectedSizeData.id}`;
+      setItemsInCart(prev => ({ ...prev, [key]: true }));
+
       setModalConfig({
         isOpen: true,
         title: "Success",
@@ -288,6 +292,10 @@ const ProductDetail = () => {
         setIsAddingToCart(false);
         return;
       }
+
+      // Update itemsInCart state
+      const key = `${product.id}-${selectedSizeData.id}`;
+      setItemsInCart(prev => ({ ...prev, [key]: true }));
 
       setModalConfig({
         isOpen: true,

@@ -267,6 +267,10 @@ const SuggestedItemsDetails: React.FC = () => {
         maxQuantity: selectedSizeData.quantity,
       });
 
+      // Update itemsInCart state
+      const key = `${product.id}-${selectedSizeData.id}`;
+      setItemsInCart(prev => ({ ...prev, [key]: true }));
+
       setModalConfig({
         isOpen: true,
         title: "Success",
@@ -340,6 +344,10 @@ const SuggestedItemsDetails: React.FC = () => {
         setIsAddingToCart(false);
         throw new Error("Failed to add to cart");
       }
+
+      // Update itemsInCart state
+      const key = `${product.id}-${selectedSizeData.id}`;
+      setItemsInCart(prev => ({ ...prev, [key]: true }));
 
       setModalConfig({
         isOpen: true,
@@ -469,7 +477,7 @@ const SuggestedItemsDetails: React.FC = () => {
                   ₦ {product.price}
                 </span>
                 <div className="flex space-x-2">
-                  {product?.undiscounted_price > product.price && (
+                  {product?.undiscounted_price && product.undiscounted_price > product.price && (
                       <span className="text-gray-500 line-through text-3xl">
                         ₦ {product.undiscounted_price}
                       </span>
