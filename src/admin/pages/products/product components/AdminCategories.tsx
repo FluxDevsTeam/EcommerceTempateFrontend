@@ -136,7 +136,7 @@ const AdminCategories = () => {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  const totalPages = Math.ceil(totalCategories / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(totalCategories / ITEMS_PER_PAGE));
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">

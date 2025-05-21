@@ -53,7 +53,7 @@ const SuggestedCard: React.FC<CardProps> = ({
         />
         <Wish color="red" liked={liked} onToggle={handleToggle} />
       </div>
-      <div className="space-y-0.5">
+      <div className="space-y-0.5 mt-3">
         <p className="text-md font-medium line-clamp-1">{product.name}</p>
         <div className="">
           {typeof product.price === "number" && product.price > 0 && (

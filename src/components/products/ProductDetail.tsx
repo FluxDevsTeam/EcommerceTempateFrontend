@@ -80,6 +80,7 @@ const ProductDetail = () => {
   });
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [itemsInCart, setItemsInCart] = useState<{[key: string]: boolean}>({});
 
   // Fetch product data
   const {
@@ -107,6 +108,22 @@ const ProductDetail = () => {
       }
     }
   }, [product, mainImage, selectedSize]);
+
+  // Check if items are in cart when component mounts or when product/selectedSize changes
+  useEffect(() => {
+    const checkCartItems = async () => {
+      if (product && selectedSize) {
+        const selectedSizeData = product.sizes.find(size => size.size === selectedSize);
+        if (selectedSizeData) {
+          const key = `${product.id}-${selectedSizeData.id}`;
+          const isInCart = await isItemInUserCart(product.id, selectedSizeData.id);
+          setItemsInCart(prev => ({ ...prev, [key]: isInCart }));
+        }
+      }
+    };
+    
+    checkCartItems();
+  }, [product, selectedSize]);
 
   const createNewCart = async (accessToken: string) => {
     const response = await fetch(`${baseURL}/api/v1/cart/`, {
@@ -350,25 +367,6 @@ const ProductDetail = () => {
   // Determine if the item is in stock
   const isInStock = product.unlimited || availableQuantity > 0;
 
-  // State to track items in cart
-  const [itemsInCart, setItemsInCart] = useState<{[key: string]: boolean}>({});
-
-  // Check if items are in cart when component mounts or when product/selectedSize changes
-  useEffect(() => {
-    const checkCartItems = async () => {
-      if (product && selectedSize) {
-        const selectedSizeData = product.sizes.find(size => size.size === selectedSize);
-        if (selectedSizeData) {
-          const key = `${product.id}-${selectedSizeData.id}`;
-          const isInCart = await isItemInUserCart(product.id, selectedSizeData.id);
-          setItemsInCart(prev => ({ ...prev, [key]: isInCart }));
-        }
-      }
-    };
-    
-    checkCartItems();
-  }, [product, selectedSize]);
-
   const isSizeInCart = (productId: number, sizeId: number): boolean => {
     const key = `${productId}-${sizeId}`;
     const accessToken = localStorage.getItem("accessToken");
@@ -477,7 +475,7 @@ const ProductDetail = () => {
                   ₦ {selectedSizeData?.price}
                 </span>
                 <div className="flex space-x-2">
-                  {product?.undiscounted_price > product.price && (
+                  {undiscountedPrice > product.price && (
                     <span className="text-gray-500 line-through text-3xl">
                       ₦ {product.undiscounted_price}
                     </span>

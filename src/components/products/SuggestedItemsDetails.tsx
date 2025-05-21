@@ -63,7 +63,7 @@ const fetchProduct = async (id: number): Promise<Product> => {
   return response.json();
 };
 
-const SuggestedItemsDetails: React.FC<ImageSliderProps> = ({ data }) => {
+const SuggestedItemsDetails: React.FC = () => {
   const { id } = useParams<keyof ProductDetailParams>() as ProductDetailParams;
   const productId = parseInt(id);
   const [mainImage, setMainImage] = useState<string>("");
@@ -78,6 +78,7 @@ const SuggestedItemsDetails: React.FC<ImageSliderProps> = ({ data }) => {
 
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [itemsInCart, setItemsInCart] = useState<{[key: string]: boolean}>({});
 
   // Fetch product data
   const {
@@ -105,6 +106,22 @@ const SuggestedItemsDetails: React.FC<ImageSliderProps> = ({ data }) => {
       }
     }
   }, [product, mainImage, selectedSize]);
+
+  // Check if items are in cart when component mounts or when product/selectedSize changes
+  useEffect(() => {
+    const checkCartItems = async () => {
+      if (product && selectedSize) {
+        const selectedSizeData = product.sizes.find(size => size.size === selectedSize);
+        if (selectedSizeData) {
+          const key = `${product.id}-${selectedSizeData.id}`;
+          const isInCart = await isItemInUserCart(product.id, selectedSizeData.id);
+          setItemsInCart(prev => ({ ...prev, [key]: isInCart }));
+        }
+      }
+    };
+    
+    checkCartItems();
+  }, [product, selectedSize]);
 
   const handleSuggestedItemClick = (image: string) => {
     setMainImage(image);
@@ -214,8 +231,8 @@ const SuggestedItemsDetails: React.FC<ImageSliderProps> = ({ data }) => {
     if (!selectedSizeData) {
       setModalConfig({
         isOpen: true,
-        title: "Error",
-        message: "Selected size not found",
+        title: "",
+        message: "Please select a size",
         type: "error",
       });
       setIsAddingToCart(false);
@@ -342,25 +359,6 @@ const SuggestedItemsDetails: React.FC<ImageSliderProps> = ({ data }) => {
   };
   const isInStock = product.unlimited || availableQuantity > 0;
 
-  // State to track items in cart
-  const [itemsInCart, setItemsInCart] = useState<{[key: string]: boolean}>({});
-
-  // Check if items are in cart when component mounts or when product/selectedSize changes
-  useEffect(() => {
-    const checkCartItems = async () => {
-      if (product && selectedSize) {
-        const selectedSizeData = product.sizes.find(size => size.size === selectedSize);
-        if (selectedSizeData) {
-          const key = `${product.id}-${selectedSizeData.id}`;
-          const isInCart = await isItemInUserCart(product.id, selectedSizeData.id);
-          setItemsInCart(prev => ({ ...prev, [key]: isInCart }));
-        }
-      }
-    };
-    
-    checkCartItems();
-  }, [product, selectedSize]);
-
   // Function to check if size is in cart
   const isSizeInCart = (productId: number, sizeId: number): boolean => {
     const key = `${productId}-${sizeId}`;
@@ -384,14 +382,14 @@ const SuggestedItemsDetails: React.FC<ImageSliderProps> = ({ data }) => {
             <div
               className={`bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 border-t-4 ${
                 modalConfig.type === "success"
-                  ? "border-green-500"
+                  ? "border-customBlue"
                   : "border-red-500"
               }`}
             >
               <h2
                 className={`text-2xl font-bold mb-4 ${
                   modalConfig.type === "success"
-                    ? "text-green-600"
+                    ? "text-customBlue"
                     : "text-red-600"
                 }`}
               >
@@ -402,7 +400,7 @@ const SuggestedItemsDetails: React.FC<ImageSliderProps> = ({ data }) => {
                 onClick={handleCloseModal}
                 className={`w-full py-2 px-4 text-white rounded ${
                   modalConfig.type === "success"
-                    ? "bg-green-600 hover:bg-green-700"
+                    ? "bg-customBlue hover:bg-customBlue/80"
                     : "bg-red-500 hover:bg-red-600"
                 }`}
               >

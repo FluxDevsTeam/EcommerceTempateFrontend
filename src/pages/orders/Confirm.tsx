@@ -49,7 +49,7 @@ const Confirm = () => {
   
 
   return (
-    <div className="p-4 sm:p-14 pb-10 sm:pb-28">
+    <div className="p-4 sm:pt-20 pb-10 sm:pb-28 max-md:mt-10">
       <h2 className="font-normal text-[32px] sm:text-[40px] tracking mb-8">Track Orders</h2>
       <h4 className="text-[#344054] font-bold text-[16px] sm:text-[25px] mb-6">Order ID: {order.id}</h4>
       <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center mb-6">
@@ -127,13 +127,13 @@ const Confirm = () => {
       </ul>
 
       <div className="flex flex-col sm:flex-row justify-between items-start py-6 border-b border-b-gray-300 w-full sm:w-[80%]">
-        <div className="basis-[50%] mb-8">
+        {/* <div className="basis-[50%] mb-8">
           <h6 className="font-medium text-[20px] leading-[30px] mb-2">Payment</h6>
           <p className="flex items-center gap-4">
             <span className="text-[14px] leading-[20px] text-[#667085]">Visa**56</span>
             <img src={visa} className="w-[24px]" alt="card" />
           </p>
-        </div>
+        </div> */}
         <div className="font-medium">
           <h6 className="text-[20px] leading-[30px]">Delivery Address</h6>
             <p className="text-[18px] leading-[28px] text-[#667085]">{order.delivery_address}<br />{order.state}<br />{order.phone_number}</p>

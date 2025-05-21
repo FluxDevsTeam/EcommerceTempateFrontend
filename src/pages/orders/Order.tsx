@@ -74,9 +74,9 @@ const Order = () => {
       <h2 className="text-3xl font-semibold capitalize tracking mb-8">My Orders</h2>
 
       {orders.map((order: OrderData) => (
-        <div key={order.id} className="mb-14">
-          <h4 className="text-[#344054] font-bold text-[16px] sm:text-[25px] mb-6">Order ID: {order.id}</h4>
-          <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center mb-6">
+        <div key={order.id} className="mb-6">
+          <h3 className="text-[#344054] font-bold text-[16px] sm:text-[25px] mb-6">Order ID: {order.id}</h3>
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center mb-6">
             <p className="flex gap-2 items-center">
               <span className="text-[#667085] text-sm leading-5">Order date:</span>
               <span className="text-[#1D2939]">{order.order_date}</span>
@@ -87,19 +87,19 @@ const Order = () => {
             </p>
           </div>
 
-          <div className="mb-4 flex flex-col">
+          <div className="mb-2 flex flex-col">
             {/* <span className="text-[20px] inline-block leading-[30px] mb-2">Status</span> */}
-            <span className="bg-[#72D3E940] inline-block rounded-2xl pl-2 py-1 w-[150px]">{order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}</span>
+            <span className="bg-[#72D3E940] inline-block rounded-2xl pl-2 pr-3 py-1 w-fit">{order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}</span>
           </div>
 
           <ul className="flex flex-col gap-6 sm:gap-3">
             {order.order_items.map((item: OrderItem) => (
               <li key={item.id} className="flex flex-wrap items-center gap-5 sm:gap-20 p-4 rounded-xl">
-                <div className="bg-[#F0EEED] max-w-[120px] sm:max-w-[200px] rounded-2xl overflow-hidden">
+                <div className="bg-[#F0EEED] max-w-[120px] sm:max-w-[200px] rounded-xl overflow-hidden">
                   <img src={item.image1} className="w-[400px]" alt={item.name} />
                 </div>
                 <div className="basis-[40%] sm:basis-[30%]">
-                  <p className="text-base sm:text-2xl leading-8 mb-2 line-clamp-2">{item.name}</p>
+                  <p className="text-base sm:text-xl leading-8 mb-2 line-clamp-2">{item.name}</p>
                   <p className="leading-4 text-[#667085] capitalize">
                     {item.colour} | {item.size}
                   </p>
@@ -108,7 +108,12 @@ const Order = () => {
                   <p className="font-semibold text-lg leading-[30px] text-right">₦{item.price}</p>
                   <p className="text-[#667085] text-right">Qty: {item.quantity}</p>
                 </div>
-                <Link to={`/orders/${order.id}`}className="basis-[50%] sm:basis-auto inline-block text-white bg-customBlue px-4 sm:px-16 py-2 ml-5 sm:py-4 rounded-2xl">Track Order</Link>
+                <button>
+                <Link to={`/orders/${order.id}`}className="basis-[50%] sm:basis-auto text-sm inline-block px-3 py-2 text-white bg-customBlue rounded-xl">
+                Track Orders
+                </Link>
+                </button>
+
                 {/* <div>
                   <p className="text-[20px] leading-[30px] mb-1.5">Expected Delivery</p>
                   <span>{formatEstimatedDelivery(order.estimated_delivery)}</span>
