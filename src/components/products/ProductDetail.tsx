@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Suggested from "./Suggested";
 import { addToLocalCart, isItemInLocalCart, isItemInUserCart } from "../../utils/cartStorage";
 
@@ -67,6 +67,7 @@ const fetchProduct = async (id: number): Promise<Product> => {
 const ProductDetail = () => {
   const { id } = useParams<keyof ProductDetailParams>() as ProductDetailParams;
   const productId = parseInt(id);
+  const navigate = useNavigate();
 
   // Group all useState hooks together at the top
   const [mainImage, setMainImage] = useState<string>("");
@@ -159,6 +160,25 @@ const ProductDetail = () => {
       return;
     }
 
+    // Use the component-scoped selectedSizeData (defined around line 334)
+    // This variable is updated whenever 'selectedSize' or 'product' changes.
+    if (!selectedSizeData) {
+      setModalConfig({
+        isOpen: true,
+        title: "Error",
+        message: "Selected size details not available. Please select a valid size.",
+        type: "error",
+      });
+      return;
+    }
+
+    // If item is ALREADY in cart and button is clicked, navigate to cart.
+    if (product && isSizeInCart(product.id, selectedSizeData.id)) {
+      navigate("/cart");
+      return;
+    }
+
+    // If item is NOT already in cart, then proceed with adding.
     setIsAddingToCart(true);
 
     if (!product) {
@@ -172,50 +192,27 @@ const ProductDetail = () => {
       return;
     }
 
-    const selectedSizeData = product?.sizes?.find(
-      (size) => size.size === selectedSize
-    );
-
-    if (!selectedSizeData) {
-      setModalConfig({
-        isOpen: true,
-        title: "Error",
-        message: "Selected size not found",
-        type: "error",
-      });
-      setIsAddingToCart(false);
-      return;
-    }
+    // The selectedSizeData from component scope is used for adding.
+    // No need to re-fetch/re-find it here if it's already up-to-date.
 
     const accessToken = localStorage.getItem("accessToken");
 
     if (!accessToken) {
-      // Check if item already exists in local cart
-      if (isItemInLocalCart(product.id, selectedSizeData.id)) {
-        setModalConfig({
-          isOpen: true,
-          title: "Notice",
-          message: "This item is already in your cart",
-          type: "error",
-        });
-        setIsAddingToCart(false);
-        return;
-      }
-
-      // Store in local storage for guest users
+      // Guest user: Add to local cart
+      // The check for item already in local cart is covered by isSizeInCart -> navigate above.
       addToLocalCart({
         productId: product.id,
         sizeId: selectedSizeData.id,
         productName: product.name,
         productImage: product.image1,
-        productPrice: product.price,
-        discountedPrice: product.discounted_price || null,
+        productPrice: parseFloat(selectedSizeData.price) || product.price, // Use size-specific price
+        discountedPrice: product.discounted_price || null, // This is product-level discount, might not be size-specific
         sizeName: selectedSizeData.size,
-        quantity: quantity, // Use the quantity from state
+        quantity: quantity,
         maxQuantity: selectedSizeData.quantity,
+        sizeUndiscountedPrice: selectedSizeData.undiscounted_price ? parseFloat(selectedSizeData.undiscounted_price) : (product.undiscounted_price || parseFloat(selectedSizeData.price) || product.price) // Pass size-specific undiscounted price
       });
 
-      // Update itemsInCart state
       const key = `${product.id}-${selectedSizeData.id}`;
       setItemsInCart(prev => ({ ...prev, [key]: true }));
 
@@ -229,8 +226,8 @@ const ProductDetail = () => {
       return;
     }
 
+    // Authenticated user: Add to server cart
     try {
-      // First try to get cart
       const cartResponse = await fetch(`${baseURL}/api/v1/cart/`, {
         method: "GET",
         headers: {
@@ -240,13 +237,11 @@ const ProductDetail = () => {
       });
 
       let cartUuid;
-
       if (cartResponse.ok) {
         const cartData = await cartResponse.json();
         cartUuid = cartData.results[0]?.id;
       }
 
-      // If no cart exists, create one
       if (!cartUuid) {
         try {
           cartUuid = await createNewCart(accessToken);
@@ -255,7 +250,7 @@ const ProductDetail = () => {
           setModalConfig({
             isOpen: true,
             title: "Error",
-            message: "Failed to create cart",
+            message: "Failed to create cart. Please try again.",
             type: "error",
           });
           setIsAddingToCart(false);
@@ -263,7 +258,6 @@ const ProductDetail = () => {
         }
       }
 
-      // Add item to cart with selected quantity
       const response = await fetch(
         `${baseURL}/api/v1/cart/${cartUuid}/items/`,
         {
@@ -275,7 +269,7 @@ const ProductDetail = () => {
           body: JSON.stringify({
             product: product.id,
             size: selectedSizeData.id,
-            quantity: quantity, // Use the quantity from state
+            quantity: quantity,
           }),
         }
       );
@@ -286,14 +280,13 @@ const ProductDetail = () => {
         setModalConfig({
           isOpen: true,
           title: "Notice",
-          message: errorData.error || "Failed to add item to cart",
+          message: errorData.error || "Failed to add item to cart. Please try again.",
           type: "error",
         });
         setIsAddingToCart(false);
-        return;
+        return; 
       }
 
-      // Update itemsInCart state
       const key = `${product.id}-${selectedSizeData.id}`;
       setItemsInCart(prev => ({ ...prev, [key]: true }));
 
@@ -304,11 +297,11 @@ const ProductDetail = () => {
         type: "success",
       });
     } catch (error) {
-      console.error("Error adding to cart:", error);
+      console.error("Error during cart operation:", error);
       setModalConfig({
         isOpen: true,
         title: "Error",
-        message: "Failed to add item to cart 2",
+        message: "An unexpected error occurred. Please try again.",
         type: "error",
       });
     } finally {
@@ -581,19 +574,19 @@ const ProductDetail = () => {
               <button
                 onClick={handleAddToCart}
                 className={`w-full py-3 text-white rounded-2xl transition-colors cursor-pointer ${
-                  !isInStock || isAddingToCart || (selectedSizeData && isSizeInCart(product.id, selectedSizeData.id))
+                  (!isInStock || isAddingToCart)
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-customBlue hover:brightness-90"
                 }`}
                 type="button"
-                disabled={!isInStock || isAddingToCart || (selectedSizeData && isSizeInCart(product.id, selectedSizeData.id))}
+                disabled={!isInStock || isAddingToCart}
               >
                 {isAddingToCart
                   ? "Adding..."
                   : !isInStock
                   ? "Out of Stock"
                   : selectedSizeData && isSizeInCart(product.id, selectedSizeData.id)
-                  ? "Already in Cart"
+                  ? "Item in Cart"
                   : "Add to Cart"}
               </button>
             </div>

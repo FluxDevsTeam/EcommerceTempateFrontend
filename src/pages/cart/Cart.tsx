@@ -81,34 +81,45 @@ const Cart = () => {
         // Load cart from local storage for guest users
         const localCart = getLocalCart();
 
-        const formattedCart = localCart.map((item) => ({
-          id: parseInt(`${item.productId}${item.sizeId}`),
-          product: {
-            id: item.productId,
-            name: item.productName,
-            image1: item.productImage,
-            price: item.productPrice,
-            discounted_price: item.discountedPrice,
-            sub_category: {
-              id: 0,
-              name: "",
+        const formattedCart = localCart.map((item) => {
+          // Determine the best undiscounted price for the size
+          let undiscountedPriceForSize: number;
+          if (item.sizeUndiscountedPrice !== undefined && item.sizeUndiscountedPrice !== null) {
+            undiscountedPriceForSize = Number(item.sizeUndiscountedPrice);
+          } else if (item.discountedPrice !== undefined && item.discountedPrice !== null && item.productPrice < item.discountedPrice) {
+            // This case assumes item.discountedPrice was actually the original price before a product-level discount
+            undiscountedPriceForSize = Number(item.discountedPrice);
+          } else {
+            undiscountedPriceForSize = Number(item.productPrice);
+          }
+
+          return {
+            id: parseInt(`${item.productId}${item.sizeId}`), 
+            product: {
+              id: item.productId,
+              name: item.productName,
+              image1: item.productImage,
+              sub_category: {
+                id: 0, 
+                name: "", 
+              },
             },
-          },
-          cart: {
-            id: "guest-cart",
-            user: 0,
-          },
-          size: {
-            id: item.sizeId,
-            size: item.sizeName,
-            quantity: item.maxQuantity,
-            undiscounted_price: null,
-            price: item.productPrice,
-          },
-          quantity: item.quantity,
-        }));
-        setCartItems(formattedCart);
-        setIsLoading(false); // Set loading false after getting local cart
+            cart: {
+              id: "guest-cart", 
+              user: 0, 
+            },
+            size: {
+              id: item.sizeId,
+              size: item.sizeName,
+              quantity: item.maxQuantity, 
+              undiscounted_price: undiscountedPriceForSize, // Use the determined undiscounted price for the size
+              price: String(item.productPrice), 
+            },
+            quantity: item.quantity, 
+          };
+        });
+        setCartItems(formattedCart as CartItem[]);
+        setIsLoading(false);
         return;
       }
 
@@ -337,14 +348,14 @@ const Cart = () => {
 
   const undiscountedTotal = cartItems.reduce(
     (total: number, item: CartItem) => {
-      const itemPrice = Number(item.size.price);
-      const undiscountedPrice = item.size.undiscounted_price
-        ? Number(item.size.undiscounted_price)
-        : itemPrice;
-      // Use the higher of undiscounted_price or price
+      // For guest cart items, item.size.undiscounted_price is now populated correctly.
+      // For API items, it comes directly.
+      const originalPrice = Number(item.size.undiscounted_price);
+      const currentPrice = Number(item.size.price);
+      // Ensure we use the actual original price for the sum if it's greater than current price
       return (
         total +
-        (undiscountedPrice > itemPrice ? undiscountedPrice : itemPrice) *
+        (originalPrice > currentPrice ? originalPrice : currentPrice) *
           item.quantity
       );
     },

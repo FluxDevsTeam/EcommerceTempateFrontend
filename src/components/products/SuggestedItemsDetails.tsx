@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import SuggestedProductDetails from "./SuggestedProductDetail";
 import DescriptionList from "./DescriptionList";
 import { addToLocalCart, isItemInLocalCart, isItemInUserCart } from "../../utils/cartStorage";
@@ -66,6 +66,7 @@ const fetchProduct = async (id: number): Promise<Product> => {
 const SuggestedItemsDetails: React.FC = () => {
   const { id } = useParams<keyof ProductDetailParams>() as ProductDetailParams;
   const productId = parseInt(id);
+  const navigate = useNavigate();
   const [mainImage, setMainImage] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
@@ -211,64 +212,62 @@ const SuggestedItemsDetails: React.FC = () => {
       return;
     }
 
-    setIsAddingToCart(true);
-
+    // Ensure product is available before proceeding
     if (!product) {
       setModalConfig({
         isOpen: true,
         title: "Error",
-        message: "Product data not available",
+        message: "Product data not available. Cannot process cart action.",
         type: "error",
       });
-      setIsAddingToCart(false);
       return;
     }
 
-    const selectedSizeData = product.sizes.find(
+    const currentSelectedSizeData = product.sizes.find(
       (size) => size.size === selectedSize
     );
 
-    if (!selectedSizeData) {
+    if (!currentSelectedSizeData) {
       setModalConfig({
         isOpen: true,
-        title: "",
-        message: "Please select a size",
+        title: "Error", 
+        message: "Selected size details not available. Please select a valid size.",
         type: "error",
       });
-      setIsAddingToCart(false);
       return;
     }
+
+    // If item is ALREADY in cart and button is clicked, navigate to cart.
+    if (isSizeInCart(product.id, currentSelectedSizeData.id)) {
+      navigate("/cart");
+      return; // Exit early, do not set isAddingToCart or proceed further
+    }
+
+    // If item is NOT already in cart, then proceed with adding.
+    setIsAddingToCart(true);
 
     const accessToken = localStorage.getItem("accessToken");
 
     if (!accessToken) {
-      // Check if item already exists in local cart
-      if (isItemInLocalCart(product.id, selectedSizeData.id)) {
-        setModalConfig({
-          isOpen: true,
-          title: "Notice",
-          message: "This item is already in your cart",
-          type: "error",
-        });
-        setIsAddingToCart(false);
-        return;
-      }
-
-      // Store in local storage for guest users
+      // Guest user: Add to local cart
+      // The check for item already in local cart (isItemInLocalCart) is covered by isSizeInCart -> navigate above.
       addToLocalCart({
         productId: product.id,
-        sizeId: selectedSizeData.id,
+        sizeId: currentSelectedSizeData.id,
         productName: product.name,
         productImage: product.image1,
-        productPrice: product.price,
-        discountedPrice: product.discounted_price,
-        sizeName: selectedSizeData.size,
+        productPrice: parseFloat(currentSelectedSizeData.price) || product.price, // Use size-specific price, ensure parsing
+        discountedPrice: product.discounted_price, // Product-level general discount
+        sizeName: currentSelectedSizeData.size,
         quantity: quantity,
-        maxQuantity: selectedSizeData.quantity,
+        maxQuantity: currentSelectedSizeData.quantity,
+        // Ensure sizeUndiscountedPrice is passed
+        sizeUndiscountedPrice: currentSelectedSizeData.undiscounted_price 
+                               ? parseFloat(currentSelectedSizeData.undiscounted_price) 
+                               : (product.undiscounted_price || parseFloat(currentSelectedSizeData.price) || product.price)
       });
 
-      // Update itemsInCart state
-      const key = `${product.id}-${selectedSizeData.id}`;
+      const key = `${product.id}-${currentSelectedSizeData.id}`;
       setItemsInCart(prev => ({ ...prev, [key]: true }));
 
       setModalConfig({
@@ -281,8 +280,8 @@ const SuggestedItemsDetails: React.FC = () => {
       return;
     }
 
+    // Authenticated user: Add to server cart
     try {
-      // First try to get cart
       const cartResponse = await fetch(`${baseURL}/api/v1/cart/`, {
         method: "GET",
         headers: {
@@ -292,13 +291,11 @@ const SuggestedItemsDetails: React.FC = () => {
       });
 
       let cartUuid;
-
       if (cartResponse.ok) {
         const cartData = await cartResponse.json();
         cartUuid = cartData.results[0]?.id;
       }
 
-      // If no cart exists, create one
       if (!cartUuid) {
         try {
           cartUuid = await createNewCart(accessToken);
@@ -307,7 +304,7 @@ const SuggestedItemsDetails: React.FC = () => {
           setModalConfig({
             isOpen: true,
             title: "Error",
-            message: "Failed to create cart",
+            message: "Failed to create cart. Please try again.",
             type: "error",
           });
           setIsAddingToCart(false);
@@ -315,7 +312,6 @@ const SuggestedItemsDetails: React.FC = () => {
         }
       }
 
-      // Add item to cart
       const response = await fetch(
         `${baseURL}/api/v1/cart/${cartUuid}/items/`,
         {
@@ -326,7 +322,7 @@ const SuggestedItemsDetails: React.FC = () => {
           },
           body: JSON.stringify({
             product: product.id,
-            size: selectedSizeData.id,
+            size: currentSelectedSizeData.id,
             quantity: quantity,
           }),
         }
@@ -337,16 +333,15 @@ const SuggestedItemsDetails: React.FC = () => {
         console.error("Error adding to cart:", errorData);
         setModalConfig({
           isOpen: true,
-          title: "",
-          message: errorData.error,
+          title: "Notice", // Or "Error" as appropriate
+          message: errorData.error || "Failed to add item to cart. Please try again.",
           type: "error",
         });
-        setIsAddingToCart(false);
-        throw new Error("Failed to add to cart");
+        // setIsAddingToCart(false); // Already in finally block
+        throw new Error(errorData.error || "Failed to add to cart");
       }
 
-      // Update itemsInCart state
-      const key = `${product.id}-${selectedSizeData.id}`;
+      const key = `${product.id}-${currentSelectedSizeData.id}`;
       setItemsInCart(prev => ({ ...prev, [key]: true }));
 
       setModalConfig({
@@ -356,7 +351,16 @@ const SuggestedItemsDetails: React.FC = () => {
         type: "success",
       });
     } catch (error) {
-      console.error("Error adding to cart:", error);
+      console.error("Error during cart operation:", error);
+      // Avoid setting modal if it's already set by a specific error message from the try block
+      if (!modalConfig.isOpen || modalConfig.message !== (error as Error).message) {
+        setModalConfig({
+            isOpen: true,
+            title: "Error",
+            message: (error instanceof Error && error.message.includes("Failed to add")) ? error.message : "An unexpected error occurred. Please try again.",
+            type: "error",
+        });
+      }
     } finally {
       setIsAddingToCart(false);
     }
@@ -574,20 +578,20 @@ const SuggestedItemsDetails: React.FC = () => {
               {/* Add to Cart */}
               <button
                 onClick={handleAddToCart}
-                className={`w-full py-3 text-white rounded-2xl transition-colors cursor-pointer ${
-                  !isInStock || isAddingToCart || (selectedSizeData && isSizeInCart(product.id, selectedSizeData.id))
+                className={`w-full py-3 text-white rounded-2xl transition-colors cursor-pointer ${ 
+                  (!isInStock || isAddingToCart) && !(selectedSizeData && isSizeInCart(product.id, selectedSizeData.id)) // Condition to be gray
                     ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-customBlue hover:brightness-90"
+                    : "bg-customBlue hover:brightness-90" // Blue otherwise (including when item is in cart)
                 }`}
                 type="button"
-                disabled={!isInStock || isAddingToCart || (selectedSizeData && isSizeInCart(product.id, selectedSizeData.id))}
+                disabled={(!isInStock || isAddingToCart) && !(selectedSizeData && isSizeInCart(product.id, selectedSizeData.id))} // Disable only if out of stock or adding, but not if already in cart
               >
                 {isAddingToCart
                   ? "Adding..."
                   : !isInStock
                   ? "Out of Stock"
                   : selectedSizeData && isSizeInCart(product.id, selectedSizeData.id)
-                  ? "Already in Cart"
+                  ? "Item in Cart" // Text when item is in cart
                   : "Add to Cart"}
               </button>
             </div>

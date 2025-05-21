@@ -4,7 +4,8 @@ interface LocalCartItem {
   productName: string;
   productImage: string;
   productPrice: number;
-  discountedPrice?: number | null; // Make discountedPrice optional
+  discountedPrice?: number | null; // Product-level general discount, might not be size-specific
+  sizeUndiscountedPrice?: number | string | null; // Size-specific original price, before any discount
   sizeName: string;
   quantity: number;
   maxQuantity: number;
