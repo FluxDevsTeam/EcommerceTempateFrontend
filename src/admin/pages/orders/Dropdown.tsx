@@ -50,7 +50,7 @@ const Dropdown = ({
         onClick={() => setIsOpen(prev => !prev)}
         className={`px-2 py-1 sm:px-4 sm:py-2 text-[12px] sm:text-base flex items-center justify-between gap-4 border border-[#CACACA] rounded-lg min-w-[100px] sm:min-w-[150px] ${menuBgClass} z-10`}
       >
-        <span>{selected}</span>
+        <span>{selected.charAt(0).toUpperCase() + selected.slice(1).toLowerCase()}</span>
         <FiChevronDown />
       </button>
 
@@ -76,7 +76,7 @@ const Dropdown = ({
               {option === "CANCELLED" && (
                 <span className="w-2 h-2 rounded-full bg-[#F44336]"></span>
               )}
-              <span>{option}</span>
+              <span>{option.charAt(0).toUpperCase() + option.slice(1).toLowerCase()}</span>
             </li>
           ))}
         </ul>
