@@ -70,27 +70,28 @@ const AdminSubCategories: React.FC = () => {
   const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
   const [prevPageUrl, setPrevPageUrl] = useState<string | null>(null);
 
+  const fetchSubCategories = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get<ApiResponse>(
+        `${API_BASE_URL}?page=${page}&page_size=${rowsPerPage}&search=${encodeURIComponent(
+          searchQuery
+        )}`
+      );
+      setSubCategories(response.data.results);
+      setTotalCount(response.data.count);
+      setNextPageUrl(response.data.next);
+      setPrevPageUrl(response.data.previous);
+    } catch (err) {
+      setError("Failed to fetch subcategories. Please try again later.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchSubCategories = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await axios.get<ApiResponse>(
-          `${API_BASE_URL}?page=${page}&page_size=${rowsPerPage}&search=${encodeURIComponent(
-            searchQuery
-          )}`
-        );
-        setSubCategories(response.data.results);
-        setTotalCount(response.data.count);
-        setNextPageUrl(response.data.next);
-        setPrevPageUrl(response.data.previous);
-      } catch (err) {
-        setError("Failed to fetch subcategories. Please try again later.");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchSubCategories();
   }, [page, rowsPerPage, searchQuery]);
 
@@ -132,19 +133,13 @@ const AdminSubCategories: React.FC = () => {
       await axios.post(
         API_BASE_URL,
         { category: newSubCategory.category, name: newSubCategory.name },
-        { headers: accessToken ? { Authorization: `JWT ${accessToken}` } : {} }
+        { headers: { Authorization: `JWT ${accessToken}` } }
       );
       setNewSubCategory({ category: "", name: "" });
-      // Refresh subcategories
-      const response = await axios.get<ApiResponse>(
-        `${API_BASE_URL}?page=${page + 1}&page_size=${rowsPerPage}`
-      );
-      setSubCategories(response.data.results);
-      setTotalCount(response.data.count);
+      setEditDialogOpen(false);
+      fetchSubCategories();
     } catch (err: any) {
-      setAddError(
-        err?.response?.data?.name?.[0] || "Failed to add subcategory."
-      );
+      setAddError(err?.response?.data?.name?.[0]);
     } finally {
       setAddLoading(false);
     }
