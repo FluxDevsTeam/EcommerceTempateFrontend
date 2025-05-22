@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import Card from "@/card/Card";
 import PaginationComponent from '@/components/Pagination';
 import SortDropdown from './FilterDropDown';
-import { WishData } from '@/card/wishListApi';
-import { WishItem } from '@/card/types';
+import { WishData } from '../../pages/orders/api';
+import type { WishItem } from '../../pages/orders/types';
 
 export interface Category {
   id: number;

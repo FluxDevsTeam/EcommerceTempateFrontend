@@ -3,10 +3,10 @@ import { ProductItemsResponse } from "../types/data-types";
 
 
 
-export const fetchProducts = async (page = 1): Promise<ProductAPIResponse> => {
+export const fetchProducts = async (page = 1, pageSize = 12): Promise<ProductAPIResponse> => {
   try {
     const res = await fetch(
-      `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/homepage/?page=${page}&page_size=16&latest_item=true&top_selling_items=true`
+      `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/homepage/?page=${page}&page_size=${pageSize}&latest_item=true&top_selling_items=true`
     );
     
     if (!res.ok) {

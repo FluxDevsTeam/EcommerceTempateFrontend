@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import authService from './authservice';
 import { migrateLocalCartToUserCart } from '../../utils/cartStorage';
+import { addWishItem, clearWishlistLocalStorage, getWishlistFromLocalStorage, WishData } from '../../pages/orders/api';
+import type { WishItem } from '../../pages/orders/types';
 
 interface User {
   id: string;
@@ -153,13 +155,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (response.user) {
         setCurrentUser(response.user);
         
-        // After successful login, migrate local cart items
         const accessToken = localStorage.getItem('accessToken');
         if (accessToken) {
+          // Migrate local cart items
           try {
             await migrateLocalCartToUserCart(accessToken);
           } catch (cartError) {
             console.error("Failed to migrate cart items:", cartError);
+          }
+
+          // Migrate local wishlist items
+          try {
+            const localWishlistItems = getWishlistFromLocalStorage();
+            if (localWishlistItems && localWishlistItems.length > 0) {
+              // Fetch current DB wishlist to avoid duplicates
+              const dbWishlistItems = await WishData(); // Fetches for the now logged-in user
+              const dbProductIds = new Set(dbWishlistItems.map(item => item.product.id));
+
+              for (const localItem of localWishlistItems) {
+                if (!dbProductIds.has(localItem.product.id)) {
+                  await addWishItem(localItem.product.id);
+                }
+              }
+              clearWishlistLocalStorage();
+              console.log("Local wishlist items processed and migrated to database if not already present.");
+            }
+          } catch (wishlistError) {
+            console.error("Failed to migrate wishlist items:", wishlistError);
           }
         }
       } else {

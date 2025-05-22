@@ -13,6 +13,7 @@ interface AdminLayoutProps {
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [activePath, setActivePath] = useState<string>("/dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
 
   const handleNavClick = (path: string) => {
     setActivePath(path);
@@ -25,6 +26,10 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
     <AdminRouteGuard>
       <div className="flex flex-col md:flex-row bg-gray-50 min-h-screen">
@@ -34,10 +39,12 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           handleNavClick={handleNavClick}
           isMobileMenuOpen={isMobileMenuOpen}
           toggleMobileMenu={toggleMobileMenu}
+          isCollapsed={isCollapsed}
+          toggleCollapse={toggleCollapse}
         />
 
         {/* Main content area */}
-        <div className="flex-1 md:ml-64 overflow-x-hidden">
+        <div className={`flex-1 overflow-x-hidden md:transition-all md:duration-300 ${isCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
           {/* Admin Header */}
           <AdminHeader 
             isMobileMenuOpen={isMobileMenuOpen}

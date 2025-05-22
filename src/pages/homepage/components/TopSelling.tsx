@@ -21,21 +21,21 @@ const TopSelling: React.FC<LatestItemsProps> = ({
   onLoadMore
 }) => {
   // Auto-load more items when scrolling to bottom
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop + 100 >= 
-        document.documentElement.offsetHeight && 
-        hasMoreItems && 
-        !isLoadingMore
-      ) {
-        onLoadMore();
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [hasMoreItems, isLoadingMore, onLoadMore]);
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     if (
+  //       window.innerHeight + document.documentElement.scrollTop + 100 >= 
+  //       document.documentElement.offsetHeight && 
+  //       hasMoreItems && 
+  //       !isLoadingMore
+  //     ) {
+  //       onLoadMore();
+  //     }
+  //   };
+  //
+  //   window.addEventListener('scroll', handleScroll);
+  //   return () => window.removeEventListener('scroll', handleScroll);
+  // }, [hasMoreItems, isLoadingMore, onLoadMore]);
 
   return (
     <div className="px-3 py-8 md:py-12 space-y-5">

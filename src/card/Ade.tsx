@@ -1,29 +1,36 @@
 import { useEffect, useState } from 'react';
 import Card from './Card';
-import { WishData } from './wishListApi'; // Import your wishlist fetch function
+import { WishData } from '../pages/orders/api'; // Corrected import for WishData
+import type { WishItem as ApiWishItem } from '../pages/orders/types'; // Corrected import for WishItem type, aliased
+// import type { ProductItem } from './types'; // Removed as ProductItem is not exported from ./types.tsx
 
-interface Product {
+// Define a product type that matches the structure expected by CardProps.product
+interface ProductForCard {
   id: number;
   name: string;
+  description: string;
+  total_quantity: number;
+  sub_category: any; // Replace 'any' with a more specific SubCategory type if available and needed
+  colour: string;
   image1: string;
-  price: number;
+  image2: string | null;
+  image3: string | null;
   undiscounted_price: number;
-}
-
-interface WishItem {
-  id: number;
-  product: {
-    id: number;
-    name: string;
-    image1: string;
-    price: number;
-    undiscounted_price: number;
-  };
+  price: number;
+  is_available: boolean;
+  latest_item: boolean;
+  latest_item_position: number;
+  dimensional_size: string;
+  weight: string;
+  top_selling_items: boolean;
+  top_selling_position: number;
+  date_created: string;
+  date_updated: string;
 }
 
 const Producter = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
+  const [products, setProducts] = useState<ProductForCard[]>([]); // Use ProductForCard
+  const [wishlistItems, setWishlistItems] = useState<ApiWishItem[]>([]); // Use imported ApiWishItem
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,12 +38,12 @@ const Producter = () => {
     const fetchData = async () => {
       try {
         const [productRes, wishlistRes] = await Promise.all([
-          fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/'),
+          fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/').then(res => res.json()), // Ensure res.json() is called here
           WishData()
         ]);
 
-        const productData = await productRes.json();
-        setProducts(productData.results);
+        // Assuming productData.results matches ProductForCard structure
+        setProducts(productRes.results as ProductForCard[]); 
 
         setWishlistItems(wishlistRes);
       } catch (err) {
@@ -66,6 +73,7 @@ const Producter = () => {
               product={product}
               isInitiallyLiked={!!matchedWish}
               wishItemId={matchedWish?.id}
+              onItemClick={() => {}} // Added dummy onItemClick to satisfy CardProps
             />
           );
         })}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,7 +9,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { toast } from 'react-toastify';
-
+import logo from '/images/logo.png'
 
 
 // Define the schema for form validation
@@ -29,8 +29,12 @@ const Login = () => {
   
   const { login, error, clearError } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   
 
+  useEffect(() => {
+    console.log("Login page location state:", location.state);
+  }, [location.state]);
   
   const {
     register,
@@ -56,13 +60,15 @@ const Login = () => {
           background: '#ffffff', // Brighter blue
           color: '#000000'       
         },
-        progressStyle: {
-          background: '#0057b7'  
-        },
-        icon: "🗸",
         position: "top-right",
       });
-      navigate('/dashboard');
+      
+      // ADD logic to redirect to intended path or default to /dashboard
+      const searchParams = new URLSearchParams(location.search);
+      const redirectUrlFromQuery = searchParams.get('redirect');
+      const from = location.state?.from?.pathname || redirectUrlFromQuery || '/dashboard';
+      navigate(from, { replace: true });
+
     } catch (err: any) {
       console.error('Login error:', err);
       toast.error(error || 'Login failed. Please check your credentials.');
@@ -75,7 +81,13 @@ const Login = () => {
     <div className="flex items-center justify-center">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold">SHOP.CO</h1>
+          <Link to="/">
+            <img 
+              src="/images/logo.png" 
+              alt="SHOP.CO Logo" 
+              className="h-10 w-auto mx-auto cursor-pointer"
+            />
+          </Link>
         </div>
      
         

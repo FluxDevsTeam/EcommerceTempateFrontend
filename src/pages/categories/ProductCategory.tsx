@@ -5,8 +5,8 @@ import { useState, useEffect } from 'react';
 import Card from '@/card/Card';
 import PaginationComponent from '@/components/Pagination';
 import SortDropdown from './SortButton';
-import { WishData } from '@/card/wishListApi';
-import { WishItem } from '@/card/types';
+import { WishData } from '../orders/api';
+import type { WishItem } from '../orders/types';
 
 // Interfaces
 export interface Category {
