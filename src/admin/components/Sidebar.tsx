@@ -125,7 +125,7 @@ const Sidebar = ({
           <NavItem 
             icon={<HelpCircle className={`h-5 w-5 ${activePath === "/help" ? "text-black" : ""}`} />} 
             label="Help Centre" 
-            to="/help"
+            to="https://fluxdevs.com/Contact"
             active={activePath === "/help"}
             onClick={handleHelpCentreClick}
             isCollapsed={isCollapsed}
