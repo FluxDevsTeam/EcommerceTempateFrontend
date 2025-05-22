@@ -246,6 +246,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
         setOpenPopoverId(null);
       }
     };
+    
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
