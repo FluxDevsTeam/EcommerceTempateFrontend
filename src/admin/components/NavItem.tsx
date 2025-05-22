@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -11,7 +12,16 @@ interface NavItemProps {
   isCollapsed?: boolean;
 }
 
-export default function NavItem({ icon, label, to, active, badge, className, onClick, isCollapsed }: NavItemProps) {
+export default function NavItem({
+  icon,
+  label,
+  to,
+  active,
+  badge,
+  className,
+  onClick,
+  isCollapsed,
+}: NavItemProps) {
   return (
     <div title={isCollapsed ? label : undefined} className="relative">
       <Link
@@ -25,11 +35,13 @@ export default function NavItem({ icon, label, to, active, badge, className, onC
         `}
         onClick={onClick}
       >
-        <span className={`${active ? "text-black" : ""}`}>
-          {icon}
-        </span>
+        <span className={`${active ? "text-black" : ""}`}>{icon}</span>
         {!isCollapsed && (
-          <span className={`text-base font-medium ${active ? "text-black" : ""}`}>{label}</span>
+          <span
+            className={`text-base font-medium ${active ? "text-black" : ""}`}
+          >
+            {label}
+          </span>
         )}
         {badge && !isCollapsed && (
           <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
