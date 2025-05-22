@@ -125,6 +125,7 @@ const PaginatedDropdown: React.FC<PaginatedDropdownProps> = ({
           ))}
           {filteredOptions.length > displayedItems.length && (
             <button
+              type="button"
               onClick={() => setPage(p => p + 1)}
               className="w-full px-4 py-2 text-center text-blue-600 hover:bg-gray-50 border-t"
             >

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { DollarSign, Package, Users, CreditCard } from 'lucide-react';
+import { DollarSign, Package, Users, CreditCard, TrendingUp, AlertCircle, Loader2, Banknote } from 'lucide-react';
 import StatCard from './StatCard';
 import axios from 'axios';
 import { formatNumberWithCommas, formatCurrency } from '../../../utils/formatting';
@@ -60,50 +60,66 @@ export default function StatsGrid() {
   }, []);
 
   if (loading) {
-    return <div className="flex justify-center items-center h-32">
-      <p>Loading stats...</p>
-    </div>;
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
+        {[...Array(4)].map((_, index) => (
+          <div key={index} className="bg-white rounded-xl shadow-lg p-6 flex flex-col justify-between h-40 animate-pulse">
+            <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+            <div className="h-8 bg-gray-300 rounded w-1/2 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+          </div>
+        ))}
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-red-500 p-4">
-      <p>Error: {error}</p>
-    </div>;
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-xl shadow-lg p-6 mb-6 flex items-center gap-4">
+        <AlertCircle className="text-red-500 h-8 w-8" />
+        <div>
+          <p className="font-semibold text-red-700">Error loading statistics:</p>
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      </div>
+    );
   }
 
   if (!stats) {
-    return <div className="p-4">
-      <p>No stats available</p>
-    </div>;
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <p className="text-gray-500">No statistics available at the moment.</p>
+      </div>
+    );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-2 mt-0 lg:grid-cols-4 gap-2 md:gap-4 mb-2">
      
       <StatCard 
-        title="Total Products Available" 
+        title="Total Products"
         value={formatNumberWithCommas(stats.total_available_products)} 
-        icon={<Package className="text-blue-500" />} 
- 
+        icon={<Package className="text-indigo-500" />} 
+        description="Available in stock"
       />
 
       <StatCard 
-        title="Total Payments" 
+        title="Total Payments"
         value={formatCurrency(stats.total_payments_this_year)} 
-        icon={<DollarSign className="text-blue-500" />} 
-     
+        icon={<Banknote className="text-emerald-500" />} 
+        description="This fiscal year"
       />
       <StatCard 
-        title="Total Sales" 
-        value={formatNumberWithCommas(stats.total_sales_this_year)}
-        icon={<Users className="text-blue-500" />} 
-   
+        title="Total Sales"
+        value={formatNumberWithCommas(stats.total_sales_this_year)} 
+        icon={<TrendingUp className="text-amber-500" />} 
+        description="All-time sales count"
       />
       <StatCard 
-        title="Total Users" 
+        title="Total Users"
         value={formatNumberWithCommas(stats.total_users)} 
-        icon={<CreditCard className="text-blue-500" />} 
-    
+        icon={<Users className="text-sky-500" />} 
+        description="Registered platform users"
       />
     </div>
   );

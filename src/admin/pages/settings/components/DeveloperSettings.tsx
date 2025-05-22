@@ -36,7 +36,7 @@ const DeveloperSettings: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
   const [showModal, setShowModal] = useState<boolean>(false);
 
   useEffect(() => {
@@ -377,7 +377,7 @@ const DeveloperSettings: React.FC = () => {
 
             <div className="flex justify-end space-x-4 mt-8">
               <button
-                className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleCancel}
                 disabled={loading || !hasChanges()}
                 type="button"
@@ -385,7 +385,7 @@ const DeveloperSettings: React.FC = () => {
                 Cancel
               </button>
               <button
-                className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+                className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:cursor-not-allowed"
                 onClick={() => setShowModal(true)}
                 disabled={loading || !hasChanges()}
                 type="button"
