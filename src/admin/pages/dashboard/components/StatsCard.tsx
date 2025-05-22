@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { DollarSign, Package, Users, CreditCard } from 'lucide-react';
 import StatCard from './StatCard';
 import axios from 'axios';
+import { formatNumberWithCommas, formatCurrency } from '../../../utils/formatting';
 
 interface StatsData {
-  total_available_products:string;
+  total_available_products: string;
   total_payments_this_year: number;
   total_sales_this_year: number;
   total_users: number;
@@ -81,26 +82,26 @@ export default function StatsGrid() {
      
       <StatCard 
         title="Total Products Available" 
-        value={stats.total_available_products} 
+        value={formatNumberWithCommas(stats.total_available_products)} 
         icon={<Package className="text-blue-500" />} 
  
       />
 
       <StatCard 
         title="Total Payments" 
-        value={`₦${stats.total_payments_this_year}`} 
+        value={formatCurrency(stats.total_payments_this_year)} 
         icon={<DollarSign className="text-blue-500" />} 
      
       />
       <StatCard 
         title="Total Sales" 
-        value={stats.total_sales_this_year} 
+        value={formatNumberWithCommas(stats.total_sales_this_year)}
         icon={<Users className="text-blue-500" />} 
    
       />
       <StatCard 
         title="Total Users" 
-        value={stats.total_users} 
+        value={formatNumberWithCommas(stats.total_users)} 
         icon={<CreditCard className="text-blue-500" />} 
     
       />

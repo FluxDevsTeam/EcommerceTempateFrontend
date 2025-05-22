@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { ChevronDown } from "lucide-react";
+import { formatCurrency, formatNumberWithCommas } from "../../utils/formatting";
 
 interface Product {
   id: number;
@@ -218,7 +219,7 @@ const OrdersList: React.FC = () => {
                   </div>
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                ₦{order.total_amount}
+                {formatCurrency(order.total_amount)}
                 </td>
                 <td className="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">
                   {(() => {
@@ -253,7 +254,7 @@ const OrdersList: React.FC = () => {
             Previous
           </button>
           <span className="text-sm text-gray-700">
-            Page {currentPage} of {totalPages}
+            Page {formatNumberWithCommas(currentPage)} of {formatNumberWithCommas(totalPages)} (Total: {formatNumberWithCommas(totalOrders)} orders)
           </span>
           <button
             onClick={handleNextPage}

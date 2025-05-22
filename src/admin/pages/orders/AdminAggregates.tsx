@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FiShoppingBag, FiTruck, FiPackage } from "react-icons/fi";
 import { fetchData } from './api';
 import { Aggregate } from "./types";
+import { formatNumberWithCommas, formatCurrency } from "../../utils/formatting";
 
 const AdminAggregates = () => {
     const [aggregate, setAggregate] = useState<Aggregate>({
@@ -32,7 +33,7 @@ const AdminAggregates = () => {
         <div className="flex gap-4 flex-wrap items-center border border-[#E6EDFF] rounded-2xl lg:p-6 p-2 lg:pr-12 mt-6">
             <div className="border-r border-[#E6EDFF] basis-[40%] sm:basis-auto lg:pr-10 pr-5">
                 <div className="flex justify-between items-center mb-4 sm:mb-8">
-                    <h4 className="font-semibold text-[20px] lg:text-[28px]">{aggregate.total_orders || 0}</h4>
+                    <h4 className="font-semibold text-[20px] lg:text-[28px]">{formatNumberWithCommas(aggregate.total_orders || 0)}</h4>
                     <FiShoppingBag size={18} className="text-[#347AE2]" />
                 </div>
                 <p className="lg:font-medium text-[14px] sm:text-[18px]">Total Orders</p>
@@ -45,7 +46,7 @@ const AdminAggregates = () => {
 
             <div className="border-r border-[#E6EDFF] basis-[40%] sm:basis-auto lg:px-5 px-2">
                 <div className="flex justify-between items-center mb-4 sm:mb-8">
-                    <h4 className="font-semibold text-[20px] lg:text-[28px]">{aggregate.delivered_orders || 0}</h4>
+                    <h4 className="font-semibold text-[20px] lg:text-[28px]">{formatNumberWithCommas(aggregate.delivered_orders || 0)}</h4>
                     <FiShoppingBag size={20} className="text-[#347AE2]" />
                 </div>
                 <p className="lg:font-medium text-[14px] sm:text-[18px]">Delivered Orders</p>
@@ -58,7 +59,7 @@ const AdminAggregates = () => {
 
             <div className="border-r border-[#E6EDFF] basis-[40%] sm:basis-auto lg:px-5 px-2">
                 <div className="flex justify-between items-center mb-4 sm:mb-8">
-                    <h4 className="font-semibold text-[20px] lg:text-[28px]">{aggregate.returned_orders || 0}</h4>
+                    <h4 className="font-semibold text-[20px] lg:text-[28px]">{formatNumberWithCommas(aggregate.returned_orders || 0)}</h4>
                     <FiPackage size={20} className="text-[#347AE2]" />
                 </div>
                 <p className="lg:font-medium text-[14px] sm:text-[18px]">Returned Orders</p>
@@ -71,7 +72,7 @@ const AdminAggregates = () => {
 
             <div className="border-r border-[#E6EDFF] basis-[40%] sm:basis-auto lg:px-5 px-2">
                 <div className="flex justify-between items-center mb-4 sm:mb-8">
-                    <h4 className="font-semibold text-[20px] lg:text-[28px]">{aggregate.pending_orders || 0}</h4>
+                    <h4 className="font-semibold text-[20px] lg:text-[28px]">{formatNumberWithCommas(aggregate.pending_orders || 0)}</h4>
                     <FiTruck size={20} className="text-[#347AE2]" />
                 </div>
                 <p className="lg:font-medium text-[14px] sm:text-[18px]">Pending Orders</p>
@@ -86,7 +87,7 @@ const AdminAggregates = () => {
         <div className="flex gap-4 flex-wrap items-center border border-[#E6EDFF] rounded-2xl lg:p-6 p-2 lg:pr-12 mt-6">
             <div className="border-r border-[#E6EDFF] basis-[40%] sm:basis-auto lg:pr-10 pr-5">
                 <div className="flex justify-between items-center mb-4 sm:mb-8">
-                    <h4 className="font-semibold text-[20px] lg:text-[28px]">{aggregate.total_payment || 0}</h4>
+                    <h4 className="font-semibold text-[20px] lg:text-[28px]">{formatCurrency(aggregate.total_payment || 0)}</h4>
                     <FiShoppingBag size={18} className="text-[#347AE2]" />
                 </div>
                 <p className="lg:font-medium text-[14px] sm:text-[18px]">Total Payment</p>
@@ -99,7 +100,7 @@ const AdminAggregates = () => {
 
             <div className="border-r border-[#E6EDFF] basis-[40%] sm:basis-auto lg:px-5 px-2">
                 <div className="flex justify-between items-center mb-4 sm:mb-8">
-                    <h4 className="font-semibold text-[20px] lg:text-[28px]">{aggregate.successful_payment || 0}</h4>
+                    <h4 className="font-semibold text-[20px] lg:text-[28px]">{formatCurrency(aggregate.successful_payment || 0)}</h4>
                     <FiShoppingBag size={20} className="text-[#347AE2]" />
                 </div>
                 <p className="lg:font-medium text-[14px] sm:text-[18px]">Successful Payment</p>
@@ -112,7 +113,7 @@ const AdminAggregates = () => {
 
             <div className="border-r border-[#E6EDFF] basis-[40%] sm:basis-auto lg:px-5 px-2">
                 <div className="flex justify-between items-center mb-4 sm:mb-8">
-                    <h4 className="font-semibold text-[20px] lg:text-[28px]">{aggregate.refunded_payment || 0}</h4>
+                    <h4 className="font-semibold text-[20px] lg:text-[28px]">{formatCurrency(aggregate.refunded_payment || 0)}</h4>
                     <FiPackage size={20} className="text-[#347AE2]" />
                 </div>
                 <p className="lg:font-medium text-[14px] sm:text-[18px]">Refunded Payment</p>

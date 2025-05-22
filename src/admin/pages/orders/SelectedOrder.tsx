@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Order } from "./types"; // make sure this path is correct
 import Dropdown from "./Dropdown";
 import formatEstimatedDelivery from "./Date";
+import { formatCurrency, formatNumberWithCommas } from "../../utils/formatting";
 
 interface SelectedOrderPopupProps {
   selectedOrder: Order;
@@ -33,7 +34,7 @@ const SelectedOrderPopup: React.FC<SelectedOrderPopupProps> = ({ selectedOrder, 
             Placed on {new Date(selectedOrder.order_date).toLocaleDateString()} by {selectedOrder.first_name} {selectedOrder.last_name}
           </p>
 
-          <p className="text-[14px] font-semibold mb-3">Customer’s Details</p>
+          <p className="text-[14px] font-semibold mb-3">Customer's Details</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3">
             <p className="flex items-center gap-3 text-[12px] sm:text-[14px]"><span className="font-medium">First Name:</span><span>{selectedOrder.first_name}</span></p>
             <p className="flex items-center gap-3 text-[12px] sm:text-[14px]"><span className="font-medium">Last Name:</span><span>{selectedOrder.last_name}</span></p>
@@ -61,7 +62,7 @@ const SelectedOrderPopup: React.FC<SelectedOrderPopupProps> = ({ selectedOrder, 
             </div>
             <div className="text-[14px]">
               <p className="font-medium">Total Delivery Fee</p>
-              <p className="font-bold">₦{parseFloat(selectedOrder.delivery_fee).toLocaleString()}</p>
+              <p className="font-bold">{formatCurrency(selectedOrder.delivery_fee)}</p>
             </div>
           </div>
 
@@ -78,26 +79,26 @@ const SelectedOrderPopup: React.FC<SelectedOrderPopupProps> = ({ selectedOrder, 
                 <span className="w-[25%] overflow-hidden text-ellipsis whitespace-nowrap block">
                   {item.name}
                 </span>
-                <span className="w-[25%]">{item.quantity}</span>
-                <span className="w-[25%]">₦{parseFloat(item.price).toLocaleString()}</span>
-                <span className="w-[25%]">₦{(item.quantity * parseFloat(item.price)).toLocaleString()}</span>
+                <span className="w-[25%]">{formatNumberWithCommas(item.quantity)}</span>
+                <span className="w-[25%]">{formatCurrency(item.price)}</span>
+                <span className="w-[25%]">{formatCurrency(item.quantity * parseFloat(item.price))}</span>
               </p>
             ))}
             <p className="flex items-center justify-end text-[#333333] font-semibold py-2 sm:py-3 rounded-lg mt-2 sm:mt-4">
               <span className="w-[25%]">Subtotal</span>
-              <span className="w-[25%]">₦{selectedOrder.order_items.reduce((acc, item) => acc + item.quantity * parseFloat(item.price), 0).toLocaleString()}</span>
+              <span className="w-[25%]">{formatCurrency(selectedOrder.order_items.reduce((acc, item) => acc + item.quantity * parseFloat(item.price), 0))}</span>
             </p>
             <p className="flex items-center justify-end text-[#333333] py-2 sm:py-3 rounded-lg mt-2 sm:mt-4">
               <span className="w-[25%]">Delivery fee</span>
-              <span className="w-[25%]">₦{parseFloat(selectedOrder.delivery_fee).toLocaleString()}</span>
+              <span className="w-[25%]">{formatCurrency(selectedOrder.delivery_fee)}</span>
             </p>
             <p className="flex items-center justify-end text-[#333333] font-bold py-2 sm:py-3 rounded-lg mt-2 sm:mt-4">
               <span className="w-[25%]">Total</span>
               <span className="w-[25%]">
-                ₦{(
+                {formatCurrency(
                   selectedOrder.order_items.reduce((acc, item) => acc + item.quantity * parseFloat(item.price), 0)
                   + parseFloat(selectedOrder.delivery_fee)
-                ).toLocaleString()}
+                )}
               </span>
             </p>
           </div>

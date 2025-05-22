@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { formatCurrency } from "../../../utils/formatting";
 
 interface DeliverySettings {
   base_fee: string;
@@ -144,25 +145,25 @@ const DeliverySettings = () => {
     <div className="border-r border-gray-200 pr-4">
       <p className="text-sm text-gray-500">Base Fee</p>
       <p className="font-medium text-lg">
-        {initialData?.base_fee ? `₦${parseFloat(initialData.base_fee).toFixed(2)}` : 'Not set'}
+        {initialData?.base_fee ? formatCurrency(initialData.base_fee) : 'Not set'}
       </p>
     </div>
     <div className="border-r border-gray-200 pr-4">
       <p className="text-sm text-gray-500">Per Kilometer</p>
       <p className="font-medium text-lg">
-        {initialData?.fee_per_km ? `₦${parseFloat(initialData.fee_per_km).toFixed(2)}/km` : 'Not set'}
+        {initialData?.fee_per_km ? `${formatCurrency(initialData.fee_per_km)}/km` : 'Not set'}
       </p>
     </div>
     <div className="border-r border-gray-200 pr-4">
       <p className="text-sm text-gray-500">Weight Fee</p>
       <p className="font-medium text-lg">
-        {initialData?.weigh_fee ? `₦${parseFloat(initialData.weigh_fee).toFixed(2)}/kg` : 'Not set'}
+        {initialData?.weigh_fee ? `${formatCurrency(initialData.weigh_fee)}/kg` : 'Not set'}
       </p>
     </div>
     <div>
       <p className="text-sm text-gray-500">Size Fee</p>
       <p className="font-medium text-lg">
-        {initialData?.size_fee ? `₦${parseFloat(initialData.size_fee).toFixed(2)}/m³` : 'Not set'}
+        {initialData?.size_fee ? `${formatCurrency(initialData.size_fee)}/m³` : 'Not set'}
       </p>
     </div>
   </div>

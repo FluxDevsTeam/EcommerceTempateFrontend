@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, TooltipProps } from 'recharts';
 import axios from 'axios';
+import { formatNumberWithCommas } from '../../../utils/formatting';
 
 const OrderAnalytics = () => {
   const [orderPeriod, setOrderPeriod] = useState('Monthly');
@@ -115,6 +116,7 @@ const OrderAnalytics = () => {
               tick={{ fontSize: 12, fill: '#6B7280' }}
               domain={[0, 'dataMax + 100']} // Adjust domain to fit your data
               ticks={[0, 20, 40, 60, 80, 100]} // Custom ticks based on your data range
+              tickFormatter={(value) => formatNumberWithCommas(value)}
             />
             <Tooltip
               cursor={{ fill: 'rgba(249, 115, 22, 0.1)' }}
@@ -123,6 +125,17 @@ const OrderAnalytics = () => {
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
                 boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+              }}
+              content={({ active, payload, label }) => {
+                if (active && payload && payload.length) {
+                  return (
+                    <div className="custom-tooltip bg-white p-2 border rounded shadow-lg">
+                      <p className="label">{`${label}`}</p>
+                      <p className="intro">{`Orders: ${formatNumberWithCommas(payload[0].value as number)}`}</p>
+                    </div>
+                  );
+                }
+                return null;
               }}
             />
             <Bar dataKey="orders" fill="#F97316" radius={[4, 4, 0, 0]} barSize={40} />

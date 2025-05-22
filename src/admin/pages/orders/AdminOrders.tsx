@@ -10,6 +10,7 @@ import Pagination from './Pagination';
 import SearchInput from './SearchForm';
 import SelectedOrderPopup from './SelectedOrder';
 import { PatchOrderStatus } from './api';
+import { formatCurrency } from "../../utils/formatting";
 
 
 const AdminOrders = () => {
@@ -141,7 +142,7 @@ const loadOrders = async (url?: string) => {
                 <p className="sm:w-[20%] w-[40%] line-clamp-1 overflow-hidden text-ellipsis">{order.order_items.map(item => item.name).join(', ')}</p>
                 <p className="w-[20%] hidden sm:block">{order.delivery_address}</p>
                 <p className="sm:w-[10%] w-[15%]">
-                  ₦{order.order_items.reduce((acc, item) => acc + item.quantity * parseFloat(item.price), 0) + parseFloat(order.delivery_fee)}
+                  {formatCurrency(order.order_items.reduce((acc, item) => acc + item.quantity * parseFloat(item.price), 0) + parseFloat(order.delivery_fee))}
                 </p>
                 <p className="w-[20%] text-[12px] hidden sm:block">{formatEstimatedDelivery(order.estimated_delivery)}</p>
                 <p className={`items-center gap-3 w-[120px] px-4 py-1 hidden sm:flex rounded-lg`} style={{ backgroundColor: statusData.bg }}>
@@ -176,10 +177,10 @@ const loadOrders = async (url?: string) => {
                 </p>
                 <div className="flex justify-between items-center">
                   <span className="text-[20px] sm:text-[20px]">
-                    ₦{order.order_items.reduce((acc, item) => acc + item.quantity * parseFloat(item.price), 0) + parseFloat(order.delivery_fee)}
+                    {formatCurrency(order.order_items.reduce((acc, item) => acc + item.quantity * parseFloat(item.price), 0) + parseFloat(order.delivery_fee))}
                   </span>
                   <span className="text-[16px] text-[#00000066] line-through">
-                    ₦{parseFloat(order.delivery_fee)}
+                    {formatCurrency(parseFloat(order.delivery_fee))}
                   </span>
                   <span className="bg-[#72D3E940] text-[10px] sm:text-[14px] rounded-3xl py-0.5 px-6">Total</span>
                 </div>

@@ -1,3 +1,5 @@
+import { formatNumberWithCommas } from "../utils/formatting";
+
 type PaginationProps = {
   nextPageUrl: string | null;
   prevPageUrl: string | null;
@@ -52,7 +54,7 @@ const Pagination = ({ nextPageUrl, currentPage, totalPages, getPageUrl, prevPage
             className={`px-2 py-1 rounded ${page === currentPage ? 'bg-[#184455] text-white font-bold' : 'text-[#184455]'}`}
             onClick={() => onPageChange(getPageUrl(page))}
           >
-            {page}
+            {formatNumberWithCommas(page)}
           </button>
         ))}
 
