@@ -71,14 +71,20 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
   );
 };
 
+const ITEMS_PER_PAGE = 10;
+
 const OrdersList: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [listPeriod, setListPeriod] = useState("All Orders");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    const fetchOrders = async (page: number) => {
+      setLoading(true);
       try {
         const token = localStorage.getItem('accessToken');
         
@@ -87,7 +93,7 @@ const OrdersList: React.FC = () => {
         }
 
         const response = await axios.get(
-          "https://ecommercetemplate.pythonanywhere.com/api/v1/admin/order/",
+          `https://ecommercetemplate.pythonanywhere.com/api/v1/admin/order/?page=${page}&page_size=${ITEMS_PER_PAGE}`,
           {
             headers: {
               'Authorization': `JWT ${token}`,
@@ -98,8 +104,12 @@ const OrdersList: React.FC = () => {
 
         if (response.data && response.data.results) {
           setOrders(response.data.results);
+          setTotalOrders(response.data.count || 0);
+          setTotalPages(Math.ceil((response.data.count || 0) / ITEMS_PER_PAGE));
         } else {
           setOrders([]);
+          setTotalOrders(0);
+          setTotalPages(1);
         }
       } catch (err: any) {
         console.error('Error fetching orders:', err);
@@ -107,16 +117,25 @@ const OrdersList: React.FC = () => {
         
         if (err.response?.status === 401) {
           console.log('Unauthorized - redirecting to login');
+          // Potentially redirect to login page here
         }
       } finally {
         setLoading(false);
       }
     };
 
-    fetchOrders();
-  }, []);
+    fetchOrders(currentPage);
+  }, [currentPage]); // Refetch when currentPage changes
 
-  if (loading) {
+  const handlePrevPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  if (loading && !orders.length) { // Show loading only on initial load or when orders are empty
     return <div className="flex justify-center items-center h-32">
       <p>Loading orders...</p>
     </div>;
@@ -125,11 +144,12 @@ const OrdersList: React.FC = () => {
   if (error) {
     return <div className="text-red-500 p-4">
       <p>Error: {error}</p>
+      {/* Optionally, add a retry button here */}
     </div>;
   }
 
-  if (!orders.length) {
-    return <div className="p-4">
+  if (!loading && !orders.length && totalOrders === 0) {
+    return <div className="p-4 text-center">
       <p>No orders found</p>
     </div>;
   }
@@ -139,12 +159,12 @@ const OrdersList: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h2 className="text-lg sm:text-xl font-bold">Order List</h2>
-        <div className="relative w-full sm:w-auto">
+        {/* <div className="relative w-full sm:w-auto">
           <button className="flex items-center justify-between w-full sm:w-auto gap-2 px-4 py-2 bg-white border rounded-lg shadow-sm text-sm">
             {listPeriod}
             <ChevronDown size={16} />
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* Table */}
@@ -221,6 +241,29 @@ const OrdersList: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
+          <button
+            onClick={handlePrevPage}
+            disabled={currentPage === 1 || loading}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-700">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages || loading}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 };

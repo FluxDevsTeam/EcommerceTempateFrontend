@@ -89,12 +89,12 @@ const OrderAnalytics = () => {
             <div className="w-3 h-3 rounded-full bg-orange-500 mr-2"></div>
             <span className="text-sm">Successful Orders</span>
           </div>
-          <div className="relative">
+          {/* <div className="relative">
             <button className="flex items-center gap-2 px-4 py-2 bg-white border rounded-lg">
               {orderPeriod}
               <ChevronDown size={16} />
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
 

@@ -122,7 +122,7 @@ const ProductsPage: React.FC = () => {
         apiParams.append('page', currentPage.toString());
 
         const response = await fetch(
-          `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?${apiParams}`
+          `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?is_available=true&${apiParams}`
         );
 
         if (!response.ok) throw new Error('Failed to fetch products');
