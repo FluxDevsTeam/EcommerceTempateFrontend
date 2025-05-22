@@ -3,6 +3,7 @@ import { FaEdit, FaTrash, FaPlus, FaTh, FaThList } from "react-icons/fa";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import PaginatedDropdown from "./PaginatedDropdown";
+import { formatCurrency, formatNumberWithCommas } from "../../../utils/formatting";
 
 // Use the same interfaces from Product-List-Table-View
 interface Category {
@@ -532,8 +533,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                 <div className="absolute z-50 mt-2 p-6 bg-white border rounded-lg shadow-lg w-80">
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-4">
-                      Price Range: ₦{tempPriceRange[0].toLocaleString()} - ₦
-                      {tempPriceRange[1].toLocaleString()}
+                      Price Range: {formatCurrency(tempPriceRange[0])} - {formatCurrency(tempPriceRange[1])}
                     </label>
                     <div className="relative h-8">
                       {/* Base track */}
@@ -762,10 +762,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                     <span className="text-xs px-2 py-1 bg-gray-100 w-fit mb-1 rounded-full">
                       {product.unlimited
                         ? "∞ Unlimited"
-                        : `${product.total_quantity || "0"} in stock`}
+                        : `${formatNumberWithCommas(product.total_quantity || 0)} in stock`}
                     </span>
                     <span className="text-xs px-2 py-1 bg-gray-100 w-fit rounded-full text-center">
-                      {`${product.production_days || "0"} production days`}
+                      {`${formatNumberWithCommas(product.production_days || 0)} production days`}
                     </span>
                   </div>
                 </div>
@@ -783,9 +783,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         {/* Pagination Section */}
         <div className="flex flex-col sm:flex-row justify-between items-center mt-4 space-y-4 sm:space-y-0">
           <div className="text-sm text-gray-600 text-center sm:text-left w-full sm:w-auto">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-            {Math.min(currentPage * itemsPerPage, totalProducts)} of{" "}
-            {totalProducts} entries
+            Showing {formatNumberWithCommas((currentPage - 1) * itemsPerPage + 1)} to{" "}
+            {formatNumberWithCommas(Math.min(currentPage * itemsPerPage, totalProducts))} of{" "}
+            {formatNumberWithCommas(totalProducts)} entries
           </div>
           <div className="flex items-center gap-2 justify-center sm:justify-start">
             <button
@@ -831,7 +831,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                           : "border hover:bg-gray-50"
                       }`}
                     >
-                      {page}
+                      {formatNumberWithCommas(page)}
                     </button>
                   </React.Fragment>
                 ))}

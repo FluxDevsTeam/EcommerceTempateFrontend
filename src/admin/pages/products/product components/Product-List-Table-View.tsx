@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import PaginatedDropdown from "./PaginatedDropdown";
 import type { Product } from "../utils/productUtils";
 import { fetchProducts } from "../utils/productUtils";
+import { formatCurrency, formatNumberWithCommas } from "../../../utils/formatting";
 
 // Define interfaces for auxiliary data structures
 interface Category {
@@ -81,7 +82,8 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
     productName: "",
   });
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [sortBy, setSortBy] = useState<string>("");  const [categories, setCategories] = useState<Category[]>([]);
+  const [sortBy, setSortBy] = useState<string>("");
+  const [categories, setCategories] = useState<Category[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [showPriceFilter, setShowPriceFilter] = useState(false);
   const [dbPriceRange, setDbPriceRange] = useState<[number, number]>([0, 0]);
@@ -459,8 +461,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                 <div className="absolute z-50 mt-2 p-6 bg-white border rounded-lg shadow-lg w-80">
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-4">
-                      Price Range: ₦{tempPriceRange[0].toLocaleString()} - ₦
-                      {tempPriceRange[1].toLocaleString()}
+                      Price Range: {formatCurrency(tempPriceRange[0])} - {formatCurrency(tempPriceRange[1])}
                     </label>
                     <div className="relative h-8">
                       {/* Base track */}
@@ -648,7 +649,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                     }
                   >
                     <td className="px-4 py-3">
-                      {(currentPage - 1) * itemsPerPage + index + 1}
+                      {formatNumberWithCommas((currentPage - 1) * itemsPerPage + index + 1)}
                     </td>
                     {/* <td className="px-4 py-3">{product.id}</td> */}
                     <td className="px-4 py-3">
@@ -664,14 +665,14 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                       {product.unlimited ? (
                         <span className="text-blue-600">Unlimited</span>
                       ) : (
-                        <span>{product.total_quantity || "0"}</span>
+                        <span>{formatNumberWithCommas(product.total_quantity || 0)}</span>
                       )}
                     </td>
                     <td className="px-4 py-3 min-w-[120px] whitespace-nowrap">
-                      ₦ {product.price}
+                      {formatCurrency(product.price)}
                     </td>
                     <td className="px-4 py-3 min-w-[120px] whitespace-nowrap">
-                      {product.production_days} days
+                      {formatNumberWithCommas(product.production_days || 0)} days
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -736,9 +737,9 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
         {/* Update Pagination Section */}
         <div className="flex flex-col sm:flex-row justify-between items-center mt-4 space-y-4 sm:space-y-0">
           <div className="text-sm text-gray-600 text-center sm:text-left w-full sm:w-auto">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-            {Math.min(currentPage * itemsPerPage, totalProducts)} of{" "}
-            {totalProducts} entries
+            Showing {formatNumberWithCommas((currentPage - 1) * itemsPerPage + 1)} to{" "}
+            {formatNumberWithCommas(Math.min(currentPage * itemsPerPage, totalProducts))} of{" "}
+            {formatNumberWithCommas(totalProducts)} entries
           </div>
           <div className="flex items-center gap-2 justify-center sm:justify-start">
             <button
@@ -784,7 +785,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                           : "border hover:bg-gray-50"
                       }`}
                     >
-                      {page}
+                      {formatNumberWithCommas(page)}
                     </button>
                   </React.Fragment>
                 ))}

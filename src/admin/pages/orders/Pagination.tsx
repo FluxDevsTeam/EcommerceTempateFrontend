@@ -1,4 +1,4 @@
-import { formatNumberWithCommas } from "../utils/formatting";
+import { formatNumberWithCommas } from "../../utils/formatting";
 
 type PaginationProps = {
   nextPageUrl: string | null;
