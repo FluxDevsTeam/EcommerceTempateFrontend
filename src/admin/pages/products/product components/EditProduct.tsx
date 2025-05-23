@@ -490,7 +490,7 @@ const EditProduct: React.FC = () => {
                     onChange={(value) =>
                       setFormData((prev) => ({ ...prev, sub_category: value }))
                     }
-                    placeholder="Select Category"
+                    placeholder="Select Sub-Category"
                     required
                   />
                 </div>

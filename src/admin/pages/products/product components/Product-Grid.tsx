@@ -465,7 +465,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                 options={categories}
                 value={selectedCategory}
                 onChange={(value) => setSelectedCategory(String(value))}
-                placeholder="All Categories"
+                placeholder="All Sub-Categories"
                 className="w-full"
               />
             </div>

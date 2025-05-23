@@ -101,9 +101,16 @@ const SuggestedItemsDetails: React.FC = () => {
       if (images.length > 0 && !mainImage) {
         setMainImage(images[0]);
       }
-      // Set the first available size as default if none selected
+      // Set the first in-stock size as default if none selected
       if (product.sizes && product.sizes.length > 0 && !selectedSize) {
-        setSelectedSize(product.sizes[0].size);
+        // Find first in-stock size
+        const inStockSize = product.sizes.find(size => product.unlimited || size.quantity > 0);
+        // If there's an in-stock size, select it, otherwise select the first size
+        if (inStockSize) {
+          setSelectedSize(inStockSize.size);
+        } else {
+          setSelectedSize(product.sizes[0].size);
+        }
       }
     }
   }, [product, mainImage, selectedSize]);
@@ -387,7 +394,7 @@ const SuggestedItemsDetails: React.FC = () => {
 
   return (
     <div>
-      <div className="w-full min-h-screen md:mt-8 px-6 md:px-12 py-4 lg:px-20">
+      <div className="w-full min-h-screen md:mt-6 px-4 md:px-8 py-3 lg:px-12">
         {/* Success/Error Modal */}
         {modalConfig.isOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -423,13 +430,13 @@ const SuggestedItemsDetails: React.FC = () => {
         )}
 
         {/* Product Main Section */}
-        <div className="flex flex-col lg:flex-row justify-center items-start gap-8">
+        <div className="flex mt-8 lg:mt-2 flex-col lg:flex-row justify-center items-start gap-6">
           {/* Thumbnail Images (Left Column) */}
-          <div className="flex mx-auto md:flex-col gap-5 order-1">
+          <div className="flex mx-auto lg:my-auto md:flex-col gap-3 order-1">
             {images.map((img, index) => (
               <div
                 key={index}
-                className={`bg-gray-200 p-2 rounded-lg cursor-pointer hover:opacity-90 ${
+                className={`bg-gray-100 p-1.5 rounded-md cursor-pointer hover:opacity-90 ${
                   mainImage === img ? "ring-2 ring-blue-500" : ""
                 }`}
                 onClick={() => setMainImage(img)}
@@ -437,7 +444,7 @@ const SuggestedItemsDetails: React.FC = () => {
                 <img
                   src={img}
                   alt={`Thumbnail ${index + 1}`}
-                  className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-cover"
+                  className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = "https://via.placeholder.com/100";
@@ -448,12 +455,12 @@ const SuggestedItemsDetails: React.FC = () => {
           </div>
 
           {/* Main Product Image (Middle Column) */}
-          <div className="rounded-lg max-w-md lg:order-2">
+          <div className="rounded-lg max-w-sm lg:max-w-md mx-auto lg:order-2 h-[350px] md:h-[450px] flex items-center justify-center">
             {mainImage && (
               <img
                 src={mainImage}
                 alt="Main Product"
-                className="w-[500px] h-[500px] aspect-square object-contain"
+                className="w-full h-full object-contain"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = "https://via.placeholder.com/500";
@@ -464,42 +471,44 @@ const SuggestedItemsDetails: React.FC = () => {
 
           {/* Product Info (Right Column) */}
           <div className="flex-1 max-w-lg order-2 lg:order-3">
-            <div className="space-y-2 sm:space-y-6">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl uppercase font-medium leading-tight">
+            <div className="space-y-2 sm:space-y-4">
+              <h1 className="text-xl sm:text-2xl md:text-3xl uppercase font-medium leading-tight">
                 {product.name}
               </h1>
 
-              <span className="inline-block bg-blue-100 text-sm md:text-base rounded-2xl p-2">
+              <span className="inline-block bg-blue-200 text-blue-800 text-xs md:text-sm rounded-xl p-1.5">
                 {product.unlimited
                   ? "Unlimited stock"
                   : `${availableQuantity} left in stock`}
               </span>
 
-              <div className="flex flex-col md:flex-row md:items-center gap-3">
-                <span className="text-xl md:text-3xl font-normal">
+              <div className="flex flex-col md:flex-row md:items-center gap-2">
+                <span className="text-lg md:text-2xl font-normal">
                   {/* ₦ {product.price} */}
                   ₦ {product.price}
                 </span>
-                <div className="flex space-x-2">
+                <div className="flex space-x-1.5 items-center">
                   {product?.undiscounted_price && product.undiscounted_price > product.price && (
-                      <span className="text-gray-500 line-through text-3xl">
+                      <span className="text-gray-500 line-through text-xl md:text-2xl">
                         ₦ {product.undiscounted_price}
                       </span>
                     )}
                   {discountPercentage > 0 && (
-                    <span className="bg-red-200 text-[#FF3333] p-3 rounded-full text-sm">
+                    <span className="bg-red-200 text-[#FF3333] p-1.5 rounded-full text-xs">
                       {discountPercentage}% off
                     </span>
                   )}
                 </div>
               </div>
 
-              <p className="text-gray-700 text-base leading-relaxed line-clamp-2">
+              <p className="text-gray-700 text-sm leading-relaxed line-clamp-2">
                 {product.description}
               </p>
-              <p className="text-gray-700 text-medium font-semibold leading-relaxed">
-                Production Days : {product.production_days}
-              </p>
+              {product.production_days > 0 && (
+                <p className="text-gray-700 text-medium font-semibold leading-relaxed">
+                  Production Days : {product.production_days}
+                </p>
+              )}
 
               {/* Color Section */}
               <div className="space-y-1">
@@ -512,9 +521,9 @@ const SuggestedItemsDetails: React.FC = () => {
               {/* Size Selector */}
               <div className="space-y-2">
                 <p className="text-gray-600 text-sm sm:text-base">Size</p>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
                   {isLoading ? (
-                    <div className="col-span-4 text-center py-2">
+                    <div className="col-span-4 sm:col-span-5 text-center py-1.5">
                       Loading sizes...
                     </div>
                   ) : product.sizes && product.sizes.length > 0 ? (
@@ -526,30 +535,38 @@ const SuggestedItemsDetails: React.FC = () => {
                           setSelectedSize(item.size);
                           setQuantity(1); // Reset quantity when size changes
                         }}
-                        disabled={!product.unlimited && item.quantity <= 0}
-                        className={`p-3 text-sm sm:text-base border rounded-2xl transition-colors ${
+                        disabled={!product.unlimited && item.quantity <= 0 && !isSizeInCart(product.id, item.id)}
+                        className={`p-2 text-xs sm:text-sm border rounded-xl transition-colors ${
                           item.size === selectedSize
-                            ? "bg-customBlue text-white border-customBlue" // Selected state
+                            ? "bg-blue-200 text-blue-800 border-blue-300" // Selected state
+                            : isSizeInCart(product.id, item.id)
+                            ? "bg-green-100 text-green-800 border-green-300 cursor-pointer" // In cart: light green background
                             : !product.unlimited && item.quantity <= 0
                             ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-                            : "bg-gray-200 hover:bg-gray-300 border-gray-300 cursor-pointer"
+                            : "bg-white text-blue-600 border-blue-300 hover:bg-gray-100 cursor-pointer"
                         }`}
                         title={
-                          !product.unlimited && item.quantity <= 0
+                          isSizeInCart(product.id, item.id)
+                            ? "Item in Cart"
+                            : !product.unlimited && item.quantity <= 0
                             ? "Out of stock"
                             : ""
                         }
                       >
                         {item.size.toUpperCase()}
-                        {!product.unlimited && item.quantity <= 0 && (
+                        {isSizeInCart(product.id, item.id) ? (
+                          <span className="block text-xs text-green-600">
+                            (In Cart)
+                          </span>
+                        ) : !product.unlimited && item.quantity <= 0 ? (
                           <span className="block text-xs text-red-500">
                             (Sold out)
                           </span>
-                        )}
+                        ) : null}
                       </button>
                     ))
                   ) : (
-                    <div className="col-span-4 text-center py-2 text-red-500">
+                    <div className="col-span-4 sm:col-span-5 text-center py-1.5 text-red-500">
                       No sizes available
                     </div>
                   )}
@@ -557,28 +574,25 @@ const SuggestedItemsDetails: React.FC = () => {
               </div>
 
               {/* Quantity Selector */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <button
-                  className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-1.5 sm:p-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleQuantityDecrease}
                   disabled={quantity <= 1}
                 >
                   -
                 </button>
-                <span className="text-lg">{quantity}</span>
+                <span className="text-base">{quantity}</span>
                 <button
-                  className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-1.5 sm:p-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleQuantityIncrease}
                   disabled={!product.unlimited && quantity >= availableQuantity}
                 >
                   +
                 </button>
-              </div>
-
-              {/* Add to Cart */}
               <button
                 onClick={handleAddToCart}
-                className={`w-full py-3 text-white rounded-2xl transition-colors cursor-pointer ${ 
+                className={`w-full py-2.5 text-white rounded-xl transition-colors cursor-pointer ${ 
                   (!isInStock || isAddingToCart) && !(selectedSizeData && isSizeInCart(product.id, selectedSizeData.id)) // Condition to be gray
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-customBlue hover:brightness-90" // Blue otherwise (including when item is in cart)
@@ -594,14 +608,17 @@ const SuggestedItemsDetails: React.FC = () => {
                   ? "Item in Cart" // Text when item is in cart
                   : "Add to Cart"}
               </button>
+              </div>
+
+              {/* Add to Cart */}
             </div>
           </div>
         </div>
 
         {/* Description Section */}
-        <div className="mt-12 flex flex-col md:flex-row space-y-6">
-          <div className="md:w-[60%] w-full gap-5 space-y-3">
-            <h2 className="text-xl sm:text-2xl font-medium">Description</h2>
+        <div className="mt-8 flex flex-col md:flex-row space-y-4">
+          <div className="md:w-[60%] w-full gap-4 space-y-2.5">
+            <h2 className="text-lg sm:text-xl font-medium">Description</h2>
             <p
               className={`text-gray-700 text-sm sm:text-base ${
                 !isDescriptionExpanded ? "max-md:line-clamp-5" : ""
@@ -628,7 +645,7 @@ const SuggestedItemsDetails: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="px-0 md:px-12">
+      <div className="px-0 md:px-8">
         <SuggestedProductDetails
           onSuggestedItemClick={handleSuggestedItemClick}
         />
