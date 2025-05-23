@@ -84,6 +84,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [showPriceFilter, setShowPriceFilter] = useState(false);
   const [dbPriceRange, setDbPriceRange] = useState<[number, number]>([0, 0]);
+  const [isDbPriceRangeInitialized, setIsDbPriceRangeInitialized] = useState(false); // Add this line
   const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([
     0, 0,
   ]);
@@ -132,7 +133,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
       // Build API URL
       const apiUrl = searchQuery
-        ? `${baseURL}/api/v1/product/item/search/?search=${encodeURIComponent(
+        ? `${baseURL}/api/v1/product/item/admin-search/?search=${encodeURIComponent(
             searchQuery
           )}&${params}`
         : `${baseURL}/api/v1/product/item/?${params}`;
@@ -172,7 +173,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
   // Fetch products from the API
   useEffect(() => {
-    if (isVisible) {
+    if (isVisible && isDbPriceRangeInitialized) { // Only load products if dbPriceRange is initialized
       if (searchQuery) setCurrentPage(1);
       fetchProducts(currentPage);
     }
@@ -184,7 +185,91 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     priceRange,
     searchQuery,
     baseURL,
+    isDbPriceRangeInitialized, // Add as dependency
   ]); // Add searchQuery to dependencies
+
+  // Effect to fetch initial min/max prices for the slider
+  useEffect(() => {
+    const fetchMinMaxPrices = async () => {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        setError("Authentication error: No access token for fetching price range.");
+        setIsDbPriceRangeInitialized(true); // Allow product loading even if price range fetch fails
+        return;
+      }
+      try {
+        let allProducts: any[] = [];
+        let nextPage = `${baseURL}/api/v1/product/item/?page_size=100`; 
+
+        while (nextPage) {
+          const response = await fetch(nextPage, {
+            headers: {
+              Authorization: `JWT ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          });
+          if (!response.ok) {
+            throw new Error(`Failed to fetch products for price range: ${response.statusText}`);
+          }
+          const data = await response.json();
+          allProducts = allProducts.concat(data.results);
+          nextPage = data.next;
+        }
+
+        if (allProducts.length === 0) {
+          setDbPriceRange([0, 1000]);
+          setTempPriceRange([0, 1000]);
+          setIsDbPriceRangeInitialized(true);
+          return;
+        }
+
+        let minPrice = Infinity;
+        let maxPrice = -Infinity;
+
+        allProducts.forEach(product => {
+          if (product.sizes && product.sizes.length > 0) {
+            product.sizes.forEach((size: any) => {
+              const price = parseFloat(size.price);
+              if (!isNaN(price)) {
+                if (price < minPrice) minPrice = price;
+                if (price > maxPrice) maxPrice = price;
+              }
+            });
+          } else {
+            const productPrice = parseFloat(product.price);
+            if (!isNaN(productPrice)) {
+              if (productPrice < minPrice) minPrice = productPrice;
+              if (productPrice > maxPrice) maxPrice = productPrice;
+            }
+          }
+        });
+        
+        if (minPrice === Infinity || maxPrice === -Infinity) {
+            minPrice = 0;
+            maxPrice = 1000;
+        }
+        if (minPrice === maxPrice) {
+            maxPrice = minPrice + 100;
+        }
+
+        setDbPriceRange([minPrice, maxPrice]);
+        setTempPriceRange([minPrice, maxPrice]);
+        setPriceRange([minPrice, maxPrice]);
+
+      } catch (err) {
+        console.error("Error fetching min/max prices:", err);
+        setError("Failed to load price range data. Using default.");
+        setDbPriceRange([0, 1000]);
+        setTempPriceRange([0, 1000]);
+      } finally {
+        setIsDbPriceRangeInitialized(true);
+      }
+    };
+
+    if (isVisible) {
+        fetchMinMaxPrices();
+    }
+  }, [isVisible, baseURL]);
 
   // Fetch categories from the API
   const fetchCategories = async () => {
