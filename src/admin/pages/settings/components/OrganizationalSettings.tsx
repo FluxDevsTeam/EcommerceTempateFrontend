@@ -16,7 +16,7 @@ interface OrganizationSettings {
 
 const allNigerianStates = [
   "Lagos", "FCT - Abuja", "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", 
-  "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT - Abuja", 
+  "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu",
   "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", 
   "Kwara", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", 
   "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
@@ -201,91 +201,95 @@ const OrganizationalSettings = () => {
     handleSave();
   };
 
- const handleSave = async () => {
-  try {
-    setLoading(true);
-    const token = localStorage.getItem('accessToken');
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('accessToken');
 
-    const patchData = {
-      warehouse_state: formData.warehouse_state,
-      available_states: selectedStates,
-      phone_number: formData.phone_number,
-      customer_support_email: formData.customer_support_email,
-      admin_email: formData.admin_email,
-      facebook: formData.facebook,
-      twitter: formData.twitter,
-      linkedin: formData.linkedin,
-      tiktok: formData.tiktok
-    };
+      // Sort selectedStates based on the order in allNigerianStates
+      const sortedStates = selectedStates.sort((a, b) => {
+        return allNigerianStates.indexOf(a) - allNigerianStates.indexOf(b);
+      });
 
-    console.log("Data being sent in PATCH request:", JSON.stringify(patchData, null, 2));
+      const patchData = {
+        warehouse_state: formData.warehouse_state,
+        available_states: sortedStates,
+        phone_number: formData.phone_number,
+        customer_support_email: formData.customer_support_email,
+        admin_email: formData.admin_email,
+        facebook: formData.facebook,
+        twitter: formData.twitter,
+        linkedin: formData.linkedin,
+        tiktok: formData.tiktok
+      };
 
-    const response = await axios.patch<OrganizationSettings>(
-      'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/organisation-settings/',
-      patchData,
-      {
-        headers: {
-          'Authorization': `JWT ${token}`,
-          'Content-Type': 'application/json',
+      console.log("Data being sent in PATCH request:", JSON.stringify(patchData, null, 2));
+
+      const response = await axios.patch<OrganizationSettings>(
+        'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/organisation-settings/',
+        patchData,
+        {
+          headers: {
+            'Authorization': `JWT ${token}`,
+            'Content-Type': 'application/json',
+          }
         }
-      }
-    );
+      );
 
-    setSuccessMessage('Organization settings updated successfully');
-    setError(null);
-    setInitialData(formData);
-    setInitialSelectedStates(selectedStates);
+      setSuccessMessage('Organization settings updated successfully');
+      setError(null);
+      setInitialData(formData);
+      setInitialSelectedStates(sortedStates); // Update initialSelectedStates with sorted order
 
-    setTimeout(() => {
-      setSuccessMessage(null);
-    }, 3000);
-  } catch (err) {
-    let errorMessage = 'Failed to update organization settings';
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 3000);
+    } catch (err) {
+      let errorMessage = 'Failed to update organization settings';
 
-    if (axios.isAxiosError(err)) {
-      if (err.response) {
-        const data = err.response.data;
-        console.error('Server responded with error:', data);
+      if (axios.isAxiosError(err)) {
+        if (err.response) {
+          const data = err.response.data;
+          console.error('Server responded with error:', data);
 
-        if (typeof data === 'string') {
-          errorMessage = data;
-        } else if (typeof data === 'object' && data !== null) {
-          const messages: string[] = [];
+          if (typeof data === 'string') {
+            errorMessage = data;
+          } else if (typeof data === 'object' && data !== null) {
+            const messages: string[] = [];
 
-          for (const key in data) {
-            const value = data[key];
-            if (Array.isArray(value)) {
-              messages.push(`${key}: ${value.join(', ')}`);
-            } else if (typeof value === 'string') {
-              messages.push(`${key}: ${value}`);
-            } else {
-              messages.push(`${key}: ${JSON.stringify(value)}`);
+            for (const key in data) {
+              const value = data[key];
+              if (Array.isArray(value)) {
+                messages.push(`${key}: ${value.join(', ')}`);
+              } else if (typeof value === 'string') {
+                messages.push(`${key}: ${value}`);
+              } else {
+                messages.push(`${key}: ${JSON.stringify(value)}`);
+              }
             }
+
+            errorMessage = messages.join(' | ');
+          } else {
+            errorMessage = JSON.stringify(data);
           }
 
-          errorMessage = messages.join(' | ');
+        } else if (err.request) {
+          console.error('No response received:', err.request);
+          errorMessage = 'No response received from server';
         } else {
-          errorMessage = JSON.stringify(data);
+          console.error('Request setup error:', err.message);
+          errorMessage = `Request error: ${err.message}`;
         }
-
-      } else if (err.request) {
-        console.error('No response received:', err.request);
-        errorMessage = 'No response received from server';
       } else {
-        console.error('Request setup error:', err.message);
-        errorMessage = `Request error: ${err.message}`;
+        console.error('Unexpected error:', err);
+        errorMessage = `Unexpected error: ${err instanceof Error ? err.message : String(err)}`;
       }
-    } else {
-      console.error('Unexpected error:', err);
-      errorMessage = `Unexpected error: ${err instanceof Error ? err.message : String(err)}`;
+
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
-
-    setError(errorMessage);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   const hasChanges = () => {
     if (!initialData) return false;
@@ -425,7 +429,7 @@ const OrganizationalSettings = () => {
           
           <div>
             <label className="block text-sm font-medium mb-2">Available States</label>
-            <div className="border border-gray-300 rounded-md p-4 h-64 overflow-y-auto">
+            <div className="border border-gray-300 rounded-md p-4 h-36 overflow-y-auto">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                 {allNigerianStates.map(state => (
                   <div key={state} className="flex items-center">
