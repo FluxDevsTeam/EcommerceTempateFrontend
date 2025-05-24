@@ -54,7 +54,7 @@ interface NewProductsListProps {
 }
 
 const fetchProducts = async (page = 1): Promise<ApiResponse> => {
-  const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?is_available=true&?page_size=12&page=${page}`);
+  const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?is_available=true&page_size=16&page=${page}`);
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }

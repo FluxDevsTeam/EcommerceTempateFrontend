@@ -53,7 +53,7 @@ interface ApiResponse {
 // Fetch functions
 const fetchCategoryProducts = async (categoryId: number, page = 1): Promise<ApiResponse> => {
   const response = await fetch(
-    `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?is_available=true&?category=${categoryId}&page_size=12&page=${page}`
+    `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?category=${categoryId}&is_available=true&page_size=12&page=${page}`
   );
   if (!response.ok) throw new Error('Failed to fetch products.');
   return response.json();
