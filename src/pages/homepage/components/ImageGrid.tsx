@@ -1,6 +1,7 @@
 import { ProductItem } from "../types/data-types";
 import Card from "@/card/Card";
 import { useEffect } from "react";
+import { useMediaQuery } from 'react-responsive';
 
 interface LatestItemsProps {
   product: ProductItem[];
@@ -37,13 +38,15 @@ const ImageGrid: React.FC<LatestItemsProps> = ({
   //   return () => window.removeEventListener('scroll', handleScroll);
   // }, [hasMoreItems, isLoadingMore, onLoadMore]);
 
+  const isTabletAndAbove = useMediaQuery({ query: '(min-width: 768px)' });
+
   return (
-    <div className="px-3 py-8 md:py-12 space-y-5">
-      <p className="text-3xl md:text-5xl font-medium leading-tight text-center mb-6 sm:mb-8 md:mb-10">
-        Latest Items
+    <div className="px-3 py-6 md:py-12 space-y-5">
+      <p className="text-xl pt-2 pb-0 md:text-3xl font-medium leading-tight text-center mb-6 sm:mb-0 md:mb-10">
+        LATEST ITEMS
       </p>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 md:space-x-8 space-x-0 mb-8 sm:mb-16">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 md:space-x-8 space-x-0">
         {product.map((item) => {
           const wishlistInfo = getWishlistInfo(item.id);
           return (
@@ -57,7 +60,7 @@ const ImageGrid: React.FC<LatestItemsProps> = ({
         })}
       </div>
 
-      <div className="flex justify-center items-center mt-6 sm:mt-8">
+      <div className="flex justify-center items-center" style={{marginTop: isTabletAndAbove ? '46px' : "0px"}}>
         {hasMoreItems ? (
           <button 
             onClick={onLoadMore}
@@ -66,11 +69,11 @@ const ImageGrid: React.FC<LatestItemsProps> = ({
           >
             {isLoadingMore ? (
               <span className="flex items-center">
-                <span className="animate-spin h-4 w-4 border-b-2 border-primary rounded-full mr-2"></span>
+                <span className="animate-spin w-4 border-b-2 border-primary rounded-full mr-2"></span>
                 Loading...
               </span>
             ) : (
-              "Load More"
+              <span>Load More...</span>
             )}
           </button>
         ) : (

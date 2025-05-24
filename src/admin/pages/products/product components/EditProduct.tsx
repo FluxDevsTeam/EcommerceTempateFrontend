@@ -90,8 +90,26 @@ const EditProduct: React.FC = () => {
     "Medium",
     "Heavy",
     "Very Heavy",
-    "XX Heavy",
+    "XXHeavy",
   ];
+
+  const allowedWeightsBySize: { [key: string]: string[] } = {
+    "Very Small": ["Very Light", "Light"],
+    Small: ["Very Light", "Light", "Medium"],
+    Medium: ["Light", "Medium", "Heavy"],
+    Large: ["Medium", "Heavy", "Very Heavy"],
+    "Very Large": ["Heavy", "Very Heavy", "XXHeavy"],
+    XXL: ["Very Heavy", "XXHeavy"],
+  };
+
+  const allowedSizesByWeight: { [key: string]: string[] } = {
+    "Very Light": ["Very Small", "Small"],
+    Light: ["Very Small", "Small", "Medium"],
+    Medium: ["Small", "Medium", "Large"],
+    Heavy: ["Medium", "Large", "Very Large"],
+    "Very Heavy": ["Heavy", "Very Large", "XXL"],
+    "XXHeavy": ["Very Large", "XXL"],
+  };
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredCategories, setFilteredCategories] = useState<SubCategory[]>(
@@ -186,6 +204,34 @@ const EditProduct: React.FC = () => {
     );
     setFilteredCategories(filtered);
   }, [searchQuery, categories]);
+
+  useEffect(() => {
+    if (formData.dimensional_size) {
+      const allowedWeights =
+        allowedWeightsBySize[formData.dimensional_size] || weightOptions;
+      if (formData.weight && !allowedWeights.includes(formData.weight)) {
+        setFormData((prev) => ({
+          ...prev,
+          weight: null, // Reset weight if it's not allowed for the new size
+        }));
+      }
+    }
+  }, [formData.dimensional_size]);
+
+  useEffect(() => {
+    if (formData.weight) {
+      const allowedSizes = allowedSizesByWeight[formData.weight] || sizeOptions;
+      if (
+        formData.dimensional_size &&
+        !allowedSizes.includes(formData.dimensional_size)
+      ) {
+        setFormData((prev) => ({
+          ...prev,
+          dimensional_size: null,
+        }));
+      }
+    }
+  });
 
   const fetchProduct = async () => {
     const accessToken = localStorage.getItem("accessToken");
@@ -534,39 +580,58 @@ const EditProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Transport Size
+                    Transport Size (based on weight)
                   </label>
                   <select
                     name="dimensional_size"
                     value={formData.dimensional_size || ""}
                     onChange={handleChange}
+                    required
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                   >
                     <option value="">Select Size</option>
-                    {sizeOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
+                    {formData.weight
+                      ? (
+                          allowedSizesByWeight[formData.weight] || sizeOptions
+                        ).map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))
+                      : sizeOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Transport Weight
+                    Transport Weight (based on size)
                   </label>
                   <select
                     name="weight"
                     value={formData.weight || ""}
                     onChange={handleChange}
+                    required
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                   >
                     <option value="">Select Weight</option>
-                    {weightOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
+                    {formData.dimensional_size
+                      ? (
+                          allowedWeightsBySize[formData.dimensional_size] ||
+                          weightOptions
+                        ).map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))
+                      : weightOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
                   </select>
                 </div>
 

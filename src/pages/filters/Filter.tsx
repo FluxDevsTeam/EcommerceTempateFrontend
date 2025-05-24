@@ -64,7 +64,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
   const [displayedItems, setDisplayedItems] = useState<SubCategory[]>([]);
   const [dbPriceRange, setDbPriceRange] = useState<[number, number]>([0, 10000000]); // Default, will be updated
   const [isDbPriceRangeInitialized, setIsDbPriceRangeInitialized] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(window.innerWidth < 768 ? 5 : 10);
+  const [itemsPerPage, setItemsPerPage] = useState(window.innerWidth < 768 ? 10 : 10);
 
   // State for filter selections
   const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>(
@@ -115,7 +115,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
     fetchMinMaxPrices(); // Fetch min/max prices when component is open
 
     const handleResize = () => {
-      setItemsPerPage(window.innerWidth < 768 ? 5 : 10);
+      setItemsPerPage(window.innerWidth < 768 ? 10 : 10);
     };
 
     window.addEventListener('resize', handleResize);
@@ -304,7 +304,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
   return (
     <div className={`fixed min-h-screen top-0 left-0 h-full bg-white shadow-lg w-80 transform transition-transform duration-300 ease-in-out z-50 ${isOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto`}>
       <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-3">
           <h2 className="text-xl font-bold">Filters</h2>
           <button onClick={onClose} className="text-gray-600 hover:text-gray-900 cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -325,7 +325,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
             <AccordionItem value="subcategory" className="border-b border-gray-200">
               <AccordionTrigger className="py-4 font-semibold cursor-pointer">
                 Subcategory
-                <span className="ml-2 text-sm text-gray-500">({displayedItems.length} of {totalItems})</span>
+                {/* <span className="ml-2 text-sm text-gray-500">({displayedItems.length} of {totalItems})</span> */}
               </AccordionTrigger>
               <AccordionContent>
                 {/* Horizontal scrolling container */}
@@ -393,16 +393,16 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black"></div>
                   </div>
                 ) : (
-                  <div className="pt-2 pb-6">
-                    <div className="relative h-8 mb-4 w-full md:w-auto"> {/* Added w-full md:w-auto for responsiveness */}
+                  <div className="pt-2 px-4 pb-2">
+                    <div className="relative h-8 mb-2 mx-auto"> {/* Updated width and centered */}
                       {/* Track */}
-                      <div className="absolute w-full h-1.5 bg-gray-200 rounded-full top-1/2 -translate-y-1/2"></div>
+                      <div className="absolute h-1.5 bg-gray-200 rounded-full top-1/2 -translate-y-1/2"></div>
                       {/* Highlighted Range */}
                       <div
-                        className="absolute h-1.5 bg-customBlue rounded-full top-1/2 -translate-y-1/2"
+                        className="absolute h-1.5 px-4 bg-customBlue rounded-full top-1/2 -translate-y-1/2"
                         style={{
-                          left: `${dbPriceRange[1] === dbPriceRange[0] ? 0 : ((tempPriceRange[0] - dbPriceRange[0]) / (dbPriceRange[1] - dbPriceRange[0])) * 100}%`,
-                          width: `${dbPriceRange[1] === dbPriceRange[0] ? 100 : ((tempPriceRange[1] - tempPriceRange[0]) / (dbPriceRange[1] - dbPriceRange[0])) * 100}%`,
+                          left: `${((tempPriceRange[0] - dbPriceRange[0]) / (dbPriceRange[1] - dbPriceRange[0])) * 100}%`,
+                          width: `${((tempPriceRange[1] - tempPriceRange[0]) / (dbPriceRange[1] - dbPriceRange[0])) * 100}%`,
                         }}
                       ></div>
                       {/* Min Handle */}
@@ -412,13 +412,11 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
                         max={dbPriceRange[1]}
                         value={tempPriceRange[0]}
                         onChange={(e) => {
-                          const newMinValue = Number(e.target.value);
-                          // Ensure min is less than max and respects dbPriceRange bounds
-                          const newMin = Math.max(dbPriceRange[0], Math.min(newMinValue, tempPriceRange[1] - (dbPriceRange[1] > dbPriceRange[0] ? (dbPriceRange[1]-dbPriceRange[0])*0.01 : 10) ));
-                          setTempPriceRange([newMin, tempPriceRange[1]]);
+                          const newMin = Number(e.target.value);
+                          const constrainedMin = Math.max(dbPriceRange[0], Math.min(newMin, tempPriceRange[1] - 1));
+                          setTempPriceRange([constrainedMin, tempPriceRange[1]]);
                         }}
-                        className="absolute w-full h-full opacity-0 cursor-pointer z-20" // Increased z-index
-                        style={{ pointerEvents: 'auto' }} // Ensure it's interactive
+                        className="absolute w-full h-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:bg-transparent [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-30 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:bg-transparent [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:relative [&::-moz-range-thumb]:z-30"
                       />
                       {/* Max Handle */}
                       <input
@@ -427,41 +425,52 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
                         max={dbPriceRange[1]}
                         value={tempPriceRange[1]}
                         onChange={(e) => {
-                          const newMaxValue = Number(e.target.value);
-                          // Ensure max is greater than min and respects dbPriceRange bounds
-                          const newMax = Math.min(dbPriceRange[1], Math.max(newMaxValue, tempPriceRange[0] + (dbPriceRange[1] > dbPriceRange[0] ? (dbPriceRange[1]-dbPriceRange[0])*0.01 : 10)));
-                          setTempPriceRange([tempPriceRange[0], newMax]);
+                          const newMax = Number(e.target.value);
+                          const constrainedMax = Math.min(dbPriceRange[1], Math.max(newMax, tempPriceRange[0] + 1));
+                          setTempPriceRange([tempPriceRange[0], constrainedMax]);
                         }}
-                        className="absolute w-full h-full opacity-0 cursor-pointer z-20" // Increased z-index
-                        style={{ pointerEvents: 'auto' }} // Ensure it's interactive
+                        className="absolute w-full h-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:bg-transparent [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-30 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:bg-transparent [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:relative [&::-moz-range-thumb]:z-30"
                       />
-                       {/* Visual Min Handle */}
-                        <div className="absolute w-4 h-4 bg-customBlue rounded-full shadow-md top-1/2 -translate-y-1/2 -translate-x-1/2 border-2 border-white"
-                            style={{ left: `${dbPriceRange[1] === dbPriceRange[0] ? 0 : ((tempPriceRange[0] - dbPriceRange[0]) / (dbPriceRange[1] - dbPriceRange[0])) * 100}%` }}></div>
-                        {/* Visual Max Handle */}
-                        <div className="absolute w-4 h-4 bg-customBlue rounded-full shadow-md top-1/2 -translate-y-1/2 -translate-x-1/2 border-2 border-white"
-                            style={{ left: `${dbPriceRange[1] === dbPriceRange[0] ? 100 :((tempPriceRange[1] - dbPriceRange[0]) / (dbPriceRange[1] - dbPriceRange[0])) * 100}%` }}></div>
+                      {/* Visual Handles */}
+                      <div
+                        className="absolute w-4 h-4 bg-customBlue rounded-full shadow-md top-1/2 -translate-y-1/2 -translate-x-1/2 border-2 border-white z-20"
+                        style={{ left: `${((tempPriceRange[0] - dbPriceRange[0]) / (dbPriceRange[1] - dbPriceRange[0])) * 100}%` }}
+                      ></div>
+                      <div
+                        className="absolute w-4 h-4 bg-customBlue rounded-full shadow-md top-1/2 -translate-y-1/2 -translate-x-1/2 border-2 border-white z-20"
+                        style={{ left: `${((tempPriceRange[1] - dbPriceRange[0]) / (dbPriceRange[1] - dbPriceRange[0])) * 100}%` }}
+                      ></div>
                     </div>
                     <div className="flex justify-between mt-4 text-sm">
                       <input 
                         type="number" 
                         value={tempPriceRange[0]} 
-                        onChange={(e) => setTempPriceRange([Math.max(dbPriceRange[0], Math.min(Number(e.target.value), tempPriceRange[1] - (dbPriceRange[1] > dbPriceRange[0] ? (dbPriceRange[1]-dbPriceRange[0])*0.01 : 10))), tempPriceRange[1]])} 
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+                          if (value >= dbPriceRange[0] && value < tempPriceRange[1]) {
+                            setTempPriceRange([value, tempPriceRange[1]]);
+                          }
+                        }}
                         className="w-24 p-1.5 border rounded-md text-center focus:ring-customBlue focus:border-customBlue"
                         min={dbPriceRange[0]}
-                        max={tempPriceRange[1] - (dbPriceRange[1] > dbPriceRange[0] ? (dbPriceRange[1]-dbPriceRange[0])*0.01 : 10)}
+                        max={tempPriceRange[1] - 1}
                       />
                       <span className="text-gray-500">-</span>
                       <input 
                         type="number" 
                         value={tempPriceRange[1]} 
-                        onChange={(e) => setTempPriceRange([tempPriceRange[0], Math.min(dbPriceRange[1], Math.max(Number(e.target.value), tempPriceRange[0] + (dbPriceRange[1] > dbPriceRange[0] ? (dbPriceRange[1]-dbPriceRange[0])*0.01 : 10)))])} 
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+                          if (value <= dbPriceRange[1] && value > tempPriceRange[0]) {
+                            setTempPriceRange([tempPriceRange[0], value]);
+                          }
+                        }}
                         className="w-24 p-1.5 border rounded-md text-center focus:ring-customBlue focus:border-customBlue"
-                        min={tempPriceRange[0] + (dbPriceRange[1] > dbPriceRange[0] ? (dbPriceRange[1]-dbPriceRange[0])*0.01 : 10)}
+                        min={tempPriceRange[0] + 1}
                         max={dbPriceRange[1]}
                       />
                     </div>
-                    <Button onClick={applyPriceFilter} className="w-full mt-4 bg-customBlue hover:bg-customBlue/90 text-white rounded-full">Apply Price</Button>
+                    {/* <Button onClick={applyPriceFilter} className="w-full mt-4 bg-customBlue hover:bg-customBlue/90 text-white rounded-full">Apply Price</Button> */}
                   </div>
                 )}
               </AccordionContent>
@@ -470,7 +479,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
         )}
       </div>
       
-      <div className="px-6 pb-6 mt-4">
+      <div className="px-6 pb-6 mt-0">
         <div className="flex gap-3 mb-3">
           <Button 
             onClick={handleResetFilters} 

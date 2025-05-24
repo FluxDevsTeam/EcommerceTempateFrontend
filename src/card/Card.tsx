@@ -70,7 +70,7 @@ const Card: React.FC<CardProps> = ({
 
 
   return (
-    <div className="mb-10 cursor-pointer "    
+    <div className="mb-2 cursor-pointer "    
    >
       <div className="relative w-fit mb-4 rounded-lg">
         <img

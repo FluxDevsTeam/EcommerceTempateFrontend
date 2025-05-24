@@ -31,13 +31,12 @@ const AddNewProduct: React.FC = () => {
   const [selectedPreviewImage, setSelectedPreviewImage] = useState(0);
   const [newProductId, setNewProductId] = useState<number | null>(null);
 
-  // Form data state
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     sub_category: null as number | null,
     colour: "",
-    is_available: true, // Changed from false to true
+    is_available: true,
     dimensional_size: null as string | null,
     weight: null as string | null,
     latest_item: false,
@@ -53,7 +52,6 @@ const AddNewProduct: React.FC = () => {
 
   const [categories, setCategories] = useState<SubCategory[]>([]);
 
-  // Define size and weight options
   const sizeOptions = [
     "Very Small",
     "Small",
@@ -68,8 +66,27 @@ const AddNewProduct: React.FC = () => {
     "Medium",
     "Heavy",
     "Very Heavy",
-    "XX Heavy",
+    "XXHeavy",
   ];
+
+  // Mapping of sizes to allowed weights
+  const allowedWeightsBySize: { [key: string]: string[] } = {
+    "Very Small": ["Very Light", "Light"],
+    Small: ["Very Light", "Light", "Medium"],
+    Medium: ["Light", "Medium", "Heavy"],
+    Large: ["Medium", "Heavy", "Very Heavy"],
+    "Very Large": ["Heavy", "Very Heavy", "XXHeavy"],
+    XXL: ["Very Heavy", "XXHeavy"],
+  };
+
+  const allowedSizesByWeight: { [key: string]: string[] } = {
+    "Very Light": ["Very Small", "Small"],
+    Light: ["Very Small", "Small", "Medium"],
+    Medium: ["Small", "Medium", "Large"],
+    Heavy: ["Medium", "Large", "Very Large"],
+    "Very Heavy": ["Heavy", "Very Large", "XXL"],
+    "XXHeavy": ["Very Large", "XXl"],
+  };
 
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -77,6 +94,7 @@ const AddNewProduct: React.FC = () => {
     []
   );
 
+  // Filter categories based on search query
   useEffect(() => {
     const filtered = categories.filter((category) =>
       category.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -84,6 +102,36 @@ const AddNewProduct: React.FC = () => {
     setFilteredCategories(filtered);
   }, [searchQuery, categories]);
 
+  // Reset weight if it becomes invalid when size changes
+  useEffect(() => {
+    if (formData.dimensional_size) {
+      const allowedWeights =
+        allowedWeightsBySize[formData.dimensional_size] || weightOptions;
+      if (formData.weight && !allowedWeights.includes(formData.weight)) {
+        setFormData((prev) => ({
+          ...prev,
+          weight: null, // Reset weight if it's not allowed for the new size
+        }));
+      }
+    }
+  }, [formData.dimensional_size]);
+
+  useEffect(() => {
+    if (formData.weight) {
+      const allowedSizes = allowedSizesByWeight[formData.weight] || sizeOptions;
+      if (
+        formData.dimensional_size &&
+        !allowedSizes.includes(formData.dimensional_size)
+      ) {
+        setFormData((prev) => ({
+          ...prev,
+          dimensional_size: null,
+        }));
+      }
+    }
+  });
+
+  // Fetch categories (unchanged)
   useEffect(() => {
     const fetchCategories = async () => {
       setLoading(true);
@@ -101,7 +149,6 @@ const AddNewProduct: React.FC = () => {
       }
 
       try {
-        // First fetch to get total count
         const initialResponse = await fetch(
           "https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/?page_size=100",
           {
@@ -118,10 +165,9 @@ const AddNewProduct: React.FC = () => {
 
         const initialData = await initialResponse.json();
         const totalItems = initialData.count;
-        const itemsPerPage = 100; // Increased page size
+        const itemsPerPage = 100;
         const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-        // Fetch all pages
         const fetchPromises = [];
         for (let page = 1; page <= totalPages; page++) {
           fetchPromises.push(
@@ -137,10 +183,7 @@ const AddNewProduct: React.FC = () => {
           );
         }
 
-        // Wait for all requests to complete
         const responses = await Promise.all(fetchPromises);
-
-        // Combine all results and sort by name
         const allCategories = responses
           .reduce((acc, response) => {
             return [...acc, ...response.results];
@@ -176,7 +219,6 @@ const AddNewProduct: React.FC = () => {
   const handleCloseModal = () => {
     setModalConfig({ ...modalConfig, isOpen: false });
     if (modalConfig.type === "success" && newProductId) {
-      // Use timeout to ensure modal is closed before navigation
       setTimeout(() => {
         navigate(`/admin/admin-products-details/${newProductId}`);
       }, 100);
@@ -208,18 +250,16 @@ const AddNewProduct: React.FC = () => {
         [imageField]: file,
       }));
 
-      // Create preview URL
       const newImagePreviewUrls = [...imagePreviewUrls];
       newImagePreviewUrls[imageIndex] = URL.createObjectURL(file);
       setImagePreviewUrls(newImagePreviewUrls);
     }
   };
 
-  // Update handleSaveChanges to use click event
   const handleSaveChanges = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setLoading(true);
-    setViewProductPreviewModal(false); // Close preview modal if open
+    setViewProductPreviewModal(false);
     const accessToken = localStorage.getItem("accessToken");
 
     if (!accessToken) {
@@ -298,20 +338,18 @@ const AddNewProduct: React.FC = () => {
     }
   };
 
-  // Add this new function to check form validity
   const isFormValid = () => {
     return (
       formData.name.trim() !== "" &&
       formData.description.trim() !== "" &&
       formData.sub_category !== null &&
-      formData.image1 !== null // Require main image
+      formData.image1 !== null
     );
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header Section */}
         <div className="mb-8">
           <div className="grid md:flex md:items-center md:justify-between">
             <div>
@@ -325,10 +363,8 @@ const AddNewProduct: React.FC = () => {
           </div>
         </div>
 
-        {/* Main Form */}
         <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
           <div className="bg-white shadow rounded-lg overflow-hidden">
-            {/* Basic Information Section */}
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Basic Information
@@ -390,7 +426,6 @@ const AddNewProduct: React.FC = () => {
               </div>
             </div>
 
-            {/* Specifications Section */}
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Specifications
@@ -412,7 +447,7 @@ const AddNewProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Transport Size
+                    Transport Size (based on weight)
                   </label>
                   <select
                     name="dimensional_size"
@@ -421,17 +456,25 @@ const AddNewProduct: React.FC = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                   >
                     <option value="">Select Size</option>
-                    {sizeOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
+                    {formData.weight
+                      ? (
+                          allowedSizesByWeight[formData.weight] || sizeOptions
+                        ).map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))
+                      : sizeOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Transport Weight
+                    Transport Weight (based on size)
                   </label>
                   <select
                     name="weight"
@@ -440,11 +483,20 @@ const AddNewProduct: React.FC = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                   >
                     <option value="">Select Weight</option>
-                    {weightOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
+                    {formData.dimensional_size
+                      ? (
+                          allowedWeightsBySize[formData.dimensional_size] ||
+                          weightOptions
+                        ).map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))
+                      : weightOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
                   </select>
                 </div>
 
@@ -472,7 +524,6 @@ const AddNewProduct: React.FC = () => {
               </div>
             </div>
 
-            {/* Product Options Section */}
             <div className="p-6 border-b border-gray-200 bg-gray-50">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Product Options
@@ -612,7 +663,6 @@ const AddNewProduct: React.FC = () => {
               </div>
             </div>
 
-            {/* Images Section */}
             <div className="p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Product Images
@@ -673,7 +723,6 @@ const AddNewProduct: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Additional Images */}
                 {[2, 3].map((num) => (
                   <div key={num} className="space-y-4">
                     <div>
@@ -744,7 +793,6 @@ const AddNewProduct: React.FC = () => {
             </div>
           </div>
 
-          {/* Form Actions */}
           <div className="flex justify-end space-x-4">
             <button
               type="button"
@@ -811,11 +859,9 @@ const AddNewProduct: React.FC = () => {
         </form>
       </div>
 
-      {/* Preview Modal */}
       {viewProductPreviewModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-white w-full max-w-[1000px] rounded-2xl max-h-[90vh] overflow-y-auto">
-            {/* Mobile Header */}
             <div className="flex items-center p-4 md:hidden border-b">
               <button
                 onClick={() => setViewProductPreviewModal(false)}
@@ -828,7 +874,6 @@ const AddNewProduct: React.FC = () => {
               </h1>
             </div>
 
-            {/* Desktop Header */}
             <div className="hidden md:flex justify-between items-center p-6 border-b">
               <h1 className="text-2xl font-bold text-gray-800">
                 Product Preview
@@ -843,9 +888,7 @@ const AddNewProduct: React.FC = () => {
 
             <div className="p-6">
               <div className="md:flex md:space-x-8">
-                {/* Image Section */}
                 <div className="md:w-1/2 space-y-4">
-                  {/* Main Image Display */}
                   <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
                     {imagePreviewUrls[selectedPreviewImage] ? (
                       <img
@@ -873,7 +916,6 @@ const AddNewProduct: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Thumbnail Images */}
                   <div className="grid grid-cols-3 gap-4">
                     {imagePreviewUrls.map((url, index) => (
                       <button
@@ -901,7 +943,6 @@ const AddNewProduct: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Product Details */}
                 <div className="md:w-1/2 mt-6 md:mt-0">
                   <div className="space-y-6">
                     <div>
@@ -998,7 +1039,6 @@ const AddNewProduct: React.FC = () => {
                 </div>
               </div>
 
-              {/* Add new buttons section at the bottom of the modal */}
               <div className="mt-8 flex justify-end gap-4 border-t pt-4">
                 <button
                   type="button"
@@ -1013,7 +1053,6 @@ const AddNewProduct: React.FC = () => {
         </div>
       )}
 
-      {/* Success/Error Modal */}
       <Modal
         isOpen={modalConfig.isOpen}
         onClose={handleCloseModal}

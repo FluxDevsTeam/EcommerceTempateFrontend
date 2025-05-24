@@ -212,7 +212,7 @@ const SearchResults = () => {
     <div className="container mx-auto px-6 md:px-14 py-8 md:py-12">
       {hasResults && (
         <div className="mb-6">
-          <h1 className="text-3xl font-medium flex justify-center items-center pt-2">
+          <h1 className="text-xl md:text-3xl font-medium flex justify-center items-center pt-2">
             Search Results for "{query}"
           </h1>
           <p className="text-gray-600 mt-2 text-center">

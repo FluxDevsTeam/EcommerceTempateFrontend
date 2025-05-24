@@ -206,7 +206,7 @@ const Homepage = () => {
         {/* Text Content Column */}
         <div className="flex flex-col justify-center items-start space-y-6 max-w-xl w-full px-4 md:px-0 md:col-start-1">
           <div className="w-full md:space-y-4 lg:space-y-0">
-            <h1 className="text-xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight tracking-tight">
+            <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight tracking-tight">
               Furnish with Fun, Discover What Your Little Ones Love!
             </h1>
             <p className="text-gray-700 text-base md:text-lg lg:text-xl leading-relaxed">
