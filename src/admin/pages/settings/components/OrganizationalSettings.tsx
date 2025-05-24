@@ -15,11 +15,11 @@ interface OrganizationSettings {
 }
 
 const allNigerianStates = [
-  "Lagos", "Ogun", "Oyo", "Osun", "Ondo", "Ekiti", "Edo", "Delta", "Kwara", 
-  "Kogi", "Niger", "Abuja", "Kaduna", "Kano", "Borno", "Yobe", "Sokoto", 
-  "Zamfara", "Taraba", "Gombe", "Bauchi", "Adamawa", "Katsina", "Jigawa", 
-  "Nasarawa", "Benue", "Kebbi", "Bayelsa", "Rivers", "Akwa Ibom", 
-  "Cross River", "Enugu", "Anambra", "Abia", "Imo", "Ebonyi", "FCT - Abuja"
+  "Lagos", "FCT - Abuja", "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", 
+  "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT - Abuja", 
+  "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", 
+  "Kwara", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", 
+  "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
 ];
 
 const OrganizationalSettings = () => {
