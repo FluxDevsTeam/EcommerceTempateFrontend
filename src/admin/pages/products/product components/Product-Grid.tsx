@@ -615,7 +615,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               </select>
 
               {showPriceFilter && (
-                <div className="absolute z-50 mt-2 p-6 bg-white border rounded-lg shadow-lg w-80">
+                <div className="absolute z-50 mt-2 p-4 sm:p-6 bg-white border rounded-lg shadow-lg w-full max-w-xs sm:max-w-sm md:max-w-md lg:w-96">
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-4">
                       Price Range: {formatCurrency(tempPriceRange[0])} - {formatCurrency(tempPriceRange[1])}

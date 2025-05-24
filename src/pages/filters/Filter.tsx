@@ -88,7 +88,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
       setLoading(true);
       try {
         const response = await fetch(
-          `https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/?page=1`
+          `https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/?page=1&page_size=${itemsPerPage}`
         );
         
         if (!response.ok) {
