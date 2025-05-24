@@ -7,7 +7,7 @@ import { WishData } from '@/card/wishListApi';
 import { WishItem } from '@/card/types';
 
 // Full search API endpoint
-const SEARCH_API_URL = "https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/search/?page=${page}";
+const SEARCH_API_URL = "https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/search/";
 
 export interface Category {
   id: number;
@@ -62,6 +62,7 @@ const fetchSearchResults = async (
   }
   
   url.searchParams.set('page', page.toString());
+  url.searchParams.set('page_size', '16'); // Explicitly set page_size to 16
   
   if (ordering) {
     url.searchParams.set('ordering', ordering);
@@ -69,7 +70,12 @@ const fetchSearchResults = async (
   
   const response = await fetch(url.toString());
   if (!response.ok) throw new Error("Failed to fetch products");
-  return response.json();
+  const data = await response.json();
+  // Validate pagination data
+  if (typeof data.count !== 'number' || !Array.isArray(data.results)) {
+    throw new Error('Invalid pagination data');
+  }
+  return data;
 };
 
 const SearchResults = () => {
@@ -97,15 +103,6 @@ const SearchResults = () => {
         setError(null);
         
         const data = await fetchSearchResults(query, currentPage, ordering);
-        
-        if (!data.results) {
-          throw new Error('No products data received from the API');
-        }
-        
-        if (!Array.isArray(data.results)) {
-          throw new Error(`Invalid products data format: ${typeof data.results}`);
-        }
-        
         setProductsData(data);
         
       } catch (err) {
@@ -205,7 +202,7 @@ const SearchResults = () => {
   }
   
   const hasResults = productsData.results.length > 0;
-  const itemsPerPage = 10;
+  const itemsPerPage = 16; // Match specified pagination size
   const totalPages = productsData.count ? Math.ceil(productsData.count / itemsPerPage) : 1;
 
   return (
@@ -245,7 +242,7 @@ const SearchResults = () => {
             })}
           </div>
           
-          {/* Pagination Controls */}
+          {/* Pagination controls */}
           <div className="mt-6">
             <PaginationComponent
               currentPage={currentPage}
