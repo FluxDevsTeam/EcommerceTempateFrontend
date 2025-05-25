@@ -54,7 +54,7 @@ const OrganizationalSettings = () => {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
       const response = await axios.get<OrganizationSettings>(
-        'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/organisation-settings/',
+        'http://kidsdesignecommerce.pythonanywhere.com/api/v1/admin/organisation-settings/',
         {
           headers: {
             'Authorization': `JWT ${token}`,
@@ -134,7 +134,7 @@ const OrganizationalSettings = () => {
       formData.append('brand_logo', logoFile);
 
       const response = await axios.patch(
-        'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/organisation-settings/',
+        'http://kidsdesignecommerce.pythonanywhere.com/api/v1/admin/organisation-settings/',
         formData,
         {
           headers: {
@@ -226,7 +226,7 @@ const OrganizationalSettings = () => {
       console.log("Data being sent in PATCH request:", JSON.stringify(patchData, null, 2));
 
       const response = await axios.patch<OrganizationSettings>(
-        'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/organisation-settings/',
+        'http://kidsdesignecommerce.pythonanywhere.com/api/v1/admin/organisation-settings/',
         patchData,
         {
           headers: {

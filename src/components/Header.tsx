@@ -74,7 +74,7 @@ const Header = () => {
         }
 
         // Fetch all categories at once without page_size limitation
-        const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/category/');
+        const response = await fetch('http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/category/');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setCategories(data.results);

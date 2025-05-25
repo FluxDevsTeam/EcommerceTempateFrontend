@@ -117,7 +117,7 @@ const EditProduct: React.FC = () => {
 
       try {
         const initialResponse = await fetch(
-          "https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/",
+          "http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/sub-category/",
           {
             headers: {
               Authorization: `JWT ${accessToken}`,
@@ -139,7 +139,7 @@ const EditProduct: React.FC = () => {
         for (let page = 1; page <= totalPages; page++) {
           fetchPromises.push(
             fetch(
-              `https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/?page=${page}`,
+              `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/sub-category/?page=${page}`,
               {
                 headers: {
                   Authorization: `JWT ${accessToken}`,
@@ -195,7 +195,7 @@ const EditProduct: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${id}/`,
+        `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/${id}/`,
         {
           headers: {
             Authorization: `JWT ${accessToken}`,
@@ -323,7 +323,7 @@ const EditProduct: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${id}/`,
+        `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/${id}/`,
         {
           method: "PATCH",
           headers: {

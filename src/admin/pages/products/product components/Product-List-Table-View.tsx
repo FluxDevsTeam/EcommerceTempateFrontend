@@ -98,7 +98,7 @@ const [isDbPriceRangeInitialized, setIsDbPriceRangeInitialized] = useState(false
   const [editingCategory, setEditingCategory] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
+  const baseURL = `http://kidsdesignecommerce.pythonanywhere.com`;
 
   useEffect(() => {
     const loadProducts = async () => {

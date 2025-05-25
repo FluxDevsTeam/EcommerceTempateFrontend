@@ -104,7 +104,7 @@ const AdminProductDetails: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${id}/`,
+        `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/${id}/`,
         {
           headers: {
             Authorization: `JWT ${accessToken}`,
@@ -151,7 +151,7 @@ const AdminProductDetails: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${editSizeFormData.product}/size/${editSizeFormData.id}/`,
+        `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/${editSizeFormData.product}/size/${editSizeFormData.id}/`,
         {
           method: "PATCH",
           headers: {
@@ -208,7 +208,7 @@ const AdminProductDetails: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${product.id}/size/${deleteModalConfig.sizeId}/`,
+        `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/${product.id}/size/${deleteModalConfig.sizeId}/`,
         {
           method: "DELETE",
           headers: {
@@ -263,7 +263,7 @@ const AdminProductDetails: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${product.id}/size/`,
+        `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/${product.id}/size/`,
         {
           method: "POST",
           headers: {

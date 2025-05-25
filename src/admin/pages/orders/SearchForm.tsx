@@ -25,7 +25,7 @@ function useCustomDebounce<T>(value: T, delay: number): T {
 }
 
 // Autocomplete API endpoint
-const AUTOCOMPLETE_API_URL = "https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/autocomplete/";
+const AUTOCOMPLETE_API_URL = "http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/autocomplete/";
 
 const fetchAutocompleteResults = async (searchQuery?: string): Promise<string[]> => {
   if (!searchQuery || searchQuery.trim() === "") {

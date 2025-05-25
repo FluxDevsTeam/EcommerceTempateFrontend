@@ -16,7 +16,7 @@ const Order = () => {
   const [nextUrl, setNextUrl] = useState<string | null>(null);
   const [prevUrl, setPrevUrl] = useState<string | null>(null);
 
-  const getPageUrl = (page: number) => `https://ecommercetemplate.pythonanywhere.com/api/v1/orders/item/?page=${page}`;
+  const getPageUrl = (page: number) => `http://kidsdesignecommerce.pythonanywhere.com/api/v1/orders/item/?page=${page}`;
   
   const loadOrders = async (url?: string) => {
     try {

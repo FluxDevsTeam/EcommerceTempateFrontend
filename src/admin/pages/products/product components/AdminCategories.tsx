@@ -35,7 +35,7 @@ const AdminCategories = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
 
-  const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
+  const baseURL = `http://kidsdesignecommerce.pythonanywhere.com`;
 
   // Debounce the search input
   useEffect(() => {

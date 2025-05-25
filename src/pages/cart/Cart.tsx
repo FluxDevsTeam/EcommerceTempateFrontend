@@ -66,7 +66,7 @@ const Cart = () => {
   const [cartUid, setCartUid] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
+  const baseURL = `http://kidsdesignecommerce.pythonanywhere.com`;
 
   const formatPrice = (price: number) => {
     return price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
