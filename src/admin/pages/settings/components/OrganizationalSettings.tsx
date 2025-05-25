@@ -39,9 +39,9 @@ const OrganizationalSettings = () => {
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
+  const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const [selectedStates, setSelectedStates] = useState<string[]>([]);
-  const [showModal, setShowModal] = useState(false);
   const [initialData, setInitialData] = useState<OrganizationSettings | null>(null);
   const [initialSelectedStates, setInitialSelectedStates] = useState<string[]>([]);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -68,7 +68,6 @@ const OrganizationalSettings = () => {
       if (response.data) {
         setFormData(response.data);
         setInitialData(response.data);
-        console.log(response.data)
         
         let states: string[] = [];
         if (Array.isArray(response.data.available_states)) {
@@ -126,43 +125,6 @@ const OrganizationalSettings = () => {
     }
   };
 
-  const uploadLogo = async () => {
-    if (!logoFile) return;
-
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      const formData = new FormData();
-      formData.append('brand_logo', logoFile);
-
-      const response = await axios.patch(
-        'http://kidsdesignecommerce.pythonanywhere.com/api/v1/admin/organisation-settings/',
-        formData,
-        {
-          headers: {
-            'Authorization': `JWT ${token}`,
-            'Content-Type': 'multipart/form-data',
-          }
-        }
-      );
-
-      setFormData(prev => ({
-        ...prev,
-        brand_logo: response.data.brand_logo
-      }));
-      
-      setSuccessMessage('Logo uploaded successfully');
-      setTimeout(() => {
-        setSuccessMessage(null);
-      }, 3000);
-    } catch (err) {
-      setError('Failed to upload logo');
-      console.error('Error uploading logo:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const mapFieldNameToApi = (fieldName: string): string => {
     const mapping: {[key: string]: string} = {
       'warehouseStates': 'warehouse_state',
@@ -201,7 +163,7 @@ const OrganizationalSettings = () => {
   };
 
   const handleSaveConfirm = () => {
-    setShowModal(false);
+    setShowConfirmModal(false);
     handleSave();
   };
 
@@ -210,44 +172,43 @@ const OrganizationalSettings = () => {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
 
-      // Sort selectedStates based on the order in allNigerianStates
-      const sortedStates = selectedStates.sort((a, b) => {
-        return allNigerianStates.indexOf(a) - allNigerianStates.indexOf(b);
-      });
-
-      const patchData = {
-        warehouse_state: formData.warehouse_state,
-        available_states: sortedStates,
-        phone_number: formData.phone_number,
-        customer_support_email: formData.customer_support_email,
-        admin_email: formData.admin_email,
-        facebook: formData.facebook,
-        twitter: formData.twitter,
-        linkedin: formData.linkedin,
-        tiktok: formData.tiktok,
-        instagram: formData.instagram
-      };
-
-      console.log("Data being sent in PATCH request:", JSON.stringify(patchData, null, 2));
+      const formDataToSend = new FormData();
+      formDataToSend.append('warehouse_state', formData.warehouse_state);
+      formDataToSend.append('available_states', JSON.stringify(selectedStates.sort((a, b) => allNigerianStates.indexOf(a) - allNigerianStates.indexOf(b))));
+      formDataToSend.append('phone_number', formData.phone_number);
+      formDataToSend.append('customer_support_email', formData.customer_support_email);
+      formDataToSend.append('admin_email', formData.admin_email);
+      formDataToSend.append('facebook', formData.facebook || '');
+      formDataToSend.append('twitter', formData.twitter || '');
+      formDataToSend.append('linkedin', formData.linkedin || '');
+      formDataToSend.append('tiktok', formData.tiktok || '');
+      formDataToSend.append('instagram', formData.instagram || '');
+      if (logoFile) {
+        formDataToSend.append('brand_logo', logoFile);
+      }
 
       const response = await axios.patch<OrganizationSettings>(
         'http://kidsdesignecommerce.pythonanywhere.com/api/v1/admin/organisation-settings/',
-        patchData,
+        formDataToSend,
         {
           headers: {
             'Authorization': `JWT ${token}`,
-            'Content-Type': 'application/json',
+            'Content-Type': 'multipart/form-data',
           }
         }
       );
 
-      setSuccessMessage('Organization settings updated successfully');
+      setFormData(response.data);
+      setInitialData(response.data);
+      setInitialSelectedStates(selectedStates.sort((a, b) => allNigerianStates.indexOf(a) - allNigerianStates.indexOf(b)));
+      setLogoFile(null);
+      setLogoPreview(response.data.brand_logo || logoPreview);
+      
+      setShowSuccessModal(true);
       setError(null);
-      setInitialData(formData);
-      setInitialSelectedStates(sortedStates); // Update initialSelectedStates with sorted order
-
+      
       setTimeout(() => {
-        setSuccessMessage(null);
+        setShowSuccessModal(false);
       }, 3000);
     } catch (err) {
       let errorMessage = 'Failed to update organization settings';
@@ -341,12 +302,6 @@ const OrganizationalSettings = () => {
         </div>
       )}
 
-      {successMessage && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          {successMessage}
-        </div>
-      )}
-
       <div className="mb-8 bg-gray-100 p-4 rounded-lg shadow border border-gray-200">
         <h3 className="font-medium text-lg mb-3">Current Settings</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -375,7 +330,16 @@ const OrganizationalSettings = () => {
             </p>
           </div>
           <div>
-         
+            <p className="text-sm text-gray-500">Logo</p>
+            {initialData?.brand_logo ? (
+              <img 
+                src={initialData.brand_logo} 
+                alt="Brand Logo" 
+                className="w-16 h-16 object-cover rounded-md"
+              />
+            ) : (
+              <p className="font-medium">Not set</p>
+            )}
           </div>
         </div>
         
@@ -487,15 +451,6 @@ const OrganizationalSettings = () => {
                     file:bg-gray-50 file:text-gray-700
                     hover:file:bg-gray-100"
                 />
-                {logoFile && (
-                  <button
-                    onClick={uploadLogo}
-                    disabled={loading}
-                    className="mt-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:bg-blue-300"
-                  >
-                    {loading ? 'Uploading...' : 'Upload Logo'}
-                  </button>
-                )}
               </div>
             </div>
           </div>
@@ -649,7 +604,7 @@ const OrganizationalSettings = () => {
             </button>
             <button 
               className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:cursor-not-allowed"
-              onClick={() => setShowModal(true)}
+              onClick={() => setShowConfirmModal(true)}
               disabled={loading || !hasChanges()}
             >
               {loading ? 'Saving...' : 'Save Changes'}
@@ -657,7 +612,8 @@ const OrganizationalSettings = () => {
           </div>
         </div>
 
-        {showModal && (
+        {/* Confirmation Modal */}
+        {showConfirmModal && (
           <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
               <h3 className="text-lg font-medium mb-4">Confirm Changes</h3>
@@ -667,7 +623,7 @@ const OrganizationalSettings = () => {
               <div className="flex justify-end space-x-4">
                 <button
                   className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => setShowConfirmModal(false)}
                 >
                   Cancel
                 </button>
@@ -676,6 +632,26 @@ const OrganizationalSettings = () => {
                   onClick={handleSaveConfirm}
                 >
                   Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Success Modal */}
+        {showSuccessModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+              <h3 className="text-lg font-medium mb-4 text-green-700">Success</h3>
+              <p className="mb-6">
+                Organization settings updated successfully!
+              </p>
+              <div className="flex justify-end">
+                <button
+                  className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+                  onClick={() => setShowSuccessModal(false)}
+                >
+                  OK
                 </button>
               </div>
             </div>
