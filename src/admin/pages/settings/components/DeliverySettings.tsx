@@ -5,7 +5,7 @@ import { formatCurrency } from "../../../utils/formatting";
 interface DeliverySettings {
   base_fee: string;
   fee_per_km: string;
-  weigh_fee: string;
+  weight_fee: string;
   size_fee: string;
 }
 
@@ -13,7 +13,7 @@ const DeliverySettings = () => {
   const [formData, setFormData] = useState<DeliverySettings>({
     base_fee: '',
     fee_per_km: '',
-    weigh_fee: '',
+    weight_fee: '',
     size_fee: '',
   });
   const [loading, setLoading] = useState<boolean>(true);
@@ -74,7 +74,7 @@ const DeliverySettings = () => {
       const apiFormData = {
         base_fee: formData.base_fee,
         fee_per_km: formData.fee_per_km,
-        weigh_fee: formData.weigh_fee,
+        weight_fee: formData.weight_fee,
         size_fee: formData.size_fee
       };
       const token = localStorage.getItem('accessToken');
@@ -110,7 +110,7 @@ const DeliverySettings = () => {
     return (
       formData.base_fee !== initialData.base_fee ||
       formData.fee_per_km !== initialData.fee_per_km ||
-      formData.weigh_fee !== initialData.weigh_fee ||
+      formData.weight_fee !== initialData.weight_fee ||
       formData.size_fee !== initialData.size_fee
     );
   };
@@ -157,7 +157,7 @@ const DeliverySettings = () => {
     <div className="border-r border-gray-200 pr-4">
       <p className="text-sm text-gray-500">Weight Fee</p>
       <p className="font-medium text-lg">
-        {initialData?.weigh_fee ? `${formatCurrency(initialData.weigh_fee)}/kg` : 'Not set'}
+        {initialData?.weight_fee ? `${formatCurrency(initialData.weight_fee)}/kg` : 'Not set'}
       </p>
     </div>
     <div>
@@ -215,8 +215,8 @@ const DeliverySettings = () => {
             <label className="block text-sm font-medium mb-2">Weight Fee</label>
             <input
               type="text"
-              name="weigh_fee"
-              value={formData.weigh_fee}
+              name="weight_fee"
+              value={formData.weight_fee}
               onChange={handleChange}
               placeholder="Enter Weight Fee"
               className="w-full p-3 border border-gray-300 rounded-md"

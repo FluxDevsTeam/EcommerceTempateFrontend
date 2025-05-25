@@ -62,6 +62,16 @@ const PersonalInfo = () => {
       getUserProfileDeets();
     }, []);
 
+    useEffect(() => {
+      if (userProfileDeets) {
+        setPersonalInfo({
+          new_first_name: userProfileDeets.first_name || "",
+          new_last_name: userProfileDeets.last_name || "",
+          new_phone_number: userProfileDeets.phone_number || "",
+        });
+      }
+    }, [userProfileDeets]);
+
   const personalInfoPost = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const accessToken = localStorage.getItem("accessToken");
@@ -270,11 +280,11 @@ const PersonalInfo = () => {
           </div>
 
           <button
-            disabled={isRequestingChange || !personalInfo.new_first_name || !personalInfo.new_last_name || !personalInfo.new_phone_number}
+            disabled={isRequestingChange || !personalInfo.new_first_name || !personalInfo.new_last_name || !personalInfo.new_phone_number || (personalInfo.new_first_name === userProfileDeets?.first_name && personalInfo.new_last_name === userProfileDeets?.last_name && personalInfo.new_phone_number === userProfileDeets?.phone_number)}
             type="submit"
             className={`
               px-6 py-3 rounded-lg text-white font-medium transition-all
-              ${isRequestingChange || !personalInfo.new_first_name || !personalInfo.new_last_name || !personalInfo.new_phone_number
+              ${isRequestingChange || !personalInfo.new_first_name || !personalInfo.new_last_name || !personalInfo.new_phone_number || (personalInfo.new_first_name === userProfileDeets?.first_name && personalInfo.new_last_name === userProfileDeets?.last_name && personalInfo.new_phone_number === userProfileDeets?.phone_number)
                 ? "bg-gray-300 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-blue-100"
               }

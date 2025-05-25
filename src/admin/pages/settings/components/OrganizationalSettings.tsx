@@ -12,6 +12,7 @@ interface OrganizationSettings {
   twitter: string | null;
   linkedin: string | null;
   tiktok: string | null;
+  instagram: string | null;
 }
 
 const allNigerianStates = [
@@ -34,6 +35,7 @@ const OrganizationalSettings = () => {
     twitter: '',
     linkedin: '',
     tiktok: '',
+    instagram: '',
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -172,7 +174,8 @@ const OrganizationalSettings = () => {
       'facebook': 'facebook',
       'twitter': 'twitter',
       'linkedin': 'linkedin',
-      'tiktok': 'tiktok'
+      'tiktok': 'tiktok',
+      'instagram': 'instagram'
     };
     return mapping[fieldName] || fieldName;
   };
@@ -180,7 +183,7 @@ const OrganizationalSettings = () => {
   const getUiFormData = () => {
     return {
       warehouseStates: formData.warehouse_state || '',
-      availableStates: Array.isArray(formData.available_states) 
+      availableStates: Array.isArray(formData.available_states)
         ? formData.available_states.join(', ')
         : typeof formData.available_states === 'object'
           ? JSON.stringify(formData.available_states)
@@ -193,6 +196,7 @@ const OrganizationalSettings = () => {
       twitter: formData.twitter || '',
       linkedin: formData.linkedin || '',
       tiktok: formData.tiktok || '',
+      instagram: formData.instagram || '',
     };
   };
 
@@ -220,7 +224,8 @@ const OrganizationalSettings = () => {
         facebook: formData.facebook,
         twitter: formData.twitter,
         linkedin: formData.linkedin,
-        tiktok: formData.tiktok
+        tiktok: formData.tiktok,
+        instagram: formData.instagram
       };
 
       console.log("Data being sent in PATCH request:", JSON.stringify(patchData, null, 2));
@@ -293,8 +298,8 @@ const OrganizationalSettings = () => {
 
   const hasChanges = () => {
     if (!initialData) return false;
-    
-    const formChanged = 
+
+    const formChanged =
       formData.warehouse_state !== initialData.warehouse_state ||
       formData.phone_number !== initialData.phone_number ||
       formData.customer_support_email !== initialData.customer_support_email ||
@@ -303,6 +308,7 @@ const OrganizationalSettings = () => {
       formData.twitter !== initialData.twitter ||
       formData.linkedin !== initialData.linkedin ||
       formData.tiktok !== initialData.tiktok ||
+      formData.instagram !== initialData.instagram ||
       logoFile !== null;
 
     const statesChanged = 
@@ -373,7 +379,7 @@ const OrganizationalSettings = () => {
           </div>
         </div>
         
-        {(initialData?.facebook || initialData?.twitter || initialData?.linkedin || initialData?.tiktok) && (
+        {(initialData?.facebook || initialData?.twitter || initialData?.linkedin || initialData?.tiktok || initialData?.instagram) && (
           <div className="mt-4 p-3 bg-gray-100 rounded-md border border-gray-200">
             <h4 className="font-medium mb-2">Social Media Links</h4>
             <div className="grid grid-cols-1 gap-2">
@@ -399,6 +405,12 @@ const OrganizationalSettings = () => {
                 <div>
                   <span className="font-medium">TikTok: </span>
                   <span className="text-sm break-all">{initialData.tiktok}</span>
+                </div>
+              )}
+              {initialData?.instagram && (
+                <div>
+                  <span className="font-medium">Instagram: </span>
+                  <span className="text-sm break-all">{initialData.instagram}</span>
                 </div>
               )}
             </div>
@@ -601,6 +613,26 @@ const OrganizationalSettings = () => {
               />
             </div>
             {formData.tiktok && !formData.tiktok.startsWith('http') && (
+              <p className="text-xs text-red-500 mt-1">URL must start with http:// or https://</p>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <label className="block text-sm font-medium mb-2">Instagram <span className="text-red-500">*</span><span className="text-xs text-gray-500 ml-1">(Enter full URL with https://)</span></label>
+            <div className="flex">
+              <input
+                type="url"
+                name="instagram"
+                value={formData.instagram || ''}
+                onChange={handleChange}
+                placeholder="https://instagram.com/yourprofile"
+                className="flex-1 p-3 border border-gray-300 rounded-md"
+                maxLength={100}
+              />
+            </div>
+            {formData.instagram && !formData.instagram.startsWith('http') && (
               <p className="text-xs text-red-500 mt-1">URL must start with http:// or https://</p>
             )}
           </div>
