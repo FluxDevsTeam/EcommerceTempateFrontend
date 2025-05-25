@@ -452,9 +452,15 @@ const AdminProductDetails: React.FC = () => {
                   )}
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Category</span>
+                  <span className="text-gray-600">Sub-Category</span>
                   <span className="font-medium">
                     {product.sub_category.name}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Production Days</span>
+                  <span className="font-medium">
+                    {product.production_days}
                   </span>
                 </div>
               </div>

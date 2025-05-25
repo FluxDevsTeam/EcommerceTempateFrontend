@@ -13,6 +13,12 @@ interface SubCategory {
   };
 }
 
+interface WeightSizePair {
+  label: string;
+  weight: string;
+  size: string;
+}
+
 const AddNewProduct: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -37,8 +43,7 @@ const AddNewProduct: React.FC = () => {
     sub_category: null as number | null,
     colour: "",
     is_available: true,
-    dimensional_size: null as string | null,
-    weight: null as string | null,
+    weightSizePair: "" as string,
     latest_item: false,
     latest_item_position: null as number | null,
     top_selling_items: false,
@@ -52,47 +57,23 @@ const AddNewProduct: React.FC = () => {
 
   const [categories, setCategories] = useState<SubCategory[]>([]);
 
-  const sizeOptions = [
-    "Very Small",
-    "Small",
-    "Medium",
-    "Large",
-    "Very Large",
-    "XXL",
+  const weightSizePairs: WeightSizePair[] = [
+    { label: "Very Light - Very Small", weight: "Very Light", size: "Very Small" },
+    { label: "Very Light - Small", weight: "Very Light", size: "Small" },
+    { label: "Light - Small", weight: "Light", size: "Small" },
+    { label: "Light - Medium", weight: "Light", size: "Medium" },
+    { label: "Medium - Medium", weight: "Medium", size: "Medium" },
+    { label: "Medium - Large", weight: "Medium", size: "Large" },
+    { label: "Heavy - Large", weight: "Heavy", size: "Large" },
+    { label: "Heavy - Very Large", weight: "Heavy", size: "Very Large" },
+    { label: "Very Heavy - Very Large", weight: "Very Heavy", size: "Very Large" },
+    { label: "Very Heavy - XXL", weight: "Very Heavy", size: "XXL" },
+    { label: "XXHeavy - XXL", weight: "XXHeavy", size: "XXL" },
   ];
-  const weightOptions = [
-    "Very Light",
-    "Light",
-    "Medium",
-    "Heavy",
-    "Very Heavy",
-    "XXHeavy",
-  ];
-
-  // Mapping of sizes to allowed weights
-  const allowedWeightsBySize: { [key: string]: string[] } = {
-    "Very Small": ["Very Light", "Light"],
-    Small: ["Very Light", "Light", "Medium"],
-    Medium: ["Light", "Medium", "Heavy"],
-    Large: ["Medium", "Heavy", "Very Heavy"],
-    "Very Large": ["Heavy", "Very Heavy", "XXHeavy"],
-    XXL: ["Very Heavy", "XXHeavy"],
-  };
-
-  const allowedSizesByWeight: { [key: string]: string[] } = {
-    "Very Light": ["Very Small", "Small"],
-    Light: ["Very Small", "Small", "Medium"],
-    Medium: ["Small", "Medium", "Large"],
-    Heavy: ["Medium", "Large", "Very Large"],
-    "Very Heavy": ["Heavy", "Very Large", "XXL"],
-    "XXHeavy": ["Very Large", "XXl"],
-  };
 
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredCategories, setFilteredCategories] = useState<SubCategory[]>(
-    []
-  );
+  const [filteredCategories, setFilteredCategories] = useState<SubCategory[]>([]);
 
   // Filter categories based on search query
   useEffect(() => {
@@ -101,35 +82,6 @@ const AddNewProduct: React.FC = () => {
     );
     setFilteredCategories(filtered);
   }, [searchQuery, categories]);
-
-  // Reset weight if it becomes invalid when size changes
-  useEffect(() => {
-    if (formData.dimensional_size) {
-      const allowedWeights =
-        allowedWeightsBySize[formData.dimensional_size] || weightOptions;
-      if (formData.weight && !allowedWeights.includes(formData.weight)) {
-        setFormData((prev) => ({
-          ...prev,
-          weight: null, // Reset weight if it's not allowed for the new size
-        }));
-      }
-    }
-  }, [formData.dimensional_size]);
-
-  useEffect(() => {
-    if (formData.weight) {
-      const allowedSizes = allowedSizesByWeight[formData.weight] || sizeOptions;
-      if (
-        formData.dimensional_size &&
-        !allowedSizes.includes(formData.dimensional_size)
-      ) {
-        setFormData((prev) => ({
-          ...prev,
-          dimensional_size: null,
-        }));
-      }
-    }
-  });
 
   // Fetch categories (unchanged)
   useEffect(() => {
@@ -274,8 +226,18 @@ const AddNewProduct: React.FC = () => {
     }
 
     const formDataToSend = new FormData();
+    const selectedPair = weightSizePairs.find(
+      (pair) => pair.label === formData.weightSizePair
+    );
+
     Object.keys(formData).forEach((key) => {
-      if (
+      if (key === "weightSizePair") {
+        // Skip weightSizePair, add weight and dimensional_size instead
+        if (selectedPair) {
+          formDataToSend.append("weight", selectedPair.weight);
+          formDataToSend.append("dimensional_size", selectedPair.size);
+        }
+      } else if (
         formData[key as keyof typeof formData] !== null &&
         key !== "image1" &&
         key !== "image2" &&
@@ -319,7 +281,7 @@ const AddNewProduct: React.FC = () => {
       setModalConfig({
         isOpen: true,
         title: "Success",
-        message: "Product added successfully! Click OK to view the product.",
+        message: "Product added successfully!",
         type: "success",
       });
     } catch (error) {
@@ -343,8 +305,20 @@ const AddNewProduct: React.FC = () => {
       formData.name.trim() !== "" &&
       formData.description.trim() !== "" &&
       formData.sub_category !== null &&
+      formData.weightSizePair !== "" &&
       formData.image1 !== null
     );
+  };
+
+  // Helper to get weight and size for preview
+  const getWeightSizeForPreview = () => {
+    const selectedPair = weightSizePairs.find(
+      (pair) => pair.label === formData.weightSizePair
+    );
+    return {
+      weight: selectedPair ? selectedPair.weight : "Not specified",
+      size: selectedPair ? selectedPair.size : "Not specified",
+    };
   };
 
   return (
@@ -388,7 +362,7 @@ const AddNewProduct: React.FC = () => {
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Category
+                      Sub-Category
                     </label>
                     <button
                       type="button"
@@ -447,56 +421,21 @@ const AddNewProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Transport Size (based on weight)
+                    Weight & Size
                   </label>
                   <select
-                    name="dimensional_size"
-                    value={formData.dimensional_size || ""}
+                    name="weightSizePair"
+                    value={formData.weightSizePair}
                     onChange={handleChange}
+                    required
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                   >
-                    <option value="">Select Size</option>
-                    {formData.weight
-                      ? (
-                          allowedSizesByWeight[formData.weight] || sizeOptions
-                        ).map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))
-                      : sizeOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Transport Weight (based on size)
-                  </label>
-                  <select
-                    name="weight"
-                    value={formData.weight || ""}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                  >
-                    <option value="">Select Weight</option>
-                    {formData.dimensional_size
-                      ? (
-                          allowedWeightsBySize[formData.dimensional_size] ||
-                          weightOptions
-                        ).map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))
-                      : weightOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
+                    <option value="">Select Weight & Size</option>
+                    {weightSizePairs.map((pair) => (
+                      <option key={pair.label} value={pair.label}>
+                        {pair.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -993,7 +932,7 @@ const AddNewProduct: React.FC = () => {
                           Size
                         </h3>
                         <p className="text-gray-600">
-                          {formData.dimensional_size || "Not specified"}
+                          {getWeightSizeForPreview().size}
                         </p>
                       </div>
 
@@ -1002,7 +941,7 @@ const AddNewProduct: React.FC = () => {
                           Weight
                         </h3>
                         <p className="text-gray-600">
-                          {formData.weight || "Not specified"}
+                          {getWeightSizeForPreview().weight}
                         </p>
                       </div>
                     </div>
@@ -1023,15 +962,13 @@ const AddNewProduct: React.FC = () => {
 
                       {formData.latest_item && (
                         <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg">
-                          Latest Item (Position: {formData.latest_item_position}
-                          )
+                          Latest Item (Position: {formData.latest_item_position})
                         </div>
                       )}
 
                       {formData.top_selling_items && (
                         <div className="bg-orange-50 text-orange-700 px-4 py-2 rounded-lg">
-                          Top Selling Item (Position:{" "}
-                          {formData.top_selling_position})
+                          Top Selling Item (Position: {formData.top_selling_position})
                         </div>
                       )}
                     </div>

@@ -13,6 +13,12 @@ interface SubCategory {
   };
 }
 
+interface WeightSizePair {
+  label: string;
+  weight: string;
+  size: string;
+}
+
 const EditProduct: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -35,6 +41,20 @@ const EditProduct: React.FC = () => {
     type: "success" as "success" | "error",
   });
 
+  const weightSizePairs: WeightSizePair[] = [
+    { label: "Very Light - Very Small", weight: "Very Light", size: "Very Small" },
+    { label: "Very Light - Small", weight: "Very Light", size: "Small" },
+    { label: "Light - Small", weight: "Light", size: "Small" },
+    { label: "Light - Medium", weight: "Light", size: "Medium" },
+    { label: "Medium - Medium", weight: "Medium", size: "Medium" },
+    { label: "Medium - Large", weight: "Medium", size: "Large" },
+    { label: "Heavy - Large", weight: "Heavy", size: "Large" },
+    { label: "Heavy - Very Large", weight: "Heavy", size: "Very Large" },
+    { label: "Very Heavy - Very Large", weight: "Very Heavy", size: "Very Large" },
+    { label: "Very Heavy - XXL", weight: "Very Heavy", size: "XXL" },
+    { label: "XXHeavy - XXL", weight: "XXHeavy", size: "XXL" },
+  ];
+
   // Update formData to match API input structure
   const [formData, setFormData] = useState({
     name: "",
@@ -48,8 +68,7 @@ const EditProduct: React.FC = () => {
     is_available: false,
     latest_item: false,
     latest_item_position: null as number | null,
-    dimensional_size: null as string | null,
-    weight: null as string | null,
+    weightSizePair: "" as string,
     top_selling_items: false,
     top_selling_position: null as number | null,
     unlimited: false,
@@ -64,8 +83,7 @@ const EditProduct: React.FC = () => {
     is_available: false,
     latest_item: false,
     latest_item_position: null as number | null,
-    dimensional_size: null as string | null,
-    weight: null as string | null,
+    weightSizePair: "" as string,
     top_selling_items: false,
     top_selling_position: null as number | null,
     unlimited: false,
@@ -75,46 +93,8 @@ const EditProduct: React.FC = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Define size and weight options
-  const sizeOptions = [
-    "Very Small",
-    "Small",
-    "Medium",
-    "Large",
-    "Very Large",
-    "XXL",
-  ];
-  const weightOptions = [
-    "Very Light",
-    "Light",
-    "Medium",
-    "Heavy",
-    "Very Heavy",
-    "XXHeavy",
-  ];
-
-  const allowedWeightsBySize: { [key: string]: string[] } = {
-    "Very Small": ["Very Light", "Light"],
-    Small: ["Very Light", "Light", "Medium"],
-    Medium: ["Light", "Medium", "Heavy"],
-    Large: ["Medium", "Heavy", "Very Heavy"],
-    "Very Large": ["Heavy", "Very Heavy", "XXHeavy"],
-    XXL: ["Very Heavy", "XXHeavy"],
-  };
-
-  const allowedSizesByWeight: { [key: string]: string[] } = {
-    "Very Light": ["Very Small", "Small"],
-    Light: ["Very Small", "Small", "Medium"],
-    Medium: ["Small", "Medium", "Large"],
-    Heavy: ["Medium", "Large", "Very Large"],
-    "Very Heavy": ["Heavy", "Very Large", "XXL"],
-    "XXHeavy": ["Very Large", "XXL"],
-  };
-
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredCategories, setFilteredCategories] = useState<SubCategory[]>(
-    []
-  );
+  const [filteredCategories, setFilteredCategories] = useState<SubCategory[]>([]);
 
   const [isSearchMode, setIsSearchMode] = useState(false);
 
@@ -155,7 +135,6 @@ const EditProduct: React.FC = () => {
         const itemsPerPage = 10;
         const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-        // Fetch all pages
         const fetchPromises = [];
         for (let page = 1; page <= totalPages; page++) {
           fetchPromises.push(
@@ -171,10 +150,7 @@ const EditProduct: React.FC = () => {
           );
         }
 
-        // Wait for all requests to complete
         const responses = await Promise.all(fetchPromises);
-
-        // Combine all results
         const allCategories = responses.reduce((acc, response) => {
           return [...acc, ...response.results];
         }, []);
@@ -197,41 +173,12 @@ const EditProduct: React.FC = () => {
     fetchCategories();
   }, []);
 
-  // Add this new useEffect to handle category filtering
   useEffect(() => {
     const filtered = categories.filter((category) =>
       category.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredCategories(filtered);
   }, [searchQuery, categories]);
-
-  useEffect(() => {
-    if (formData.dimensional_size) {
-      const allowedWeights =
-        allowedWeightsBySize[formData.dimensional_size] || weightOptions;
-      if (formData.weight && !allowedWeights.includes(formData.weight)) {
-        setFormData((prev) => ({
-          ...prev,
-          weight: null, // Reset weight if it's not allowed for the new size
-        }));
-      }
-    }
-  }, [formData.dimensional_size]);
-
-  useEffect(() => {
-    if (formData.weight) {
-      const allowedSizes = allowedSizesByWeight[formData.weight] || sizeOptions;
-      if (
-        formData.dimensional_size &&
-        !allowedSizes.includes(formData.dimensional_size)
-      ) {
-        setFormData((prev) => ({
-          ...prev,
-          dimensional_size: null,
-        }));
-      }
-    }
-  });
 
   const fetchProduct = async () => {
     const accessToken = localStorage.getItem("accessToken");
@@ -262,6 +209,12 @@ const EditProduct: React.FC = () => {
       }
 
       const data = await response.json();
+      // Find the corresponding weightSizePair label
+      const weightSizePair = weightSizePairs.find(
+        (pair) =>
+          pair.weight === data.weight && pair.size === data.dimensional_size
+      )?.label || "";
+
       const formattedData = {
         name: data.name || "",
         description: data.description || "",
@@ -270,8 +223,7 @@ const EditProduct: React.FC = () => {
         is_available: data.is_available ?? false,
         latest_item: data.latest_item ?? false,
         latest_item_position: data.latest_item_position,
-        dimensional_size: data.dimensional_size,
-        weight: data.weight,
+        weightSizePair,
         top_selling_items: data.top_selling_items ?? false,
         top_selling_position: data.top_selling_position,
         unlimited: data.unlimited ?? false,
@@ -297,13 +249,13 @@ const EditProduct: React.FC = () => {
       });
     }
   };
+
   useEffect(() => {
     if (id) {
       fetchProduct();
     }
   }, [id]);
 
-  // Add effect to check for changes
   useEffect(() => {
     const hasFormChanges =
       JSON.stringify(formData) !== JSON.stringify(initialFormData);
@@ -319,7 +271,6 @@ const EditProduct: React.FC = () => {
     e.preventDefault();
     setIsSaving(true);
     const accessToken = localStorage.getItem("accessToken");
-    console.log("Starting product update...");
 
     if (!accessToken) {
       setModalConfig({
@@ -333,11 +284,24 @@ const EditProduct: React.FC = () => {
     }
 
     const changedFields = new FormData();
+    const selectedPair = weightSizePairs.find(
+      (pair) => pair.label === formData.weightSizePair
+    );
 
-    // Compare and only add changed fields
+    // Compare and add changed fields
     Object.keys(formData).forEach((key) => {
       const typedKey = key as keyof typeof formData;
-      if (
+      if (key === "weightSizePair") {
+        if (
+          JSON.stringify(formData.weightSizePair) !==
+          JSON.stringify(initialFormData.weightSizePair)
+        ) {
+          if (selectedPair) {
+            changedFields.append("weight", selectedPair.weight);
+            changedFields.append("dimensional_size", selectedPair.size);
+          }
+        }
+      } else if (
         JSON.stringify(formData[typedKey]) !==
         JSON.stringify(initialFormData[typedKey])
       ) {
@@ -353,6 +317,7 @@ const EditProduct: React.FC = () => {
     });
 
     if ([...changedFields.entries()].length === 0) {
+      setIsSaving(false);
       return;
     }
 
@@ -387,7 +352,6 @@ const EditProduct: React.FC = () => {
         type: "success",
       });
 
-      // Refresh the product data
       await fetchProduct();
     } catch (error) {
       console.error("Error updating product:", error);
@@ -427,7 +391,6 @@ const EditProduct: React.FC = () => {
       newSelectedImages[index] = file;
       setSelectedImages(newSelectedImages);
 
-      // Create preview URL
       const reader = new FileReader();
       reader.onload = () => {
         const newPreviewImages = [...previewImages];
@@ -436,6 +399,17 @@ const EditProduct: React.FC = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  // Helper to get weight and size for preview
+  const getWeightSizeForPreview = () => {
+    const selectedPair = weightSizePairs.find(
+      (pair) => pair.label === formData.weightSizePair
+    );
+    return {
+      weight: selectedPair ? selectedPair.weight : "Not specified",
+      size: selectedPair ? selectedPair.size : "Not specified",
+    };
   };
 
   return (
@@ -469,7 +443,6 @@ const EditProduct: React.FC = () => {
           </div>
         )}
 
-        {/* Header Section */}
         <div className="mb-8">
           <div className="grid md:flex md:items-center md:justify-between">
             <div>
@@ -492,11 +465,8 @@ const EditProduct: React.FC = () => {
           </div>
         </div>
 
-        {/* Main Form */}
         <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
           <div className="bg-white shadow rounded-lg overflow-hidden">
-            {/* Basic Information Section */}
-            {/* <div className="p-6 border-b border-gray-200"> */}
             <div className="p-6 border-b border-gray-200 bg-gray-50">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Basic Information
@@ -520,7 +490,7 @@ const EditProduct: React.FC = () => {
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Category
+                      Sub-Category
                     </label>
                     <button
                       type="button"
@@ -558,7 +528,6 @@ const EditProduct: React.FC = () => {
               </div>
             </div>
 
-            {/* Specifications Section */}
             <div className="p-6 border-b border-gray-50">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Specifications
@@ -580,58 +549,21 @@ const EditProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Transport Size (based on weight)
+                    Weight & Size
                   </label>
                   <select
-                    name="dimensional_size"
-                    value={formData.dimensional_size || ""}
+                    name="weightSizePair"
+                    value={formData.weightSizePair}
                     onChange={handleChange}
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                   >
-                    <option value="">Select Size</option>
-                    {formData.weight
-                      ? (
-                          allowedSizesByWeight[formData.weight] || sizeOptions
-                        ).map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))
-                      : sizeOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Transport Weight (based on size)
-                  </label>
-                  <select
-                    name="weight"
-                    value={formData.weight || ""}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                  >
-                    <option value="">Select Weight</option>
-                    {formData.dimensional_size
-                      ? (
-                          allowedWeightsBySize[formData.dimensional_size] ||
-                          weightOptions
-                        ).map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))
-                      : weightOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
+                    <option value="">Select Weight & Size</option>
+                    {weightSizePairs.map((pair) => (
+                      <option key={pair.label} value={pair.label}>
+                        {pair.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -657,7 +589,6 @@ const EditProduct: React.FC = () => {
               </div>
             </div>
 
-            {/* Product Options Section */}
             <div className="p-6 border-b border-gray-200 bg-gray-50">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Product Options
@@ -795,7 +726,6 @@ const EditProduct: React.FC = () => {
               </div>
             </div>
 
-            {/* Images Section */}
             <div className="p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Product Images
@@ -856,7 +786,6 @@ const EditProduct: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Additional Images */}
                 {[1, 2].map((num) => (
                   <div key={num} className="space-y-4">
                     <div>
@@ -897,7 +826,7 @@ const EditProduct: React.FC = () => {
                                   strokeLinejoin="round"
                                 />
                               </svg>
-                              <label className="relative cursor-pointer rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                              <label className="relative cursor-pointer rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus:within:ring-blue-500">
                                 <span>Upload a file</span>
                                 <input
                                   type="file"
@@ -917,7 +846,6 @@ const EditProduct: React.FC = () => {
             </div>
           </div>
 
-          {/* Form Actions */}
           <div className="flex justify-end space-x-4">
             <button
               type="button"
@@ -927,7 +855,7 @@ const EditProduct: React.FC = () => {
               Cancel
             </button>
             <button
-              type="button" // Change from "submit" to "button"
+              type="button"
               onClick={handleSaveChanges}
               disabled={!hasChanges || isSaving}
               className={`px-6 py-3 border border-transparent text-base font-medium rounded-md text-white ${
@@ -968,11 +896,9 @@ const EditProduct: React.FC = () => {
         </form>
       </div>
 
-      {/* Preview Modal */}
       {viewProductPreviewModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-white w-full max-w-[1000px] rounded-2xl max-h-[90vh] overflow-y-auto">
-            {/* Mobile Header */}
             <div className="flex items-center p-4 md:hidden border-b">
               <button
                 onClick={() => setViewProductPreviewModal(false)}
@@ -985,7 +911,6 @@ const EditProduct: React.FC = () => {
               </h1>
             </div>
 
-            {/* Desktop Header */}
             <div className="hidden md:flex justify-between items-center p-6 border-b">
               <h1 className="text-2xl font-bold text-gray-800">
                 Product Preview
@@ -1000,9 +925,7 @@ const EditProduct: React.FC = () => {
 
             <div className="p-6">
               <div className="md:flex md:space-x-8">
-                {/* Image Section */}
                 <div className="md:w-1/2 space-y-4">
-                  {/* Main Image Display */}
                   <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
                     {previewImages[selectedPreviewImage] ? (
                       <img
@@ -1030,7 +953,6 @@ const EditProduct: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Thumbnail Images */}
                   <div className="grid grid-cols-3 gap-4">
                     {previewImages.map((url, index) => (
                       <button
@@ -1058,24 +980,17 @@ const EditProduct: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Product Details */}
                 <div className="md:w-1/2 mt-6 md:mt-0">
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-3xl font-bold text-gray-900 mb-2">
                         {formData.name || "Product Name"}
                       </h2>
-                      {/* <div className="flex items-baseline space-x-4">
+                      <div className="flex items-baseline space-x-4">
                         <span className="text-2xl font-bold text-gray-900">
-                          ₦{formData.price || "0.00"}
+                          ₦{formData.undiscounted_price || "0.00"}
                         </span>
-                        {formData.undiscounted_price && (
-                          <span className="text-lg text-gray-500 line-through">
-                            ₦{formData.undiscounted_price}
-                          </span>
-                        )}
                       </div>
-                       */}
                     </div>
 
                     <div className="bg-gray-50 rounded-lg p-4">
@@ -1115,7 +1030,7 @@ const EditProduct: React.FC = () => {
                           Size
                         </h3>
                         <p className="text-gray-600">
-                          {formData.dimensional_size || "Not specified"}
+                          {getWeightSizeForPreview().size}
                         </p>
                       </div>
 
@@ -1124,7 +1039,7 @@ const EditProduct: React.FC = () => {
                           Weight
                         </h3>
                         <p className="text-gray-600">
-                          {formData.weight || "Not specified"}
+                          {getWeightSizeForPreview().weight}
                         </p>
                       </div>
                     </div>
@@ -1142,15 +1057,13 @@ const EditProduct: React.FC = () => {
 
                       {formData.latest_item && (
                         <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg">
-                          Latest Item (Position: {formData.latest_item_position}
-                          )
+                          Latest Item (Position: {formData.latest_item_position})
                         </div>
                       )}
 
                       {formData.top_selling_items && (
                         <div className="bg-orange-50 text-orange-700 px-4 py-2 rounded-lg">
-                          Top Selling Item (Position:{" "}
-                          {formData.top_selling_position})
+                          Top Selling Item (Position: {formData.top_selling_position})
                         </div>
                       )}
                     </div>
