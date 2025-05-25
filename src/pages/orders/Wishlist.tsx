@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Card from "@/card/Card";
-import { fetchPaginatedWishlistItems } from "@/card/wishListApi"; // Import the new paginated fetcher
+import { WishData } from "./api";
 import Suggested from "../../components/products/Suggested";
-import Pagination from "@/components/Pagination"; // Assuming a Pagination component exists
 
 interface WishItem {
   id: number;
@@ -16,24 +15,17 @@ interface WishItem {
   };
 }
 
-const PAGE_SIZE = 16; // Define the page size
-
 const Wishlist = () => {
   const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
         setLoading(true);
-        // Use the new paginated fetcher
-        const data = await fetchPaginatedWishlistItems(currentPage, PAGE_SIZE);
-        setWishlistItems(data.results);
-        // Calculate total pages based on count and page size
-        setTotalPages(Math.ceil(data.count / PAGE_SIZE));
+        const data = await WishData();
+        setWishlistItems(data);
       } catch (err) {
         console.error("Failed to load wishlist:", err);
         setError("Failed to load wishlist.");
@@ -43,11 +35,7 @@ const Wishlist = () => {
     };
 
     fetchWishlist();
-  }, [currentPage]); // Refetch when currentPage changes
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  }, []);
 
   if (loading) {
     return <p className="p-10 text-center">Loading wishlist...</p>;
@@ -76,32 +64,20 @@ const Wishlist = () => {
           </Link>
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 mb-8 md:space-x-8 space-x-0 sm:mb-16">
-            {wishlistItems.map((item) => (
-              <Card
-                key={item.product.id}
-                product={item.product}
-                // isInitiallyLiked is always true for items on the wishlist page
-                isInitiallyLiked={true}
-                wishItemId={item.id}
-                removeOnUnlike={true}
-              />
-            ))}
-          </div>
-
-          {/* Add Pagination controls */}
-          {totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 mb-8 md:space-x-8 space-x-0 sm:mb-16">
+          {wishlistItems.map((item) => (
+            <Card
+              key={item.product.id}
+              product={item.product}
+              isInitiallyLiked={true}
+              wishItemId={item.id}
+              removeOnUnlike={true}
             />
-          )}
-        </>
+          ))}
+        </div>
       )}
 
-      <Suggested />
+        <Suggested />
 
     </div>
   );

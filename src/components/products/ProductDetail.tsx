@@ -124,13 +124,12 @@ const ProductDetail = () => {
         const selectedSizeData = product.sizes.find(size => size.size === selectedSize);
         if (selectedSizeData) {
           const key = `${product.id}-${selectedSizeData.id}`;
-          // Check if item is in user's cart
           const isInCart = await isItemInUserCart(product.id, selectedSizeData.id);
           setItemsInCart(prev => ({ ...prev, [key]: isInCart }));
         }
       }
     };
-
+    
     checkCartItems();
   }, [product, selectedSize]);
 

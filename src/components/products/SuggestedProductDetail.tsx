@@ -7,14 +7,14 @@ import "slick-carousel/slick/slick-theme.css";
 import SuggestedCard from "@/card/SuggestedCard";
 import { useState, useEffect } from "react";
 import { WishItem } from "@/card/types";
-import { fetchAllWishlistItems } from "@/card/wishListApi"; // Import the new fetchAllWishlistItems
+import { WishData } from "@/card/wishListApi";
 
 interface SuggestedProductDetailsProps {
   onSuggestedItemClick?: (image: string) => void;
 }
 
-const SuggestedProductDetails: React.FC<SuggestedProductDetailsProps> = ({
-  onSuggestedItemClick
+const SuggestedProductDetails: React.FC<SuggestedProductDetailsProps> = ({ 
+  onSuggestedItemClick 
 })=> {
   const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
   const [wishlistLoading, setWishlistLoading] = useState(true);
@@ -29,8 +29,7 @@ const SuggestedProductDetails: React.FC<SuggestedProductDetailsProps> = ({
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
-        // Use fetchAllWishlistItems to get all wishlist items
-        const wishlistRes = await fetchAllWishlistItems();
+        const wishlistRes = await WishData();
         setWishlistItems(wishlistRes);
       } catch (err) {
         console.error('Error loading wishlist:', err);
