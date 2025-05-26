@@ -208,7 +208,7 @@ const ProductsPage: React.FC = () => {
           <p className="text-xl text-gray-600">No products found matching your filters.</p>
           <Button
             onClick={() => navigate('/products')}
-            className="mt-4 bg-black text-white px-6 py-2 rounded-full"
+            className="mt-4 bg-customBlue text-white px-6 py-2 rounded-full"
           >
             View All Products
           </Button>

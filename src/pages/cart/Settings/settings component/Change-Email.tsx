@@ -290,8 +290,8 @@ const ChangeEmail = () => {
     <div className="max-w-4xl mx-auto">
       <div className="bg-white rounded-2xl p-8 shadow-md">
         <div className="flex items-center gap-4 mb-8">
-          <div className="h-14 w-14 bg-purple-50 rounded-full flex items-center justify-center">
-            <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="h-14 w-14 bg-blue-50 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
@@ -324,7 +324,8 @@ const ChangeEmail = () => {
               value={emailChangeFormData.new_email}
               onChange={handleEmailChange}
               placeholder="Enter new email address"
-              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+              autocomplete="new-password"
+              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
             {emailChangeFormData.new_email && !isValidEmail(emailChangeFormData.new_email) && (
               <p className="mt-2 text-sm text-red-500 flex items-center gap-2">
@@ -338,14 +339,15 @@ const ChangeEmail = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Verify Password
+              Verify With Your Password
             </label>
             <input
               type="password"
               name="password"
               value={emailChangeFormData.password}
               onChange={handleEmailChange}
-              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+              autocomplete="new-password"
+              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
           </div>
 
@@ -356,7 +358,7 @@ const ChangeEmail = () => {
               px-6 py-3 rounded-lg text-white font-medium transition-all
               ${isButtonDisabled || !emailChangeFormData.new_email || !emailChangeFormData.password || !isValidEmail(emailChangeFormData.new_email)
                 ? "bg-gray-300 cursor-not-allowed"
-                : "bg-purple-600 hover:bg-purple-700 shadow-lg hover:shadow-purple-100"
+                : "bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-blue-100"
               }
             `}
           >
@@ -390,7 +392,7 @@ const ChangeEmail = () => {
                 renderInput={(props) => (
                   <input
                     {...props}
-                    className="w-12 h-12 text-center text-lg font-semibold border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    className="w-12 h-12 text-center text-lg font-semibold border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   />
                 )}
               />
@@ -404,7 +406,7 @@ const ChangeEmail = () => {
                   px-6 py-3 rounded-lg text-white font-medium transition-all
                   ${isSavingOTP || !otpFormData.otp || otpFormData.otp.length !== 6
                     ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-purple-600 hover:bg-purple-700 shadow-lg hover:shadow-purple-100"
+                    : "bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-blue-100"
                   }
                 `}
               >
@@ -419,7 +421,7 @@ const ChangeEmail = () => {
                   px-4 py-2 rounded-lg text-sm font-medium transition-all
                   ${resendDisabled
                     ? "text-gray-400 cursor-not-allowed"
-                    : "text-purple-600 hover:bg-purple-50"
+                    : "text-blue-600 hover:bg-blue-50"
                   }
                 `}
               >
@@ -452,7 +454,7 @@ const ChangeEmail = () => {
                 setIsEmailPostMsgModalOpen(false);
                 setIsEmailChangeSuccess(null); // Reset status on close
               }}
-              className="w-full px-4 py-2 bg-black text-white rounded-md hover:bg-gray-700 transition-colors"
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               Close
             </button>
@@ -468,7 +470,7 @@ const ChangeEmail = () => {
             <p className="mb-4">{OTPMsg || "Processing 23..."}</p>
             <button
               onClick={() => setIsOTPMsgModalOpen(false)}
-              className="w-full px-4 py-2 bg-black text-white rounded-md hover:bg-gray-700 transition-colors"
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               Close
             </button>
@@ -484,7 +486,7 @@ const ChangeEmail = () => {
             <p className="mb-4">{OTPResendMsg || "Processing 3..."}</p>
             <button
               onClick={() => setIsOTPResendMsgModalOpen(false)}
-              className="w-full px-4 py-2 bg-black text-white rounded-md hover:bg-gray-700 transition-colors"
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               Close
             </button>
