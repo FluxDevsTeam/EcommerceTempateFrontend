@@ -26,5 +26,5 @@ const fetcher = async <T = unknown>(url: string): Promise<T> => {
 
 // Fetch wishlist items
 export const WishData = async (): Promise<WishItem[]> => {
-  return await fetcher<WishItem[]>('http://kidsdesignecommerce.pythonanywhere.com/api/v1/wishlist/?format=json');
+  return await fetcher<WishItem[]>('https://ecommercetemplate.pythonanywhere.com/api/v1/wishlist/?format=json');
 };

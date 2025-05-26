@@ -32,7 +32,7 @@ const ConfirmOrder = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string>("paystack");
   const [error, setError] = useState<string | null>(null);
-  const baseURL = `http://kidsdesignecommerce.pythonanywhere.com`;
+  const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
   const [availableStates, setAvailableStates] = useState<string[]>([]);
 
   const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);

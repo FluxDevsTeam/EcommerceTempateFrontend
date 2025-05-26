@@ -47,7 +47,7 @@ const DeveloperSettings: React.FC = () => {
       const token = localStorage.getItem('accessToken');
       setLoading(true);
       const response = await axios.get<DeveloperSettingsData>(
-        'http://kidsdesignecommerce.pythonanywhere.com/api/v1/admin/developer-settings/',
+        'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/developer-settings/',
         {
           headers: {
             'Authorization': `JWT ${token}`,
@@ -125,7 +125,7 @@ const DeveloperSettings: React.FC = () => {
       const token = localStorage.getItem('accessToken');
 
       await axios.patch(
-        'http://kidsdesignecommerce.pythonanywhere.com/api/v1/admin/developer-settings/',
+        'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/developer-settings/',
         apiFormData,
         {
           headers: {

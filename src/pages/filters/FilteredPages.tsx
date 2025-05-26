@@ -119,7 +119,7 @@ const ProductsPage: React.FC = () => {
         apiParams.append('page', currentPage.toString());
 
         const response = await fetch(
-          `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/?is_available=true&page_size=16&${apiParams}`
+          `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?is_available=true&page_size=16&${apiParams}`
         );
 
         if (!response.ok) throw new Error('Failed to fetch products');

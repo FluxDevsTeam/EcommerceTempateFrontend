@@ -6,7 +6,7 @@ import { addToLocalCart, isItemInLocalCart, isItemInUserCart } from "../../utils
 
 import DescriptionList from "./DescriptionList";
 
-const baseURL = "http://kidsdesignecommerce.pythonanywhere.com";
+const baseURL = "https://ecommercetemplate.pythonanywhere.com";
 
 // Define TypeScript interfaces for the API responses
 interface Category {
@@ -56,7 +56,7 @@ interface ProductDetailParams {
 
 const fetchProduct = async (id: number): Promise<Product> => {
   const response = await fetch(
-    `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/${id}/`
+    `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${id}/`
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");

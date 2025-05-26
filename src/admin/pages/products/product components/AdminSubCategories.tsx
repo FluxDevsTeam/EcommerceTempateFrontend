@@ -34,7 +34,7 @@ interface NewSubCategory {
 
 const AdminSubCategories: React.FC = () => {
   const API_BASE_URL =
-    "http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/sub-category/";
+    "https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/";
 
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -100,7 +100,7 @@ const AdminSubCategories: React.FC = () => {
       try {
         const accessToken = localStorage.getItem("accessToken");
         const response = await axios.get(
-          "http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/category/",
+          "https://ecommercetemplate.pythonanywhere.com/api/v1/product/category/",
           {
             headers: accessToken ? { Authorization: `JWT ${accessToken}` } : {},
           }

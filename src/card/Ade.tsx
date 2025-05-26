@@ -38,7 +38,7 @@ const Producter = () => {
     const fetchData = async () => {
       try {
         const [productRes, wishlistRes] = await Promise.all([
-          fetch('http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/').then(res => res.json()), // Ensure res.json() is called here
+          fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/').then(res => res.json()), // Ensure res.json() is called here
           WishData()
         ]);
 

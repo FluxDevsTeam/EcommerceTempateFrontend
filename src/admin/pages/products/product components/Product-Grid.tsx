@@ -97,7 +97,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const [editingCategory, setEditingCategory] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const baseURL = `http://kidsdesignecommerce.pythonanywhere.com`;
+  const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
 
   const fetchProducts = async (page: number) => {
     setLoading(true);

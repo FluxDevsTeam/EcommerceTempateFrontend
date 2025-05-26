@@ -49,7 +49,7 @@ const AdminOrders = () => {
   ? orders
   : orders.filter((order) => order.status === statusFilter);
 
-  const getPageUrl = (page: number) => `http://kidsdesignecommerce.pythonanywhere.com/api/v1/admin/order/?page=${page}&page_size=${ITEMS_PER_PAGE}`;
+  const getPageUrl = (page: number) => `https://ecommercetemplate.pythonanywhere.com/api/v1/admin/order/?page=${page}&page_size=${ITEMS_PER_PAGE}`;
 
 const loadOrders = async (url?: string) => {
   try {

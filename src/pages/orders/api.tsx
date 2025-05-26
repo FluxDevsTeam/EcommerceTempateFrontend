@@ -1,6 +1,6 @@
 import type { WishItem } from './types';
 
-const BASE_URL = 'http://kidsdesignecommerce.pythonanywhere.com/api/v1/orders/item/';
+const BASE_URL = 'https://ecommercetemplate.pythonanywhere.com/api/v1/orders/item/';
 const WISHLIST_LOCAL_STORAGE_KEY = 'wishlistItems';
 
 // Helper function to get wishlist from local storage
@@ -102,7 +102,7 @@ const fetcher = async <T = unknown>(url: string): Promise<T> => {
 
 // Fetch orders
 // export const fetchData = async (url?: string): Promise<OrderData[]> => {
-//   const endpoint = url ?? 'http://kidsdesignecommerce.pythonanywhere.com/api/v1/orders/item/?format=json';
+//   const endpoint = url ?? 'https://ecommercetemplate.pythonanywhere.com/api/v1/orders/item/?format=json';
 
 //   try {
 //     const response = await fetch(endpoint, {
@@ -129,7 +129,7 @@ const fetcher = async <T = unknown>(url: string): Promise<T> => {
 export const WishData = async (): Promise<WishItem[]> => {
   const JWT_TOKEN = localStorage.getItem('accessToken');
   if (JWT_TOKEN) {
-    return await fetcher<WishItem[]>('http://kidsdesignecommerce.pythonanywhere.com/api/v1/wishlist/?format=json');
+    return await fetcher<WishItem[]>('https://ecommercetemplate.pythonanywhere.com/api/v1/wishlist/?format=json');
   } else {
     return getWishlistFromLocalStorage();
   }
@@ -140,7 +140,7 @@ export const deleteWishItem = async (id: number, productId?: number): Promise<vo
   const JWT_TOKEN = localStorage.getItem('accessToken');
   if (JWT_TOKEN) {
     try {
-      const response = await fetch(`http://kidsdesignecommerce.pythonanywhere.com/api/v1/wishlist/${id}/`, {
+      const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/wishlist/${id}/`, {
         method: 'DELETE',
         headers: {
           'Authorization': `JWT ${JWT_TOKEN}`,
@@ -170,7 +170,7 @@ export const addWishItem = async (product: any): Promise<WishItem> => { // produ
   if (JWT_TOKEN) {
     try {
       const productId = typeof product === 'number' ? product : product.id;
-      const response = await fetch('http://kidsdesignecommerce.pythonanywhere.com/api/v1/wishlist/', {
+      const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/wishlist/', {
         method: 'POST',
         headers: {
           'Authorization': `JWT ${JWT_TOKEN}`,
@@ -215,7 +215,7 @@ export const addWishItem = async (product: any): Promise<WishItem> => { // produ
 // // eslint-disable-next-line react-refresh/only-export-components
 // export const fetchData = async (): Promise<OrderData[]> => {
 //   try {
-//     const response = await fetch('http://kidsdesignecommerce.pythonanywhere.com/api/v1/orders/item/?format=json');
+//     const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/orders/item/?format=json');
 //     const data = await response.json();
 //     return data.results;
 //   } catch (error) {
@@ -226,7 +226,7 @@ export const addWishItem = async (product: any): Promise<WishItem> => { // produ
 
 // export const WishData = async (): Promise<WishItem[]> => {
 //     try {
-//       const response = await fetch('http://kidsdesignecommerce.pythonanywhere.com/api/v1/wishlist/?format=json');
+//       const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/wishlist/?format=json');
 //       const data = await response.json();
 //       return data.results;
 //     } catch (error) {
