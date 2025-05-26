@@ -12,7 +12,7 @@ const FAQs = () => {
     {
       question: "How do I create an account?",
       answer:
-        "Once your order is placed, you will receive a tracking link via email/SMS. You can also track it from your dashboard under My Orders",
+      'To create an account, simply click on the Sign In button at the top right corner of the website. On the Sign In page, select "Create an Account" or "Sign Up", then fill in your details and follow the prompts. Once completed, your account will be created and you can start using our services right away.',
       isOpen: true,
     },
     {
@@ -52,7 +52,7 @@ const FAQs = () => {
   };
 
   return (
-    <div className="w-full min-h-full flex flex-col px-6  md:px-24  py-12 md:py-0 font-poppins">
+    <div className="w-full min-h-full flex flex-col px-6  md:px-24  py-12 md:py-0 mb-6 font-poppins">
      
 
       <h1 className="text-3xl font-bold mb-8">Frequently asked Questions</h1>
