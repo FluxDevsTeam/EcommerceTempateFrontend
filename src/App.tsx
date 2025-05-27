@@ -21,6 +21,7 @@ import AddNewProduct from "./admin/pages/products/product components/AddNewProdu
 import EditProduct from "./admin/pages/products/product components/EditProduct";
 import AdminProductDetails from "./admin/pages/products/product components/AdminProductDetails";
 import AdminCategories from "./admin/pages/products/product components/AdminCategories";
+import ProductPrioritization from "./admin/pages/products/product components/ProductPrioritization";
 import AdminSubCategories from "./admin/pages/products/product components/AdminSubCategories";
 import Orders from "./pages/orders/Order";
 import ProductDetail from "./components/products/ProductDetail";
@@ -108,6 +109,7 @@ const AppContent: React.FC = () => {
         <Route path="products" element={<Products />} />
         <Route path="add-new-product" element={<AddNewProduct />} />
         <Route path="products/edit/:id" element={<EditProduct />} />
+        <Route path="products/Prioritize" element={<ProductPrioritization />} />
         <Route
           path="admin-products-details/:id"
           element={<AdminProductDetails />}

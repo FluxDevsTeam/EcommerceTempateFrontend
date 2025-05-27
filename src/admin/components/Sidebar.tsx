@@ -133,7 +133,7 @@ const Sidebar = ({
             to="/admin"
             active={activePath === "/admin"}
             onClick={() => handleNavClick("/admin")}
-            isCollapsed={isCollapsed}
+            isCollapsed={isCollapsed && !isMobileMenuOpen}
           />
           <NavItem
             icon={<Package className="h-5 w-5" />}
@@ -141,7 +141,7 @@ const Sidebar = ({
             to="/admin/products"
             active={activePath === "/admin/products"}
             onClick={() => handleNavClick("/admin/products")}
-            isCollapsed={isCollapsed}
+            isCollapsed={isCollapsed && !isMobileMenuOpen}
           />
           <NavItem
             icon={<ShoppingCart className="h-5 w-5" />}
@@ -149,7 +149,7 @@ const Sidebar = ({
             to="/admin/orders"
             active={activePath === "/admin/orders"}
             onClick={() => handleNavClick("/admin/orders")}
-            isCollapsed={isCollapsed}
+            isCollapsed={isCollapsed && !isMobileMenuOpen}
           />
           <NavItem
             icon={<Settings className="h-5 w-5" />}
@@ -157,7 +157,7 @@ const Sidebar = ({
             to="/admin/settings"
             active={activePath === "/admin/settings"}
             onClick={() => handleNavClick("/admin/settings")}
-            isCollapsed={isCollapsed}
+            isCollapsed={isCollapsed && !isMobileMenuOpen}
           />
         </div>
 
@@ -172,7 +172,7 @@ const Sidebar = ({
               handleNavClick("/");
               navigate("/", { replace: false });
             }}
-            isCollapsed={isCollapsed}
+            isCollapsed={isCollapsed && !isMobileMenuOpen}
           />
           <NavItem
             icon={<HelpCircle className="h-5 w-5" />}
@@ -180,7 +180,7 @@ const Sidebar = ({
             to="https://fluxdevs.com/Contact"
             active={activePath === "/help"}
             onClick={handleHelpCentreClick}
-            isCollapsed={isCollapsed}
+            isCollapsed={isCollapsed && !isMobileMenuOpen}
           />
           <NavItem
             icon={<LogOut className="h-5 w-5 text-red-500" />} // Icon remains red
@@ -189,7 +189,7 @@ const Sidebar = ({
             active={activePath === "/logout"}
             onClick={handleLogout}
             className="text-red-500 hover:text-red-400 hover:bg-red-500/10" // Label red, specific hover
-            isCollapsed={isCollapsed}
+            isCollapsed={isCollapsed && !isMobileMenuOpen}
           />
         </div>
       </div>

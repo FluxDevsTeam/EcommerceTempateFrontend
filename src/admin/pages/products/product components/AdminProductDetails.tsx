@@ -454,7 +454,7 @@ const AdminProductDetails: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Sub-Category</span>
                   <span className="font-medium">
-                    {product.sub_category.name}
+                    {product.sub_category ? product.sub_category.name : "N/A"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">

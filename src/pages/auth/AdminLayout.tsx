@@ -75,7 +75,7 @@ const generateBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [activePath, setActivePath] = useState<string>("/dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
   const location = useLocation();
 
   const handleNavClick = (path: string) => {
@@ -107,6 +107,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           isCollapsed={isCollapsed}
           toggleCollapse={toggleCollapse}
         />
+
+        {/* Overlay for mobile menu */}
+        {isMobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+            onClick={toggleMobileMenu}
+          ></div>
+        )}
 
         {/* Main content area */}
         <div className={`flex-1 overflow-x-hidden md:transition-all md:duration-300 ${isCollapsed ? 'md:ml-[70px]' : 'md:ml-64'}`}>

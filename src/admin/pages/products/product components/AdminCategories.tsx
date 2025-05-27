@@ -9,10 +9,24 @@ import {
   ChevronsRight,
 } from "lucide-react";
 import { debounce } from "lodash";
+import {
+  DndContext,
+  closestCenter,
+  useSensor,
+  useSensors,
+  PointerSensor,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface Category {
   id: number;
   name: string;
+  index: number | null;
 }
 
 const AdminCategories = () => {
@@ -22,10 +36,9 @@ const AdminCategories = () => {
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showOrderModal, setShowOrderModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-    null
-  );
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 15;
@@ -34,6 +47,7 @@ const AdminCategories = () => {
   const [prevPageUrl, setPrevPageUrl] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
+  const [orderedCategories, setOrderedCategories] = useState<Category[]>([]);
 
   const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
 
@@ -41,22 +55,27 @@ const AdminCategories = () => {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchQuery);
-    }, 500); // 500ms debounce
+    }, 500);
 
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
   const fetchCategories = async (
     page = currentPage,
-    search = debouncedSearch
+    search = debouncedSearch,
+    noPagination = false
   ) => {
     setLoading(true);
     const accessToken = localStorage.getItem("accessToken");
 
     try {
-      const url = `${baseURL}/api/v1/product/category/?page=${page}&page_size=${ITEMS_PER_PAGE}&search=${encodeURIComponent(
-        search
-      )}`;
+      const url = noPagination
+        ? `${baseURL}/api/v1/product/category/?page_size=1000&search=${encodeURIComponent(
+            search
+          )}`
+        : `${baseURL}/api/v1/product/category/?page=${page}&page_size=${ITEMS_PER_PAGE}&search=${encodeURIComponent(
+            search
+          )}`;
       const response = await fetch(url, {
         headers: {
           Authorization: `JWT ${accessToken}`,
@@ -67,10 +86,19 @@ const AdminCategories = () => {
       if (!response.ok) throw new Error("Failed to fetch categories");
 
       const data = await response.json();
-      setCategories(data.results);
-      setTotalCategories(data.count);
-      setNextPageUrl(data.next);
-      setPrevPageUrl(data.previous);
+      const fetchedCategories = data.results;
+      if (noPagination) {
+        setOrderedCategories(
+          fetchedCategories.sort((a: Category, b: Category) =>
+            a.index !== null && b.index !== null ? a.index - b.index : 0
+          )
+        );
+      } else {
+        setCategories(fetchedCategories);
+        setTotalCategories(data.count);
+        setNextPageUrl(data.next);
+        setPrevPageUrl(data.previous);
+      }
     } catch (error) {
       console.error("Error:", error);
       setError(
@@ -86,8 +114,6 @@ const AdminCategories = () => {
     fetchCategories(currentPage, debouncedSearch);
     // eslint-disable-next-line
   }, [currentPage, debouncedSearch]);
-
-  const totalPages = Math.max(1, Math.ceil(totalCategories / ITEMS_PER_PAGE));
 
   const handleAdd = async () => {
     if (!newCategoryName.trim()) return;
@@ -190,6 +216,93 @@ const AdminCategories = () => {
     setCurrentPage(1);
   };
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      const oldIndex = orderedCategories.findIndex(
+        (cat) => cat.id.toString() === active.id
+      );
+      const newIndex = orderedCategories.findIndex(
+        (cat) => cat.id.toString() === over?.id
+      );
+      const reorderedCategories = [...orderedCategories];
+      const [movedCategory] = reorderedCategories.splice(oldIndex, 1);
+      reorderedCategories.splice(newIndex, 0, movedCategory);
+      setOrderedCategories(reorderedCategories);
+    }
+  };
+
+  const handleSaveOrder = async () => {
+    setIsProcessing(true);
+    const accessToken = localStorage.getItem("accessToken");
+
+    try {
+      const updates = orderedCategories.map((category, index) => ({
+        id: category.id,
+        index: index + 1,
+      }));
+
+      for (const update of updates) {
+        const response = await fetch(
+          `${baseURL}/api/v1/product/category/${update.id}/`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `JWT ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ index: update.index }),
+          }
+        );
+
+        if (!response.ok) throw new Error("Failed to update category order");
+      }
+
+      await fetchCategories();
+      setShowOrderModal(false);
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Failed to update category order"
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const SortableItem = ({ category, index }: { category: Category; index: number }) => {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+      id: category.id.toString(),
+    });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
+
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        className="flex items-center p-2 mb-2 bg-gray-100 rounded hover:bg-gray-200 cursor-move"
+      >
+        <span className="mr-2">☰</span>
+        <span>{category.name}</span>
+      </div>
+    );
+  };
+
+  const totalPages = Math.max(1, Math.ceil(totalCategories / ITEMS_PER_PAGE));
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
@@ -214,20 +327,29 @@ const AdminCategories = () => {
                 Subcategory
               </button>
             </div>
-            <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
+            <div className="flex flex-row w-full sm:w-auto gap-3">
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="w-full sm:w-auto sm:whitespace-nowrap bg-blue-600 text-white px-4 py-1.5 text-sm rounded hover:bg-blue-700 text-center"
+              >
+                + Add Category
+              </button>
+              <button
+                onClick={() => {
+                  fetchCategories(1, "", true);
+                  setShowOrderModal(true);
+                }}
+                className="w-full sm:w-auto sm:whitespace-nowrap bg-purple-600 text-white px-4 py-1.5 text-sm rounded hover:bg-purple-700 text-center"
+              >
+                Re-Arrange Categories
+              </button>
               <button
                 onClick={() =>
                   navigate("/admin/admin-categories/subcategories")
                 }
                 className="hidden sm:block bg-green-600 text-white px-4 py-1.5 text-sm rounded hover:bg-green-700 text-center"
               >
-                Subcategory
-              </button>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="w-full sm:w-auto sm:whitespace-nowrap bg-blue-600 text-white px-4 py-1.5 text-sm rounded hover:bg-blue-700 text-center"
-              >
-                Add Category
+                SubCategory
               </button>
             </div>
           </div>
@@ -236,7 +358,6 @@ const AdminCategories = () => {
         {/* Search Section */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0">
           <div className="flex flex-col sm:flex-row w-full gap-4">
-            {/* Search Bar */}
             <div className="relative w-full sm:max-w-xs">
               <input
                 type="text"
@@ -270,6 +391,9 @@ const AdminCategories = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Index
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Name
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -280,6 +404,9 @@ const AdminCategories = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {categories.map((category) => (
                     <tr key={category.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {category.index ?? "-"}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {category.name}
                       </td>
@@ -334,7 +461,6 @@ const AdminCategories = () => {
             >
               Previous
             </button>
-            {/* Page Numbers */}
             <div className="flex gap-1">
               {Array.from({ length: totalPages }, (_, i) => i + 1)
                 .filter((pageNum) => {
@@ -449,6 +575,52 @@ const AdminCategories = () => {
                 className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
               >
                 {isProcessing ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Order Modal */}
+      {showOrderModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-md rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Reorder Categories
+            </h3>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={orderedCategories.map((cat) => cat.id.toString())}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="max-h-96 overflow-y-auto">
+                  {orderedCategories.map((category, index) => (
+                    <SortableItem
+                      key={category.id}
+                      category={category}
+                      index={index}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+            <div className="flex justify-end gap-4 mt-4">
+              <button
+                onClick={() => setShowOrderModal(false)}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveOrder}
+                disabled={isProcessing}
+                className="px-4 py-2 text-white bg-purple-600 rounded-md hover:bg-purple-700 transition-colors"
+              >
+                {isProcessing ? "Saving..." : "Save Order"}
               </button>
             </div>
           </div>
