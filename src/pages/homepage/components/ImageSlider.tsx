@@ -1,14 +1,12 @@
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { ProductItem } from "../types/data-types";
+import { Product } from "@/types/api-types";
 import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
-
 import { useState, useEffect } from "react";
 
 interface ImageSliderProps {
-  data: ProductItem[];
+  data: Product[];
 }
 
 const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
@@ -26,6 +24,27 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const CustomArrow = ({ className, style, onClick, direction }: { className?: string; style?: React.CSSProperties; onClick?: () => void; direction: 'left' | 'right'; }) => (
+    <button
+      className={`z-40 absolute top-1/2 transform -translate-y-1/2 ${direction === 'left' ? 'left-[-20px] md:left-[-20px]' : 'right-[-10px] md:right-[-10px]'} bg-transparent hover:bg-transparent focus:bg-transparent rounded-full flex items-center justify-center transition-all duration-200 group`}
+      style={{ ...style, width: 52, height: 52 }}
+      onClick={onClick}
+      aria-label={direction === 'left' ? 'Previous Slide' : 'Next Slide'}
+    >
+      {direction === 'left' ? (
+        <svg width="64" height="64" fill="none" viewBox="0 0 64 64" stroke="currentColor" className="w-16 h-16 text-gray-800 transition-all duration-200">
+          <circle cx="32" cy="32" r="30" stroke="currentColor" strokeOpacity="0.08" strokeWidth="4" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M38 48L22 32l16-16" />
+        </svg>
+      ) : (
+        <svg width="64" height="64" fill="none" viewBox="0 0 64 64" stroke="currentColor" className="w-16 h-16 text-gray-800 transition-all duration-200">
+          <circle cx="32" cy="32" r="30" stroke="currentColor" strokeOpacity="0.08" strokeWidth="4" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M26 16l16 16-16 16" />
+        </svg>
+      )}
+    </button>
+  );
+
   const settings = {
     dots: false,
     fade: false,
@@ -38,6 +57,8 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
     waitForAnimate: true,
     cssEase: "ease-in-out",
     arrows: true,
+    nextArrow: <CustomArrow direction="right" />,
+    prevArrow: <CustomArrow direction="left" />,
   };
 
   // Flatten all images into a single list
@@ -59,7 +80,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
               onClick={() => handleClick(image.id.split("-")[0])}
             >
               <div className="flex flex-col md:flex-row items-center min-h-[300px] md:min-h-[400px]">
-                {/* Mobile text overlay */}{" "}
+                {/* Mobile text overlay */}
                 <div className="absolute bottom-5 left-0 h-1/3 right-0 md:hidden z-10 rounded-b-lg bg-gradient-to-b from-white/0 to-black/80">
                   <h3 className="text-xl leading-8 text-white line-clamp-2 text-center capitalize">
                     {image.name.toUpperCase()}
@@ -74,14 +95,12 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
                   <p className="text-gray-600 text-lg lg:text-xl">
                     Discover our exclusive collection
                   </p>
-                  {/* <Link to="/new-arrivals"> */}
                   <button
                     className="bg-customBlue text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors w-fit"
                     onClick={() => handleClick(image.id.split("-")[0])}
                   >
                     Shop Now
                   </button>
-                  {/* </Link> */}
                 </div>
                 <div className="flex items-center justify-center p-4 md:w-1/2 order-1 md:order-2">
                   <img
