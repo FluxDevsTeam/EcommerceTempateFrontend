@@ -50,7 +50,7 @@ interface ModalConfig {
 
 const SkeletonCard: React.FC = () => (
   <div className="bg-white p-2 sm:p-3 rounded-xl shadow-sm animate-pulse border border-gray-100">
-    <div className="w-full h-16 sm:h-20 bg-gray-100 rounded-lg mb-2" />
+    <div className="w-full h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg mb-2" />
     <div className="h-3 sm:h-4 bg-gray-100 rounded w-3/4" />
     <div className="h-2 sm:h-3 bg-gray-100 rounded w-1/2 mt-1 sm:mt-2" />
   </div>
@@ -191,19 +191,42 @@ const ProductPrioritization: React.FC = () => {
     handleSearch(searchQuery);
   }, [searchQuery, handleSearch]);
 
+  const fetchAllProducts = async () => {
+    const headers = getAuthHeaders();
+    if (!headers) return [];
+
+    let allProducts: Product[] = [];
+    let nextPage: string | null = `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?page_size=100`;
+
+    try {
+      while (nextPage) {
+        const response = await fetch(nextPage, { headers });
+        if (!response.ok) throw new Error(`Failed to fetch products: ${response.status}`);
+        const data = await response.json();
+        allProducts = [...allProducts, ...data.results];
+        nextPage = data.next;
+      }
+      return allProducts;
+    } catch (error) {
+      setModalConfig({
+        isOpen: true,
+        title: 'Error',
+        message: error instanceof Error ? error.message : 'Failed to fetch all products.',
+        type: 'error',
+      });
+      return [];
+    }
+  };
+
   const updateProductOrder = async (updatedProducts: Product[], showModal = true) => {
     setIsSaving(true);
     const headers = getAuthHeaders();
     if (!headers) return;
 
     try {
-      const allProductsResponse = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?page_size=1000`,
-        { headers }
-      );
-      if (!allProductsResponse.ok) throw new Error('Failed to fetch all products');
+      const allProducts = await fetchAllProducts();
+      if (!allProducts.length) throw new Error('No products fetched');
 
-      const allProducts = (await allProductsResponse.json()).results;
       const positionField = activeTab === 'top_selling' ? 'top_selling_position' : 'latest_item_position';
       const flagField = activeTab === 'top_selling' ? 'top_selling_items' : 'latest_item';
 
@@ -306,16 +329,11 @@ const ProductPrioritization: React.FC = () => {
     if (!headers) return;
 
     try {
+      const allProducts = await fetchAllProducts();
+      if (!allProducts.length) throw new Error('No products fetched');
+
       const positionField = activeTab === 'top_selling' ? 'top_selling_position' : 'latest_item_position';
       const flagField = activeTab === 'top_selling' ? 'top_selling_items' : 'latest_item';
-
-      const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?page_size=1000`,
-        { headers }
-      );
-      if (!response.ok) throw new Error('Failed to fetch products for reset');
-
-      const allProducts = (await response.json()).results;
 
       for (const product of allProducts) {
         const response = await fetch(
@@ -483,11 +501,13 @@ const ProductPrioritization: React.FC = () => {
             {activeTab === 'top_selling' ? 'Latest' : 'Top Selling'}
           </span>
         )}
-        <img
-          src={product.image1 || 'https://via.placeholder.com/100'}
-          alt={product.name}
-          className="w-full h-16 sm:h-20 object-cover rounded-lg mb-2"
-        />
+        <div className="w-full h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg mb-2 overflow-hidden">
+          <img
+            src={product.image1 || 'https://via.placeholder.com/100'}
+            alt={product.name}
+            className="w-full h-full object-contain"
+          />
+        </div>
         <p className="text-xs sm:text-sm font-medium text-gray-800 truncate">{product.name}</p>
         <p className="text-xs text-gray-500">
           Position: {product[activeTab === 'top_selling' ? 'top_selling_position' : 'latest_item_position'] ?? 'N/A'}
@@ -508,15 +528,17 @@ const ProductPrioritization: React.FC = () => {
     return (
       <div
         ref={drag}
-        className={`bg-white p-2 sm:p-3 rounded-xl shadow-sm border border-gray-100 transition-all duration-300 group hover:shadow-md hover:-translate-y-1 ${
+        className={`bg-white p-2 sm:p-3 rounded-xl shadow-sm border border-gray-200 transition-all duration-300 group hover:shadow-md hover:-translate-y-1 ${
           isDragging ? 'opacity-70 scale-105 shadow-lg rotate-2 border-dashed border-blue-300' : ''
         }`}
       >
-        <img
-          src={result.image1 || 'https://via.placeholder.com/100'}
-          alt={result.name}
-          className="w-full h-16 sm:h-20 object-cover rounded-lg mb-2"
-        />
+        <div className="w-full h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-lg mb-2 overflow-hidden">
+          <img
+            src={result.image1 || 'https://via.placeholder.com/100'}
+            alt={result.name}
+            className="w-full h-full object-contain"
+          />
+        </div>
         <p className="text-xs sm:text-sm font-medium text-gray-800 truncate">{result.name}</p>
       </div>
     );
@@ -524,19 +546,31 @@ const ProductPrioritization: React.FC = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 font-sans">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 font-sans relative">
+        {(isSaving || isResetting) && (
+          <div className="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
+            <svg className="animate-spin h-8 w-8 text-gray-500" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
+              />
+            </svg>
+          </div>
+        )}
         <div className="max-w-7xl mx-auto p-3 sm:p-6 lg:p-8">
           <div className="sticky top-0 bg-white shadow-md rounded-2xl p-3 sm:p-6 z-10 mb-4 sm:mb-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6">
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-0">
                 Product Prioritization
               </h1>
-              <button
+              {/* <button
                 onClick={() => navigate('/admin/products')}
                 className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-300 rounded-lg text-gray-700 hover:from-gray-200 hover:to-gray-300 transition-all text-sm sm:text-base"
               >
                 Back to Products
-              </button>
+              </button> */}
             </div>
             <div className="flex space-x-2 sm:space-x-4">
               {['top_selling', 'latest'].map((tab) => (
@@ -602,13 +636,28 @@ const ProductPrioritization: React.FC = () => {
               <div className="relative sm:hidden">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-200 transition-all"
+                  disabled={isResetting}
+                  className={`px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-200 transition-all ${
+                    isResetting ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                   aria-label="Toggle actions menu"
                 >
                   <IoEllipsisVertical size={16} />
                 </button>
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                    {isResetting && (
+                      <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
+                        <svg className="animate-spin h-5 w-5 text-gray-500" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
+                          />
+                        </svg>
+                      </div>
+                    )}
                     <button
                       onClick={confirmReset}
                       disabled={isSaving || isLoading || isResetting}
@@ -677,7 +726,7 @@ const ProductPrioritization: React.FC = () => {
                   Clear Search
                 </button>
               </div>
-              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-4">
                 {searchResults.map((result) => (
                   <SearchResultCard key={result.id} result={result} />
                 ))}
@@ -685,9 +734,9 @@ const ProductPrioritization: React.FC = () => {
             </div>
           )}
 
-          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-4">
             {isLoading ? (
-              Array(6)
+              Array(8)
                 .fill(0)
                 .map((_, i) => <SkeletonCard key={i} />)
             ) : products.length === 0 ? (

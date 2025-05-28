@@ -3,6 +3,7 @@ import { useState } from "react";
 import Sidebar from "@/admin/components/Sidebar";
 import AdminHeader from "@/admin/components/AdminHeader";
 import Breadcrumbs from "@/admin/components/Breadcrumbs";
+import BackButton from "@/admin/components/BackButton";
 import { ReactNode } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import AdminRouteGuard from "./AdminRouteGuard";
@@ -126,7 +127,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           
           {/* Page Content */}
           <div className="p-4 md:p-6 lg:p-8">
-            <Breadcrumbs items={breadcrumbItems} />
+            <BackButton />
             {children || <Outlet />}
           </div>
         </div>
