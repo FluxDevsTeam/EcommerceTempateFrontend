@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { IoSearch, IoClose } from 'react-icons/io5';
+import React, { useEffect, useState, useRef } from "react";
+import { IoSearch, IoClose } from "react-icons/io5";
 
 interface Option {
   id: number;
@@ -25,7 +25,7 @@ const PaginatedDropdown: React.FC<PaginatedDropdownProps> = ({
   placeholder = "Select an option",
   className = "",
   required = false,
-  label
+  label,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchMode, setSearchMode] = useState(false);
@@ -34,7 +34,7 @@ const PaginatedDropdown: React.FC<PaginatedDropdownProps> = ({
   const [page, setPage] = useState(1);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const filteredOptions = options.filter(option =>
+  const filteredOptions = options.filter((option) =>
     option.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -44,17 +44,37 @@ const PaginatedDropdown: React.FC<PaginatedDropdownProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
         setSearchMode(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const selectedOption = options.find(opt => opt.id === Number(value));
+  const selectedOption = options.find((opt) => opt.id === Number(value));
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const subCategorySearchInputFocus = () => {
+    // if (searchInputRef.current) {
+    //   searchInputRef.current.focus();
+    // }
+
+    setTimeout(() => {
+      if (searchInputRef.current) {
+        searchInputRef.current.focus();
+      }
+    }, 0);
+
+    console.log("search btn clicked");
+    console.log(searchInputRef);
+  };
 
   return (
     <div ref={dropdownRef} className="relative">
@@ -75,6 +95,7 @@ const PaginatedDropdown: React.FC<PaginatedDropdownProps> = ({
             }}
             className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             placeholder="Search..."
+            ref={searchInputRef}
           />
           <button
             onClick={() => {
@@ -99,6 +120,7 @@ const PaginatedDropdown: React.FC<PaginatedDropdownProps> = ({
             onClick={(e) => {
               e.stopPropagation();
               setSearchMode(true);
+              subCategorySearchInputFocus();
             }}
             className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
@@ -126,7 +148,7 @@ const PaginatedDropdown: React.FC<PaginatedDropdownProps> = ({
           {filteredOptions.length > displayedItems.length && (
             <button
               type="button"
-              onClick={() => setPage(p => p + 1)}
+              onClick={() => setPage((p) => p + 1)}
               className="w-full px-4 py-2 text-center text-blue-600 hover:bg-gray-50 border-t"
             >
               Load more...
