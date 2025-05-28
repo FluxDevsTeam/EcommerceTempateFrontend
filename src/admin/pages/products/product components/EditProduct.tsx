@@ -209,6 +209,12 @@ const EditProduct: React.FC = () => {
       }
 
       const data = await response.json();
+      
+      // // Validate the required data exists
+      // if (!data || !data.sub_category || !data.sub_category.id) {
+      //   throw new Error('Invalid product data received from server');
+      // }
+
       // Find the corresponding weightSizePair label
       const weightSizePair = weightSizePairs.find(
         (pair) =>
@@ -218,14 +224,14 @@ const EditProduct: React.FC = () => {
       const formattedData = {
         name: data.name || "",
         description: data.description || "",
-        sub_category: data.sub_category.id,
+        sub_category: data.sub_category.id || "",
         colour: data.colour || "",
         is_available: data.is_available ?? false,
         latest_item: data.latest_item ?? false,
-        latest_item_position: data.latest_item_position,
+        latest_item_position: data.latest_item_position || null,
         weightSizePair,
         top_selling_items: data.top_selling_items ?? false,
-        top_selling_position: data.top_selling_position,
+        top_selling_position: data.top_selling_position || null,
         unlimited: data.unlimited ?? false,
         production_days: data.production_days || 0,
       };

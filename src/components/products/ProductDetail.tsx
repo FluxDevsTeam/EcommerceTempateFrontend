@@ -632,7 +632,7 @@ const ProductDetail = () => {
               details={{
                 Category: product.sub_category?.category?.name || "N/A",
                 Subcategory: product.sub_category?.name || 'N/A',
-                Weight: product.weight || 'N/A',
+                // Weight: product.weight || 'N/A',
                 Color: product.colour || 'N/A',
               }}
             />

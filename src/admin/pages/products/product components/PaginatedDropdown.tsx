@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { IoSearch, IoClose } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
 interface Option {
   id: number;
@@ -37,6 +38,8 @@ const PaginatedDropdown: React.FC<PaginatedDropdownProps> = ({
   const filteredOptions = options.filter((option) =>
     option.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     setDisplayedItems(filteredOptions.slice(0, page * ITEMS_PER_PAGE));
@@ -155,7 +158,17 @@ const PaginatedDropdown: React.FC<PaginatedDropdownProps> = ({
             </button>
           )}
           {displayedItems.length === 0 && (
-            <div className="px-4 py-2 text-gray-500">No options found</div>
+            <div className="px-4 py-2 text-gray-500">
+              No options found
+              <button
+                onClick={() =>
+                  navigate("/admin/admin-categories/subcategories")
+                }
+                className="text-blue-600 hover:underline"
+              >
+                can't find? add a new sub-category
+              </button>
+            </div>
           )}
         </div>
       )}
