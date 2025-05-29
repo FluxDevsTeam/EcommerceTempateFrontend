@@ -160,14 +160,6 @@ const PaginatedDropdown: React.FC<PaginatedDropdownProps> = ({
           {displayedItems.length === 0 && (
             <div className="px-4 py-2 text-gray-500">
               No options found
-              <button
-                onClick={() =>
-                  navigate("/admin/admin-categories/subcategories")
-                }
-                className="text-blue-600 hover:underline"
-              >
-                can't find? add a new sub-category
-              </button>
             </div>
           )}
         </div>
