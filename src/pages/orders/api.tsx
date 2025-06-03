@@ -363,6 +363,35 @@ export const deleteWishItem = async (
   }
 };
 
+// New function to sync local wishlist with API
+export const syncWishlistWithApi = async (): Promise<void> => {
+  const JWT_TOKEN = localStorage.getItem('accessToken');
+  if (!JWT_TOKEN) return;
+
+  try {
+    // Get local wishlist items
+    const localWishlist = getWishlistFromLocalStorage();
+    if (localWishlist.length === 0) return;
+
+    // Get current API wishlist
+    const apiWishlist = await WishData();
+    const existingProductIds = new Set(apiWishlist.results.map(item => item.product.id));
+
+    // Filter out items that already exist in API wishlist
+    const itemsToSync = localWishlist.filter(item => !existingProductIds.has(item.product.id));
+
+    // Add new items to API wishlist
+    for (const item of itemsToSync) {
+      await addWishItem(item.product);
+    }
+
+    // Clear local storage wishlist after successful sync
+    clearWishlistLocalStorage();
+  } catch (error) {
+    console.error('syncWishlistWithApi: Error syncing wishlist:', error);
+  }
+};
+
 // Add to wishlist
 export const addWishItem = async (product: any): Promise<WishItem> => {
   const JWT_TOKEN = localStorage.getItem('accessToken');
@@ -371,6 +400,13 @@ export const addWishItem = async (product: any): Promise<WishItem> => {
     try {
       const productId = typeof product === 'number' ? product : product.id;
       
+      // Check if item already exists in API wishlist
+      const currentWishlist = await WishData();
+      const existingItem = currentWishlist.results.find(item => item.product.id === productId);
+      if (existingItem) {
+        return existingItem;
+      }
+
       const response = await fetch(
         `${BASE_URL}/wishlist/`,
         {
