@@ -47,7 +47,7 @@ const DeliverySettings = () => {
       setError(null);
     } catch (err) {
       setError('Failed to load delivery settings');
-      console.error(err);
+      
     } finally {
       setLoading(false);
     }
@@ -98,7 +98,7 @@ const DeliverySettings = () => {
       }, 3000);
     } catch (err) {
       setError('Failed to update delivery settings');
-      console.error('Error updating delivery settings:', err);
+      
     } finally {
       setLoading(false);
     }

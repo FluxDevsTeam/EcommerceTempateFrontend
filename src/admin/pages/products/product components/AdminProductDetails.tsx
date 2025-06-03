@@ -118,7 +118,7 @@ const AdminProductDetails: React.FC = () => {
       }
       const data = await response.json();
 
-      console.log(data.unlimited);
+      
 
       setProduct(data);
     } catch (err) {
@@ -163,10 +163,10 @@ const AdminProductDetails: React.FC = () => {
       );
 
       const data = await response.json();
-      // console.log(data);
+      
 
       if (response.ok) {
-        // console.log(data);
+        
 
         setModalConfig({
           isOpen: true,
@@ -175,7 +175,7 @@ const AdminProductDetails: React.FC = () => {
           type: "success",
         });
       } else {
-        console.log(data);
+        
 
         setModalConfig({
           isOpen: true,

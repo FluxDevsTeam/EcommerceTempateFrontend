@@ -1,6 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Wish from "./Wish";
-import { addWishItem, deleteWishItem } from "./api";
+import { 
+  addWishItem, 
+  deleteWishItem, 
+  getWishlistFromLocalStorage, 
+  addToWishlistLocalStorage, 
+  removeFromWishlistLocalStorage 
+} from "@/pages/orders/api";
 import { CardProps, WishItem } from "./types";
 import { useNavigate } from "react-router-dom";
 
@@ -10,75 +16,114 @@ const SuggestedCard: React.FC<CardProps> = ({
   wishItemId: initialWishItemId,
   removeOnUnlike = false,
   onItemClick,
+  onWishlistToggle,
 }) => {
   const [liked, setLiked] = useState(isInitiallyLiked);
-  const [wishItemId, setWishItemId] = useState<number | null>(
-    initialWishItemId ?? null
-  );
+  const [wishItemId, setWishItemId] = useState<number | null>(initialWishItemId ?? null);
   const [visible, setVisible] = useState(true);
   const navigate = useNavigate();
+  const accessToken = localStorage.getItem('accessToken');
+
+  // Sync with local storage for non-logged-in users or server fallback
+  useEffect(() => {
+    if (!accessToken || !liked) return;
+    const localWishlist = getWishlistFromLocalStorage();
+    const isInLocalWishlist = localWishlist.some(item => item.product.id === product.id);
+    const localWishItem = localWishlist.find(item => item.product.id === product.id);
+    
+    if (isInLocalWishlist && localWishItem?.id !== wishItemId) {
+      setWishItemId(localWishItem?.id ?? null);
+    } else if (!isInLocalWishlist && !accessToken && liked) {
+      setLiked(false);
+      setWishItemId(null);
+    }
+  }, [product.id, liked, wishItemId, accessToken]);
 
   const handleToggle = async () => {
-  const wasLiked = liked;
-  const previousWishItemId = wishItemId;
+    const wasLiked = liked;
+    const previousWishItemId = wishItemId;
 
-  // Optimistically update the UI
-  if (liked && wishItemId) {
-    setWishItemId(null);
-    setLiked(false);
-    if (removeOnUnlike) setVisible(false);
-  } else {
-    setLiked(true);
-  }
+    // Optimistically update UI
+    setLiked(!wasLiked);
+    if (wasLiked) {
+      setWishItemId(null);
+      if (removeOnUnlike) setVisible(false);
+    } else {
+      setWishItemId(Date.now()); // Temporary ID for optimistic update
+    }
 
-  // Queue the API call to ensure sequential execution
-  const executeApiCall = async () => {
     try {
-      if (wasLiked && previousWishItemId) {
-        await deleteWishItem(previousWishItemId);
+      if (!accessToken) {
+        if (wasLiked) {
+          removeFromWishlistLocalStorage(product.id);
+        } else {
+          addToWishlistLocalStorage(product);
+        }
+        // Dispatch event with fromSuggested flag
+        window.dispatchEvent(new CustomEvent('wishlistUpdated', { 
+          detail: { 
+            productId: product.id,
+            action: wasLiked ? 'remove' : 'add',
+            fromSuggested: true,
+            newItem: !wasLiked ? product : undefined
+          }
+        }));
       } else {
-        const newItem: WishItem = await addWishItem(product.id);
-        setWishItemId(newItem.id);
+        if (wasLiked && previousWishItemId) {
+          await deleteWishItem(previousWishItemId, product.id);
+          window.dispatchEvent(new CustomEvent('wishlistUpdated', { 
+            detail: { 
+              productId: product.id,
+              action: 'remove',
+              fromSuggested: true
+            }
+          }));
+        } else {
+          const newItem = await addWishItem(product);
+          setWishItemId(newItem.id);
+          window.dispatchEvent(new CustomEvent('wishlistUpdated', { 
+            detail: { 
+              productId: product.id,
+              action: 'add',
+              fromSuggested: true,
+              newItem: newItem
+            }
+          }));
+        }
       }
     } catch (error) {
-      console.error("Error toggling wishlist:", error);
-      // Revert UI state if API call fails
+      console.error('SuggestedCard: Error toggling wishlist:', error, { productId: product.id, wasLiked, previousWishItemId });
+      // Revert UI on error
       setLiked(wasLiked);
       setWishItemId(previousWishItemId);
-      if (removeOnUnlike) setVisible(true);
+      if (removeOnUnlike && !wasLiked) setVisible(true);
+
+      // Revert local storage on error for non-logged-in users
+      if (!accessToken) {
+        
+        if (wasLiked) {
+          addToWishlistLocalStorage(product);
+        } else {
+          removeFromWishlistLocalStorage(product.id);
+        }
+      }
     }
   };
 
-  // Add the API call to the queue
-  apiCallQueue.push(executeApiCall);
-  if (!isProcessingQueue) {
-    processApiCallQueue();
-  }
-};
-
-let apiCallQueue: (() => Promise<void>)[] = [];
-let isProcessingQueue = false;
-
-const processApiCallQueue = async () => {
-  isProcessingQueue = true;
-  while (apiCallQueue.length > 0) {
-    const nextCall = apiCallQueue.shift();
-    if (nextCall) {
-      await nextCall();
-    }
-  }
-  isProcessingQueue = false;
-};
+  // Format price with thousand separators
+  const formatPrice = (price: number) => {
+    return price.toLocaleString('en-US');
+  };
 
   if (!visible) return null;
 
   return (
-    <div className="mb-3 cursor-pointer w-full ">
-      <div className="relative w-full  ">
+    <div className="w-[150px] mb-2 cursor-pointer">
+      <div className="relative mb-2 overflow-hidden rounded-2xl">
         <img
           src={product.image1}
           alt={product.name}
-          className="max-w-full max-h-[500px] w-auto h-auto object-contain"
+          className="w-full h-32 object-contain rounded-2xl hover:scale-105 transition-transform duration-300"
           onClick={() => {
             if (onItemClick) {
               onItemClick(product.image1);
@@ -88,34 +133,23 @@ const processApiCallQueue = async () => {
         />
         <Wish color="red" liked={liked} onToggle={handleToggle} />
       </div>
-      <div className="space-y-0.5 mt-3">
-        <p className="text-md font-medium line-clamp-1">{product.name}</p>
-        <div className="">
-          {typeof product.price === "number" && product.price > 0 && (
-            <span className="pr-2">₦{product.price}</span>
+      <div className="space-y-0">
+        <p className="text-sm font-medium line-clamp-1">{product.name}</p>
+        <div className="flex flex-col gap-0">
+          {typeof product.price === 'number' && product.price > 0 && (
+            <span className="text-sm font-semibold">₦{formatPrice(product.price)}</span>
           )}
-
-          <br />
-
-          {typeof product.undiscounted_price === "number" &&
+          {typeof product.undiscounted_price === 'number' &&
             product.undiscounted_price > 0 &&
             product.undiscounted_price > product.price && (
-              <span className=" text-[#00000066] line-through pr-2">
-                ₦{product.undiscounted_price}
-              </span>
-            )}
-
-          {product.undiscounted_price > 0 &&
-            product.undiscounted_price > product.price && (
-              <span className="text-red-600 bg-red-100 font-semibold rounded-full px-2 text-sm py-1 w-fit">
-                -
-                {Math.round(
-                  ((product.undiscounted_price - product.price) /
-                    product.undiscounted_price) *
-                    100
-                )}
-                %
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-[#666] line-through">
+                  ₦{formatPrice(product.undiscounted_price)}
+                </span>
+                <span className="text-red-600 bg-red-100 font-semibold text-xs rounded-full px-1 py-0.5">
+                  -{Math.round(((product.undiscounted_price - product.price) / product.undiscounted_price) * 100)}%
+                </span>
+              </div>
             )}
         </div>
       </div>

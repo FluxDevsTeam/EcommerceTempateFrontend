@@ -107,7 +107,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
         const errorMessage = err instanceof Error ? err.message : 'Failed to load filter data';
         setError(errorMessage);
         setLoading(false);
-        console.error('Error fetching data:', err);
+        
       }
     };
 
@@ -193,7 +193,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
       setPriceRange([minPrice, maxPrice]); 
 
     } catch (err) {
-      console.error("Error fetching min/max prices:", err);
+      
       setError("Failed to load price range data. Using default.");
       setDbPriceRange([0, 10000000]); // Fallback to a wide default range
       setTempPriceRange([0, 10000000]);
@@ -227,7 +227,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
       const errorMessage = err instanceof Error ? err.message : 'Failed to load next page';
       setError(errorMessage);
       setLoading(false);
-      console.error('Error fetching next page:', err);
+      
     }
   };
 
@@ -254,7 +254,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
       const errorMessage = err instanceof Error ? err.message : 'Failed to load previous page';
       setError(errorMessage);
       setLoading(false);
-      console.error('Error fetching previous page:', err);
+      
     }
   };
 

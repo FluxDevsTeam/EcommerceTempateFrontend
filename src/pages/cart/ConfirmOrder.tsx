@@ -101,14 +101,14 @@ const ConfirmOrder = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        console.log(data);
+        
       } else {
-        console.log("Order summary fetched/refreshed:", data);
+        
         setOrderSummary(data);
         setError(null);
       }
     } catch (err) {
-      console.error("Failed to fetch order summary:", err);
+      
       if (!error || error.includes("summary")) {
         setError(
           err instanceof Error
@@ -160,7 +160,7 @@ const ConfirmOrder = () => {
         }
 
         const data = await response.json();
-        console.log("Cart details fetched:", data);
+        
 
         if (data && data.results && data.results.length > 0) {
           const cartResult = data.results[0];
@@ -174,7 +174,7 @@ const ConfirmOrder = () => {
           setError("No cart found for this user.");
         }
       } catch (err) {
-        console.error("Failed to fetch cart data:", err);
+        
         if (!error || error.includes("cart")) {
           setError(
             err instanceof Error
@@ -192,10 +192,8 @@ const ConfirmOrder = () => {
 
   useEffect(() => {
     if (cartDetails) {
-      console.log(
-        "Populating form data from fetched cart details:",
-        cartDetails
-      );
+      
+
       setFormData((prevData) => ({
         ...prevData,
         first_name: cartDetails.first_name || "",
@@ -238,7 +236,7 @@ const ConfirmOrder = () => {
       include_delivery_fee: includeDeliveryFee,
     };
 
-    console.log("Submitting (PATCH) customer details:", payload);
+
 
     try {
       const response = await fetch(`${baseURL}/api/v1/cart/${cartId}/`, {
@@ -254,10 +252,10 @@ const ConfirmOrder = () => {
         let errorData;
         try {
           errorData = await response.json();
-          console.error("API Error Response:", errorData);
+
         } catch (parseError) {
           errorData = await response.text();
-          console.error("API Error Response (non-JSON):", errorData);
+
         }
         setError(
           `Failed to update details: ${response.statusText} ${JSON.stringify(
@@ -269,7 +267,7 @@ const ConfirmOrder = () => {
       }
 
       const responseData = await response.json();
-      console.log("Successfully patched customer details:", responseData);
+      
 
       setIsOrderConfirmed(true);
 
@@ -280,7 +278,7 @@ const ConfirmOrder = () => {
         setShowSuccessModal(false);
       }, 2000);
     } catch (error) {
-      console.error("Error patching customer details:", error);
+      
       if (!error) {
         setError(
           error instanceof Error
@@ -327,13 +325,12 @@ const ConfirmOrder = () => {
 
       return `${startStr} - ${endStr}`;
     } catch (e) {
-      console.error("Error formatting date:", e);
+
       return "Date unavailable";
     }
   };
 
   const initiatePayment = async () => {
-    console.log("btn was clicked");
     const paymentButton = document.querySelector(
       ".paymentBtn"
     ) as HTMLButtonElement | null;
@@ -385,20 +382,20 @@ const ConfirmOrder = () => {
       });
 
       const logData = await response.json();
-      console.log("Initiate Payment Response:", logData);
+      
 
       if (response.ok && logData?.data?.payment_link) {
-        console.log("Redirecting to:", logData.data.payment_link);
+
         window.location.href = logData.data.payment_link;
       } else {
         const errorMessage =
           logData?.message ||
           `Failed to initiate payment. Status: ${response.status}`;
-        console.error("Payment initiation failed:", errorMessage, logData);
+
         setError(errorMessage);
       }
     } catch (error) {
-      console.error("Error initiating payment:", error);
+      
       setError(
         error instanceof Error
           ? error.message
@@ -445,10 +442,10 @@ const ConfirmOrder = () => {
         );
         if (!response.ok) throw new Error("Failed to fetch states");
         const data = await response.json();
-        console.log(data);
+        
         setAvailableStates(data.available_states);
       } catch (error) {
-        console.error("Error fetching states:", error);
+        
       }
     };
 
@@ -609,7 +606,7 @@ const ConfirmOrder = () => {
                 <div className="absolute top-full mt-2 left-0 z-10 bg-white border border-gray-200 rounded-lg shadow-lg p-4 text-sm text-gray-600 max-w-xs">
                   Delivery is optional. Choose to opt out if you prefer to pick up your order in person. The delivery fee may vary based on your location, order quantity, and preferred delivery method. For more details or to discuss custom delivery options,{" "}
                   <a
-                    href="https://wa.me/message/IJCGAQKFVMKUB1"
+                    href="https://wa.me/message/SJIYCBTVPXA6G1"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-500 underline hover:text-blue-700"
@@ -625,7 +622,7 @@ const ConfirmOrder = () => {
               <div className="text-sm text-gray-600 mt-1">
                 By opting out of delivery, you agree to pick up your order in person at our designated location.{" "}
                 <a
-                  href="https://wa.me/message/IJCGAQKFVMKUB1"
+                  href="https://wa.me/message/SJIYCBTVPXA6G1"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-500 underline hover:text-blue-700"
@@ -795,7 +792,7 @@ const ConfirmOrder = () => {
               </a>{" "}
               or message us{" "}
               <a
-                href="https://wa.me/message/IJCGAQKFVMKUB1"
+                href="https://wa.me/message/SJIYCBTVPXA6G1"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-500 underline hover:text-blue-700"

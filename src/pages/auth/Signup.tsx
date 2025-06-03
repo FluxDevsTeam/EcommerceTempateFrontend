@@ -228,14 +228,14 @@ const Signup = () => {
           <div className="w-[50%] h-1 bg-neutral-900" />
         </div>
         
-        <Button variant="outline" className="w-full p-5">
+        {/* <Button variant="outline" className="w-full p-5">
           <img 
             src="./images/Symbol.svg.png" 
             alt="Google logo" 
             className="mr-2 h-4 w-4"
           />
           Continue with Google
-        </Button>
+        </Button> */}
 
         <p className="text-sm pt-4">Already have an account? <Link to='/login' className='underline'>Login</Link> here</p>
       </div>

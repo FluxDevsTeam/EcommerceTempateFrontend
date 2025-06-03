@@ -36,20 +36,21 @@ export default function StatsGrid() {
           }
         );
         
-        if (response.data ) {
-          setStats(response.data.data);
-          console.log('stats:', response.data);
-        } else {
-          setStats(null);
+        if (response.ok) {
+          
+          setStats(response.data);
+        } else if (response.status === 401) {
+          
+          navigate('/login');
         }
       } catch (err: any) {
-        console.error('Error fetching stats:', err);
+        
         setError(err.response?.data?.message || err.message || 'Failed to fetch statistics.');
         
         // Optional: Handle 401 unauthorized errors
         if (err.response?.status === 401) {
           // You might want to redirect to login or refresh the token here
-          console.log('Unauthorized - redirecting to login');
+          
         }
       } finally {
         setLoading(false);

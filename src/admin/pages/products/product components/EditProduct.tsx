@@ -157,14 +157,10 @@ const EditProduct: React.FC = () => {
 
         setCategories(allCategories);
       } catch (error) {
-        console.error("Error fetching categories:", error);
         setModalConfig({
           isOpen: true,
           title: "Error",
-          message:
-            error instanceof Error
-              ? error.message
-              : "Failed to fetch categories",
+          message: error instanceof Error ? error.message : "Failed to fetch categories",
           type: "error",
         });
       }
@@ -343,7 +339,7 @@ const EditProduct: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log("Update response:", data);
+      
 
       setModalConfig({
         isOpen: true,

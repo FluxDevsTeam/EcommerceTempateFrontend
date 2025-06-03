@@ -73,7 +73,7 @@ export const formatDate = (dateString: string) => {
       day: "numeric",
     });
   } catch (e) {
-    console.error("Error formatting date:", e);
+    
     return "Invalid Date";
   }
 };

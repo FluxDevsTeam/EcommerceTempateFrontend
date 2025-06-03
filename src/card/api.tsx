@@ -18,7 +18,7 @@ export const deleteWishItem = async (id: number): Promise<void> => {
       throw new Error(`Failed to delete wishlist item. Status: ${response.status}. Message: ${errorText}`);
     }
   } catch (error) {
-    console.error(`❌ Error deleting wishlist item with ID ${id}:`, error);
+    
     throw error;
   }
 };
@@ -49,7 +49,7 @@ export const addWishItem = async (productId: number): Promise<WishItem> => {
 
     return data as WishItem;
   } catch (error) {
-    console.error(`❌ Error adding wishlist item for product ID ${productId}:`, error);
+    
     throw error;
   }
 };

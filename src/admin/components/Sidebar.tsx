@@ -39,7 +39,7 @@ const Sidebar = ({
       await logout();
       navigate("/login", { replace: true });
     } catch (error) {
-      console.error("Logout failed", error);
+      
     }
   };
 

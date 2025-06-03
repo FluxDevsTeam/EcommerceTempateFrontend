@@ -52,7 +52,7 @@ const PersonalInfo = () => {
         });
   
         const logData = await response.json();
-        console.log(logData);
+        
   
         setUserProfileDeets(logData);
       } catch (error) {}
@@ -113,7 +113,7 @@ const PersonalInfo = () => {
       setInfoSubmitResponseStatus(response.status);
 
       const logData = await response.json();
-      console.log(logData);
+      
 
       const message = logData?.data || logData?.message || logData?.detail || (response.ok ? "Request submitted. Please verify with your password." : "Request failed.");
       setInfoSubmitMsg(message);
@@ -170,7 +170,7 @@ const PersonalInfo = () => {
       );
 
       const logData = await response.json();
-      console.log(logData);
+      
 
       const message = logData?.data || logData?.message || logData?.detail || (response.ok ? "Profile updated successfully!" : "Verification failed.");
       setPasswordSubmitMsg(message);

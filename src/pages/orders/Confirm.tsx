@@ -29,7 +29,7 @@ const Confirm = () => {
           setError("Order not found.");
         }
       } catch (err) {
-        console.log(err)
+        
         setError("Failed to load order.");
       } finally {
         setLoading(false);

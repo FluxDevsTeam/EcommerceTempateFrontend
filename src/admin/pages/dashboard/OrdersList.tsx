@@ -87,11 +87,11 @@ const OrdersList: React.FC = () => {
           setTotalPages(1);
         }
       } catch (err: any) {
-        console.error('Error fetching orders:', err);
+        
         setError(err.response?.data?.message || err.message || 'Failed to fetch orders.');
         
         if (err.response?.status === 401) {
-          console.log('Unauthorized - redirecting to login');
+          
           // Potentially redirect to login page here
         }
       } finally {

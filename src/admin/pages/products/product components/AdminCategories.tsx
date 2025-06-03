@@ -100,10 +100,8 @@ const AdminCategories = () => {
         setPrevPageUrl(data.previous);
       }
     } catch (error) {
-      console.error("Error:", error);
-      setError(
-        error instanceof Error ? error.message : "Failed to fetch categories"
-      );
+      // Remove console.error
+      setError(error instanceof Error ? error.message : "Failed to fetch categories");
     } finally {
       setLoading(false);
     }

@@ -77,8 +77,8 @@ const ChangeEmail = () => {
       );
 
       const logData = await response.json();
-      console.log(response.ok ? logData.data : logData);
-      console.log(response.status);
+      
+      
       
 
       const otpForm = document?.querySelector(".emailOtpForm");
@@ -99,7 +99,7 @@ const ChangeEmail = () => {
         otpForm?.classList.remove("hidden");
       } else {
         console.error("Email change request failed:", logData);
-        console.log(response.status);
+        
       }
     } catch (error) {
       console.error("Error during email change request:", error);
@@ -145,7 +145,7 @@ const ChangeEmail = () => {
 
       const otpForm = document?.querySelector(".emailOtpForm");
       const logData = await response.json();
-      console.log(logData);
+      
 
       // Determine message based on response
       const message = logData?.data || logData?.message || logData?.detail || (response.ok ? "Email updated successfully!" : "OTP verification failed.");
@@ -184,11 +184,11 @@ const ChangeEmail = () => {
 
   const resendOTP = async () => {
     if (resendDisabled) {
-      console.log("Resend is currently disabled.");
+      
       return;
     }
 
-    console.log("resend otp btn clicked");
+    
     const accessToken = localStorage.getItem("accessToken");
   
     if (!accessToken) {
@@ -211,7 +211,7 @@ const ChangeEmail = () => {
       );
   
       const logData = await response.json();
-      console.log(logData);
+      
   
       setOTPResendMsg(logData.data || logData.message || "Processing...");
       setIsOTPResendMsgModalOpen(true);
@@ -250,7 +250,7 @@ const ChangeEmail = () => {
       });
 
       const logData = await response.json();
-      console.log(logData);
+      
 
       setUserProfileDeets(logData);
     } catch (error) {}

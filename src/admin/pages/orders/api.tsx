@@ -17,10 +17,9 @@ export const fetchData = async (url = `${BASE_URL}?page=1`) => {
     }
 
     const data = await response.json();
-    console.log(data);
+    
     return data;
   } catch (error) {
-    console.error('Error fetching data:', error);
     throw error;
   }
 };
@@ -38,7 +37,7 @@ export const PatchOrderStatus = async (orderId: string, newStatus: string) => {
     });
 
     const text = await response.text(); // handle both JSON and HTML
-    console.log("Raw backend response:", text);
+    
 
     if (!response.ok) {
       throw new Error(`Failed to update order status: ${text}`);

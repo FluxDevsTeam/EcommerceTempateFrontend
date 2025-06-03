@@ -87,7 +87,7 @@ const OrganizationalSettings = () => {
       setError(null);
     } catch (err) {
       setError('Failed to load organization settings');
-      console.error('Error fetching organization settings:', err);
+      
     } finally {
       setLoading(false);
     }
@@ -216,7 +216,7 @@ const OrganizationalSettings = () => {
       if (axios.isAxiosError(err)) {
         if (err.response) {
           const data = err.response.data;
-          console.error('Server responded with error:', data);
+          
 
           if (typeof data === 'string') {
             errorMessage = data;
@@ -240,14 +240,14 @@ const OrganizationalSettings = () => {
           }
 
         } else if (err.request) {
-          console.error('No response received:', err.request);
+          
           errorMessage = 'No response received from server';
         } else {
-          console.error('Request setup error:', err.message);
+          
           errorMessage = `Request error: ${err.message}`;
         }
       } else {
-        console.error('Unexpected error:', err);
+        
         errorMessage = `Unexpected error: ${err instanceof Error ? err.message : String(err)}`;
       }
 

@@ -21,7 +21,7 @@ const AdminAggregates = () => {
             const data = await fetchData();
             setAggregate(data.aggregate);
         } catch (error) {
-            console.error("Error loading orders:", error);
+            
         }
         };
 

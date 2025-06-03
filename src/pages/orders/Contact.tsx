@@ -76,13 +76,13 @@ const Contact = () => {
         },
         '8-2qWSYToSW4LP7-H'
         ).then((result) => {
-        console.log(result.text);
+        
         setSuccessMessage("Message has been sent successfully!");
         setFormData({ firstName: '', lastName: '', email: '', message: '' });
 
         setTimeout(() => setSuccessMessage(''), 3000);
         }, (error) => {
-        console.log(error.text);
+        
         alert("Something went wrong. Please try again.");
         });
     } else {
