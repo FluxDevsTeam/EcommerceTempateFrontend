@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { IoChevronBack, IoSearch, IoClose } from "react-icons/io5";
+import { IoChevronBack } from "react-icons/io5";
 import Modal from "../../../../components/ui/Modal";
 import PaginatedDropdown from "./PaginatedDropdown";
 
@@ -29,9 +29,6 @@ const EditProduct: React.FC = () => {
   ]);
   const [previewImages, setPreviewImages] = useState<string[]>(["", "", ""]);
   const [categories, setCategories] = useState<SubCategory[]>([]);
-  const [individualProductCategory, setIndividualProductCategory] =
-    useState<string>("");
-
   const [viewProductPreviewModal, setViewProductPreviewModal] = useState(false);
   const [selectedPreviewImage, setSelectedPreviewImage] = useState(0);
   const [modalConfig, setModalConfig] = useState({
@@ -42,7 +39,11 @@ const EditProduct: React.FC = () => {
   });
 
   const weightSizePairs: WeightSizePair[] = [
-    { label: "Very Light - Very Small", weight: "Very Light", size: "Very Small" },
+    {
+      label: "Very Light - Very Small",
+      weight: "Very Light",
+      size: "Very Small",
+    },
     { label: "Very Light - Small", weight: "Very Light", size: "Small" },
     { label: "Light - Small", weight: "Light", size: "Small" },
     { label: "Light - Medium", weight: "Light", size: "Medium" },
@@ -50,7 +51,11 @@ const EditProduct: React.FC = () => {
     { label: "Medium - Large", weight: "Medium", size: "Large" },
     { label: "Heavy - Large", weight: "Heavy", size: "Large" },
     { label: "Heavy - Very Large", weight: "Heavy", size: "Very Large" },
-    { label: "Very Heavy - Very Large", weight: "Very Heavy", size: "Very Large" },
+    {
+      label: "Very Heavy - Very Large",
+      weight: "Very Heavy",
+      size: "Very Large",
+    },
     { label: "Very Heavy - XXL", weight: "Very Heavy", size: "XXL" },
     { label: "XXHeavy - XXL", weight: "XXHeavy", size: "XXL" },
   ];
@@ -73,6 +78,7 @@ const EditProduct: React.FC = () => {
     top_selling_position: null as number | null,
     unlimited: false,
     production_days: null as number | null,
+    total_quantity: null as number | null,
   });
 
   const [initialFormData, setInitialFormData] = useState({
@@ -80,6 +86,10 @@ const EditProduct: React.FC = () => {
     description: "",
     sub_category: "",
     colour: "",
+    image1: null,
+    image2: null,
+    image3: null,
+    undiscounted_price: null as number | null,
     is_available: false,
     latest_item: false,
     latest_item_position: null as number | null,
@@ -88,18 +98,16 @@ const EditProduct: React.FC = () => {
     top_selling_position: null as number | null,
     unlimited: false,
     production_days: null as number | null,
+    total_quantity: null as number | null,
   });
 
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredCategories, setFilteredCategories] = useState<SubCategory[]>([]);
-
-  const [isSearchMode, setIsSearchMode] = useState(false);
-
-  const [loading, setLoading] = useState(false);
-  const [updateLoading, setUpdateLoading] = useState(false);
+  const [filteredCategories, setFilteredCategories] = useState<SubCategory[]>(
+    []
+  );
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -205,30 +213,35 @@ const EditProduct: React.FC = () => {
       }
 
       const data = await response.json();
-      // Find the corresponding weightSizePair label
-      const weightSizePair = weightSizePairs.find(
-        (pair) =>
-          pair.weight === data.weight && pair.size === data.dimensional_size
-      )?.label || "";
+
+      const weightSizePair =
+        weightSizePairs.find(
+          (pair) =>
+            pair.weight === data.weight && pair.size === data.dimensional_size
+        )?.label || "";
 
       const formattedData = {
         name: data.name || "",
         description: data.description || "",
-        sub_category: data.sub_category.id,
+        sub_category: data.sub_category.id || "",
         colour: data.colour || "",
+        image1: null,
+        image2: null,
+        image3: null,
+        undiscounted_price: data.undiscounted_price || null,
         is_available: data.is_available ?? false,
         latest_item: data.latest_item ?? false,
-        latest_item_position: data.latest_item_position,
+        latest_item_position: data.latest_item_position || null,
         weightSizePair,
         top_selling_items: data.top_selling_items ?? false,
-        top_selling_position: data.top_selling_position,
+        top_selling_position: data.top_selling_position || null,
         unlimited: data.unlimited ?? false,
-        production_days: data.production_days || 0,
+        production_days: data.production_days || null,
+        total_quantity: data.total_quantity || null,
       };
 
       setInitialFormData(formattedData);
       setFormData(formattedData);
-      setIndividualProductCategory(data.sub_category.name);
       setPreviewImages([
         data.image1 || "",
         data.image2 || "",
@@ -500,7 +513,10 @@ const EditProduct: React.FC = () => {
                     options={categories}
                     value={formData.sub_category}
                     onChange={(value) =>
-                      setFormData((prev) => ({ ...prev, sub_category: value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        sub_category: String(value),
+                      }))
                     }
                     placeholder="Select Sub-Category"
                     required
@@ -1053,13 +1069,15 @@ const EditProduct: React.FC = () => {
 
                       {formData.latest_item && (
                         <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg">
-                          Latest Item (Position: {formData.latest_item_position})
+                          Latest Item (Position: {formData.latest_item_position}
+                          )
                         </div>
                       )}
 
                       {formData.top_selling_items && (
                         <div className="bg-orange-50 text-orange-700 px-4 py-2 rounded-lg">
-                          Top Selling Item (Position: {formData.top_selling_position})
+                          Top Selling Item (Position:{" "}
+                          {formData.top_selling_position})
                         </div>
                       )}
                     </div>

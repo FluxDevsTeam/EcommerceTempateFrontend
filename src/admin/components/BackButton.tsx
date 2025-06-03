@@ -5,7 +5,7 @@ interface BackButtonProps {
   label?: string;
 }
 
-const BackButton = ({ label = "back" }: BackButtonProps) => {
+const BackButton = ({ label = "Back" }: BackButtonProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
