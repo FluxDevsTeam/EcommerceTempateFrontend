@@ -47,7 +47,7 @@ const Producter = () => {
 
         setWishlistItems(wishlistRes);
       } catch (err) {
-        console.error('Error loading data:', err);
+        
         setError('Something went wrong');
       } finally {
         setLoading(false);

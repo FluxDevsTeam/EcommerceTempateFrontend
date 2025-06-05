@@ -74,7 +74,7 @@ const loadOrders = async (url?: string) => {
       setCurrentPage(pageFromResponse);
       setTotalPages(Math.ceil(data.count / ITEMS_PER_PAGE));
   } catch (err) {
-      console.error("Error loading orders:", err);
+      
   }
 };
 
@@ -244,7 +244,7 @@ const loadOrders = async (url?: string) => {
               setOrders(updatedOrders);
               setSelectedOrder({ ...selectedOrder, status: upperStatus });
               } catch (error) {
-                console.error("Failed to update order status in backend:", error);
+                
                 alert("Failed to change status. Please try again.")
               } finally {
                 setIsUpdatingStatus(false);

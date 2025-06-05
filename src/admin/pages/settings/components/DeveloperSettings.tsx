@@ -63,7 +63,6 @@ const DeveloperSettings: React.FC = () => {
       setError(null);
     } catch (err) {
       setError('Failed to load Developer settings');
-      console.error(err);
     } finally {
       setLoading(false);
     }

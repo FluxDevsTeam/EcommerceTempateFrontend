@@ -3,7 +3,7 @@ export const formatNumberWithCommas = (value: number | string): string => {
   if (isNaN(num)) {
     return String(value); // Return original value if it's not a number (e.g., already has Naira sign)
   }
-  return num.toLocaleString('en-US');
+  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
 export const formatCurrency = (value: number | string): string => {
@@ -15,11 +15,11 @@ export const formatCurrency = (value: number | string): string => {
       const numberWithoutCommas = numericPart.replace(/,/g, '');
       const parsedNum = Number(numberWithoutCommas);
       if (!isNaN(parsedNum)) {
-        return `₦${parsedNum.toLocaleString('en-US')}`;
+        return `₦${parsedNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       }
       return value; // Return as is if parsing fails
     }
     return String(value); // Return original value if it's not a number and not a pre-formatted Naira string
   }
-  return `₦${num.toLocaleString('en-US')}`;
-}; 
+  return `₦${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};

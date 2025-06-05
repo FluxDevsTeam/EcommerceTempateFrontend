@@ -146,7 +146,7 @@ const AddNewProduct: React.FC = () => {
 
         setCategories(allCategories);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        
         setModalConfig({
           isOpen: true,
           title: "Error",
@@ -268,14 +268,14 @@ const AddNewProduct: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Server error response:", errorData);
+        
         throw new Error(
           errorData.message || `Failed to add product: ${response.statusText}`
         );
       }
 
       const data = await response.json();
-      console.log("Product added successfully:", data);
+      
 
       setNewProductId(data.id);
       setModalConfig({
@@ -285,7 +285,7 @@ const AddNewProduct: React.FC = () => {
         type: "success",
       });
     } catch (error) {
-      console.error("Error adding product:", error);
+      
       setModalConfig({
         isOpen: true,
         title: "Error",

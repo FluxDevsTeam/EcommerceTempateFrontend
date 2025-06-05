@@ -41,7 +41,7 @@ const Order = () => {
         }
 
     } catch (err) {
-     console.error("Error fetching customers:", err);
+     
         setError("Failed to load customers.");
       } finally {
         setLoading(false);

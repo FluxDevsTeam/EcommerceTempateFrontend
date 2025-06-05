@@ -82,7 +82,7 @@ const PasswordChange = () => {
       setPasswordPostResponseStatus(response.status);
 
       const logData = await response.json();
-      console.log(logData);
+      
 
       const otpForm = document?.querySelector(".passwordChangeOtpForm");
 
@@ -138,7 +138,7 @@ const PasswordChange = () => {
       );
 
       const logData = await response.json();
-      console.log(logData);
+      
 
       const otpForm = document?.querySelector(".passwordChangeOtpForm");
 
@@ -170,11 +170,11 @@ const PasswordChange = () => {
 
   const resendOTP = async () => {
     if (resendDisabled) {
-      console.log("Resend is currently disabled.");
+      
       return;
     }
 
-    console.log("resend otp btn clicked");
+    
     const accessToken = localStorage.getItem("accessToken");
 
     if (!accessToken) {
@@ -197,7 +197,7 @@ const PasswordChange = () => {
       );
 
       const logData = await response.json();
-      console.log(logData);
+      
 
       setOTPResendMsg(logData.data || logData.message || "Processing...");
       setIsOTPResendMsgModalOpen(true);

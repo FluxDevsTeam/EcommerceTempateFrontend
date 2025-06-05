@@ -59,7 +59,7 @@ const OrderAnalytics = () => {
         // Optional: Handle 401 unauthorized errors
         if (err.response?.status === 401) {
           // You might want to redirect to login or refresh the token here
-          console.log('Unauthorized - redirecting to login');
+          
         }
       } finally {
         setLoading(false);

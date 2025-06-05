@@ -89,9 +89,9 @@ const Homepage = () => {
     const fetchWishlist = async () => {
       try {
         const wishlistRes = await WishData();
-        setWishlistItems(wishlistRes);
+        setWishlistItems(wishlistRes.results);
       } catch (err) {
-        console.error("Error loading wishlist:", err);
+        
       } finally {
         setWishlistLoading(false);
       }
@@ -121,7 +121,7 @@ const Homepage = () => {
         setHasMoreItems(false);
       }
     } catch (error) {
-      console.error("Error loading more items:", error);
+      
     } finally {
       setIsLoadingMore(false);
     }
@@ -149,26 +149,36 @@ const Homepage = () => {
         setHasMoreTopSellingItems(false);
       }
     } catch (error) {
-      console.error("Error loading more top selling items:", error);
+      
     } finally {
       setIsLoadingMoreTopSelling(false);
     }
   };
 
-  if (isLoading || wishlistLoading)
+  useEffect(() => {
+  }, [isLoading, wishlistLoading]);
+
+  useEffect(() => {
+    if (!isLoading && !wishlistLoading) {
+    }
+  }, [isLoading, wishlistLoading, latestItems, topSellingItems]);
+
+  if (isLoading || wishlistLoading) {
     return (
       <div className="flex justify-center items-center py-10 text-lg">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mr-3"></div>
         Loading...
       </div>
     );
+  }
 
-  if (isError)
+  if (isError) {
     return (
       <div className="text-center py-10 text-red-500">
         Error loading data. Please try again.
       </div>
     );
+  }
 
   // Helper function to check if a product is in wishlist
   const getWishlistInfo = (productId: number) => {
@@ -183,11 +193,9 @@ const Homepage = () => {
 
   return (
     <div className="w-full min-h-full px-4 md:px-12 py-4 lg:px-28">
-      {/* Hero Section */}
       <div className="flex flex-col md:grid md:grid-cols-2 gap-8 lg:gap-12 container mx-auto mb-4 mt-8 md:mt-8 md:place-items-center">
-        {/* Image Column */}
         <div className="w-full md:col-start-2 md:row-start-1 flex items-center justify-center">
-          <div className="relative w-full flex justify-center">
+          <div className="relative w-full flex justify-center overflow-hidden">
             <img
               src={banner}
               alt="Banner image"
@@ -195,21 +203,20 @@ const Homepage = () => {
             />
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
               <Link to="/new-arrivals">
-                <button className="bg-customBlue text-white text-sm md:text-base font-medium rounded-md px-8 py-3 hover:brightness-90 transition-all duration-300 shadow-lg hover:shadow-xl opacity-70">
+                <button className="bg-customBlue text-white text-sm md:text-base font-medium rounded-md px-8 py-3 hover:brightness-90 transition-all duration-300 shadow-lg hover:shadow-xl opacity-70 animate-pulse">
                   Shop Now
                 </button>
               </Link>
             </div>
           </div>
         </div>
-
-        {/* Text Content Column */}
-        <div className="flex flex-col justify-center items-center space-y-6 max-w-xl w-full px-4 md:px-0 md:col-start-1">
-          <div className="w-full md:space-y-4 lg:space-y-0 text-center md:text-left">
-            <h1 className="text-xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight tracking-tight">
-              Furnish with Fun, Discover What Your Little Ones Love!
+        <div className="flex flex-col justify-center items-center space-y-4 md:space-y-6 max-w-xl w-full px-2 md:px-0 md:col-start-1">
+          <div className="w-full space-y-3 md:space-y-4 lg:space-y-6 text-center md:text-left">
+            <h1 className="text-[22px] font-bold leading-[1.3] tracking-[-0.02em] sm:text-3xl md:text-4xl lg:text-5xl text-gray-900 px-3 md:px-0">
+              <span className="block mb-1">Furnish with Fun, Discover What Your Little Ones Love!
+              </span>
             </h1>
-            <p className="text-gray-700 text-base md:text-lg lg:text-xl leading-relaxed">
+            <p className="hidden md:block text-base sm:text-lg md:text-xl text-gray-600 leading-relaxed max-w-[90%] mx-auto md:mx-0">
               Exclusive Deals. Stress-Free Shopping for Your Kids' Perfect Space.
             </p>
           </div>

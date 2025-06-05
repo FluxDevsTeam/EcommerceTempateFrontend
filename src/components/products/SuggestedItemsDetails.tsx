@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
-import SuggestedProductDetails from "./SuggestedProductDetail";
+import Suggested from "./Suggested";
 import DescriptionList from "./DescriptionList";
 import { addToLocalCart, isItemInLocalCart, isItemInUserCart } from "../../utils/cartStorage";
 
@@ -98,14 +98,12 @@ const SuggestedItemsDetails: React.FC = () => {
       const images = [product.image1, product.image2, product.image3].filter(
         Boolean
       );
-      if (images.length > 0 && !mainImage) {
-        setMainImage(images[0]);
-      }
+      // Reset mainImage when product changes
+      setMainImage(images.length > 0 ? images[0] : "");
+
       // Set the first in-stock size as default if none selected
-      if (product.sizes && product.sizes.length > 0 && !selectedSize) {
-        // Find first in-stock size
+      if (product.sizes && product.sizes.length > 0) {
         const inStockSize = product.sizes.find(size => product.unlimited || size.quantity > 0);
-        // If there's an in-stock size, select it, otherwise select the first size
         if (inStockSize) {
           setSelectedSize(inStockSize.size);
         } else {
@@ -113,7 +111,7 @@ const SuggestedItemsDetails: React.FC = () => {
         }
       }
     }
-  }, [product, mainImage, selectedSize]);
+  }, [product, productId]); // Add productId to dependency array
 
   // Check if items are in cart when component mounts or when product/selectedSize changes
   useEffect(() => {
@@ -157,6 +155,17 @@ const SuggestedItemsDetails: React.FC = () => {
     const data = await response.json();
     return data.id;
   };
+
+  // Add useEffect for auto-closing modal
+  useEffect(() => {
+    if (modalConfig.isOpen) {
+      const timer = setTimeout(() => {
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [modalConfig.isOpen]);
 
   if (!id || isNaN(productId)) {
     return (
@@ -271,7 +280,9 @@ const SuggestedItemsDetails: React.FC = () => {
         // Ensure sizeUndiscountedPrice is passed
         sizeUndiscountedPrice: currentSelectedSizeData.undiscounted_price 
                                ? parseFloat(currentSelectedSizeData.undiscounted_price) 
-                               : (product.undiscounted_price || parseFloat(currentSelectedSizeData.price) || product.price)
+                               : (product.undiscounted_price || parseFloat(currentSelectedSizeData.price) || product.price),
+        subCategoryId: product.sub_category?.id,
+        subCategoryName: product.sub_category?.name,
       });
 
       const key = `${product.id}-${currentSelectedSizeData.id}`;
@@ -307,7 +318,7 @@ const SuggestedItemsDetails: React.FC = () => {
         try {
           cartUuid = await createNewCart(accessToken);
         } catch (error) {
-          console.error("Error creating cart:", error);
+          
           setModalConfig({
             isOpen: true,
             title: "Error",
@@ -337,7 +348,7 @@ const SuggestedItemsDetails: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Error adding to cart:", errorData);
+        
         setModalConfig({
           isOpen: true,
           title: "Notice", // Or "Error" as appropriate
@@ -358,7 +369,7 @@ const SuggestedItemsDetails: React.FC = () => {
         type: "success",
       });
     } catch (error) {
-      console.error("Error during cart operation:", error);
+      
       // Avoid setting modal if it's already set by a specific error message from the try block
       if (!modalConfig.isOpen || modalConfig.message !== (error as Error).message) {
         setModalConfig({
@@ -415,22 +426,12 @@ const SuggestedItemsDetails: React.FC = () => {
                 {modalConfig.title}
               </h2>
               <p className="mb-6">{modalConfig.message}</p>
-              <button
-                onClick={handleCloseModal}
-                className={`w-full py-2 px-4 text-white rounded ${
-                  modalConfig.type === "success"
-                    ? "bg-customBlue hover:bg-customBlue/80"
-                    : "bg-red-500 hover:bg-red-600"
-                }`}
-              >
-                {modalConfig.type === "success" ? "Continue" : "Close"}
-              </button>
             </div>
           </div>
         )}
 
         {/* Product Main Section */}
-        <div className="flex mt-8 lg:mt-2 flex-col lg:flex-row justify-center items-start gap-6">
+        <div className="flex mt-8 lg:mt-0 flex-col lg:flex-row justify-center items-start gap-6">
           {/* Thumbnail Images (Left Column) */}
           <div className="flex mx-auto lg:my-auto md:flex-col gap-3 order-1">
             {images.map((img, index) => (
@@ -444,7 +445,7 @@ const SuggestedItemsDetails: React.FC = () => {
                 <img
                   src={img}
                   alt={`Thumbnail ${index + 1}`}
-                  className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-cover"
+                  className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-cover rounded-lg"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = "https://via.placeholder.com/100";
@@ -460,7 +461,7 @@ const SuggestedItemsDetails: React.FC = () => {
               <img
                 src={mainImage}
                 alt="Main Product"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain rounded-2xl"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = "https://via.placeholder.com/500";
@@ -620,14 +621,14 @@ const SuggestedItemsDetails: React.FC = () => {
           <div className="md:w-[60%] w-full gap-4 space-y-2.5">
             <h2 className="text-lg sm:text-xl font-medium">Description</h2>
             <p
-              className={`text-gray-700 text-sm sm:text-base ${
-                !isDescriptionExpanded ? "max-md:line-clamp-5" : ""
+              className={`text-gray-700 text-xs sm:text-sm ${
+                !isDescriptionExpanded ? "max-md:line-clamp-6 line-clamp-6" : ""
               }`}
             >
               {product.description}
             </p>
             <button
-              className="md:hidden text-blue-800 text-sm sm:text-base cursor-pointer"
+              className="text-blue-800 text-sm sm:text-base cursor-pointer"
               onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
             >
               {isDescriptionExpanded ? "view less" : "view more"}
@@ -646,9 +647,10 @@ const SuggestedItemsDetails: React.FC = () => {
         </div>
       </div>
       <div className="px-0 md:px-8">
-        <SuggestedProductDetails
-          onSuggestedItemClick={handleSuggestedItemClick}
-        />
+          <Suggested
+            subcategory_id={product.sub_category?.id}
+            excludeProductIds={[product.id]}
+          />
       </div>
     </div>
   );

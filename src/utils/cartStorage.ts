@@ -1,19 +1,55 @@
-interface LocalCartItem {
+export interface LocalCartItem {
   productId: number;
-  sizeId: number;
-  productName: string;
-  productImage: string;
-  productPrice: number;
-  discountedPrice?: number | null; // Product-level general discount, might not be size-specific
-  sizeUndiscountedPrice?: number | string | null; // Size-specific original price, before any discount
-  sizeName: string;
-  quantity: number;
-  maxQuantity: number;
+  sizeId?: number;
+  productName?: string;
+  productImage?: string;
+  productPrice?: number;
+  discountedPrice?: number | null;
+  sizeUndiscountedPrice?: number | string | null;
+  sizeName?: string;
+  quantity?: number;
+  maxQuantity?: number;
+  subCategoryId?: number;
+  subCategoryName?: string;
 }
 
-export const getLocalCart = (): LocalCartItem[] => {
-  const cart = localStorage.getItem('guestCart');
-  return cart ? JSON.parse(cart) : [];
+export const getLocalCart = (): LocalCartItem => {
+  try {
+    const cart = localStorage.getItem('guestCart');
+    // 
+    if (!cart) {
+      // 
+      return [];
+    }
+
+    const parsedCart = JSON.parse(cart);
+    // 
+
+    const filteredItems = Array.isArray(parsedCart)
+      ? parsedCart
+          .filter((item): item is LocalCartItem => {
+            const isValid = item && typeof item === 'object' && 'productId' in item;
+            if (!isValid) {
+              // Remove console.warn
+            }
+            return isValid;
+          })
+          .map(item => ({
+            ...item,
+            productId: Number(item.productId),
+            quantity: item.quantity ?? 1,
+          }))
+      : [];
+    
+    // 
+    //   count: filteredItems.length,
+    //   productIds: filteredItems.map(item => item.productId),
+    // });
+    return filteredItems;
+  } catch (error) {
+    // console.error('getLocalCart: Error reading local storage:', error);
+    return [];
+  }
 };
 
 export const addToLocalCart = (item: LocalCartItem) => {
@@ -23,9 +59,15 @@ export const addToLocalCart = (item: LocalCartItem) => {
   );
 
   if (existingItemIndex >= 0) {
-    cart[existingItemIndex].quantity += item.quantity;
+    cart[existingItemIndex].quantity = (cart[existingItemIndex].quantity ?? 1) + (item.quantity ?? 1);
   } else {
-    cart.push(item);
+    cart.push({
+      ...item,
+      productId: Number(item.productId),
+      subCategoryId: item.subCategoryId || 0,
+      subCategoryName: item.subCategoryName || 'Unknown',
+      quantity: item.quantity ?? 1,
+    });
   }
 
   localStorage.setItem('guestCart', JSON.stringify(cart));
@@ -75,15 +117,11 @@ export const isItemInUserCart = async (productId: number, sizeId: number): Promi
     });
 
     if (!response.ok) {
-      console.error('Failed to fetch cart data:', response.status);
       return false;
     }
 
     const data = await response.json();
-    
-    // Check if there's a cart and it has items
     if (data.results && data.results.length > 0 && data.results[0].cart_items) {
-      // Check if any cart item matches the product and size
       return data.results[0].cart_items.some(
         (item: any) => item.product.id === productId && item.size.id === sizeId
       );
@@ -91,7 +129,6 @@ export const isItemInUserCart = async (productId: number, sizeId: number): Promi
     
     return false;
   } catch (error) {
-    console.error('Error checking if item is in cart:', error);
     return false;
   }
 };
@@ -103,7 +140,6 @@ export const migrateLocalCartToUserCart = async (accessToken: string): Promise<b
     const localCart = getLocalCart();
     if (localCart.length === 0) return true;
 
-    // First get or create user cart
     let cartUuid;
     const cartResponse = await fetch(`${baseURL}/api/v1/cart/`, {
       method: "GET",
@@ -118,7 +154,6 @@ export const migrateLocalCartToUserCart = async (accessToken: string): Promise<b
       cartUuid = cartData.results[0]?.id;
     }
 
-    // If no cart exists, create one
     if (!cartUuid) {
       const createResponse = await fetch(`${baseURL}/api/v1/cart/`, {
         method: "POST",
@@ -137,12 +172,11 @@ export const migrateLocalCartToUserCart = async (accessToken: string): Promise<b
         }),
       });
 
-      if (!createResponse.ok) throw new Error("Failed to create cart");
+      if (!createResponse.ok) return false;
       const newCartData = await createResponse.json();
       cartUuid = newCartData.id;
     }
 
-    // Add each local cart item to user's cart
     for (const item of localCart) {
       await fetch(`${baseURL}/api/v1/cart/${cartUuid}/items/`, {
         method: "POST",
@@ -158,11 +192,9 @@ export const migrateLocalCartToUserCart = async (accessToken: string): Promise<b
       });
     }
 
-    // Clear local cart after successful migration
     clearLocalCart();
     return true;
   } catch (error) {
-    console.error("Error migrating cart:", error);
     return false;
   }
 };

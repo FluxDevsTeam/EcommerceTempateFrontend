@@ -85,7 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log("Checking authentication status...");
+        
         const accessToken = localStorage.getItem('accessToken');
         const refreshToken = localStorage.getItem('refreshToken');
         
@@ -93,14 +93,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // First try to get user from localStorage for faster UI response
           const storedUser = authService.getCurrentUser();
           if (storedUser) {
-            console.log("Loaded user from localStorage:", storedUser);
+            
             setCurrentUser(storedUser);
           }
           
           // Then try to fetch fresh data from the API
           try {
             const userProfile = await authService.getUserProfile();
-            console.log("Successfully fetched user profile:", userProfile);
+            
             setCurrentUser(userProfile);
           } catch (profileError) {
             console.error("Failed to fetch profile, using stored data or logging out:", profileError);
@@ -112,7 +112,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         } else {
           // No tokens found
-          console.log("No authentication tokens found");
+          
           setCurrentUser(null);
         }
       } catch (err) {
@@ -178,7 +178,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 }
               }
               clearWishlistLocalStorage();
-              console.log("Local wishlist items processed and migrated to database if not already present.");
+              
             }
           } catch (wishlistError) {
             console.error("Failed to migrate wishlist items:", wishlistError);
@@ -218,9 +218,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     clearError();
     
     try {
-      console.log(`Attempting to verify OTP with email: ${email}, otp: ${otp}`);
+      
       const response = await authService.verifySignupOTP(email, otp);
-      console.log('Verification response:', response);
+      
       setLoading(false);
       return response;
     } catch (err: any) {
@@ -237,9 +237,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     clearError();
     
     try {
-      console.log(`Resending OTP to email: ${email}`);
+      
       const response = await authService.resendSignupOTP(email);
-      console.log('Resend response:', response);
+      
       setLoading(false);
       return response;
     } catch (err: any) {

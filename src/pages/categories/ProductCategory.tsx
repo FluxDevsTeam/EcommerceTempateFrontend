@@ -104,9 +104,9 @@ const ProductCategory = () => {
     const fetchWishlist = async () => {
       try {
         const wishlistRes = await WishData();
-        setWishlistItems(wishlistRes);
+        setWishlistItems(wishlistRes.results);
       } catch (err) {
-        console.error('Error loading wishlist:', err);
+        
       } finally {
         setWishlistLoading(false);
       }

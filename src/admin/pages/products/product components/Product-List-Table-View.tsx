@@ -55,7 +55,7 @@ function formatDate(dateString: string) {
       day: "numeric",
     });
   } catch (e) {
-    console.error("Error formatting date:", e);
+    
     return "Invalid Date";
   }
 }
@@ -223,7 +223,7 @@ const [isDbPriceRangeInitialized, setIsDbPriceRangeInitialized] = useState(false
         setPriceRange([minPrice, maxPrice]); // Also initialize applied priceRange
 
       } catch (err) {
-        console.error("Error fetching min/max prices:", err);
+        
         setError("Failed to load price range data. Using default.");
         // Fallback to a default range if API call fails
         setDbPriceRange([0, 1000]);
@@ -293,7 +293,7 @@ const [isDbPriceRangeInitialized, setIsDbPriceRangeInitialized] = useState(false
 
       setCategories(allCategories);
     } catch (err) {
-      console.error("Failed to fetch categories:", err);
+      
       setError(
         err instanceof Error ? err.message : "Failed to fetch categories"
       );
@@ -395,7 +395,7 @@ const [isDbPriceRangeInitialized, setIsDbPriceRangeInitialized] = useState(false
         productName: "",
       });
     } catch (error) {
-      console.error("Error deleting product:", error);
+      
       setError(
         error instanceof Error ? error.message : "Failed to delete product"
       );
@@ -430,7 +430,7 @@ const [isDbPriceRangeInitialized, setIsDbPriceRangeInitialized] = useState(false
       setShowEditCategoryModal(false);
       setSelectedCategoryForEdit(null);
     } catch (error) {
-      console.error("Error editing category:", error);
+      
       setError("Failed to edit category");
     } finally {
       setEditingCategory(false);

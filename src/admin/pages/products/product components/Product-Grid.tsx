@@ -163,9 +163,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       setTotalProducts(data.count);
       setNextPageUrl(data.next);
       setPrevPageUrl(data.previous);
-    } catch (err) {
-      console.error("Error fetching products:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch products");
+    } catch (error) {
+      // Remove console.error
+      setError(error instanceof Error ? error.message : "Failed to fetch products");
     } finally {
       setLoading(false);
     }

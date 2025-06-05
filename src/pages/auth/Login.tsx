@@ -33,7 +33,7 @@ const Login = () => {
   const location = useLocation();
 
   useEffect(() => {
-    console.log("Login page location state:", location.state);
+    
   }, [location.state]);
 
   const {
@@ -163,7 +163,7 @@ const Login = () => {
           <div className="w-[50%] h-1 bg-neutral-900" />
         </div>
 
-        {/* <Button variant="outline" className="w-full p-5">
+        {/* {/* <Button variant="outline" className="w-full p-5">
           <img
             src="./images/Symbol.svg.png"
             alt="Google logo"

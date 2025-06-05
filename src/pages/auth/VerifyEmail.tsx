@@ -97,7 +97,7 @@ const VerifyEmail = () => {
 
   const onSubmit = async (data: VerifyEmailFormData) => {
     if (!currentEmail) {
-      console.error('Email is missing. Current email state:', currentEmail);
+      
       return;
     }
 

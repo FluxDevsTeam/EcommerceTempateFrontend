@@ -95,9 +95,9 @@ const ProductsPage: React.FC = () => {
     const fetchWishlist = async () => {
       try {
         const wishlistRes = await WishData();
-        setWishlistItems(wishlistRes);
+        setWishlistItems(wishlistRes.results);
       } catch (err) {
-        console.error('Wishlist fetch error:', err);
+        
       } finally {
         setWishlistLoading(false);
       }
