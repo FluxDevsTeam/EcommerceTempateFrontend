@@ -4,7 +4,8 @@ import location from './img/location.png';
 import { FaFacebook, FaInstagram, FaTiktok } from 'react-icons/fa';
 import { useEffect, useState } from "react";
 import validator from 'validator';
-import emailjs from '@emailjs/browser'
+import emailjs from '@emailjs/browser';
+import CopyablePhone from '@/components/CopyablePhone';
 
 type FormData = {
   firstName: string;
@@ -67,14 +68,15 @@ const Contact = () => {
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length === 0) {
         emailjs.send(
-        "service_u0w8c1m",
-        'template_wwvqrav',
+        "YOUR_SERVICE_ID", // Replace with your EmailJS service ID
+        "YOUR_TEMPLATE_ID", // Replace with your EmailJS template ID
         {
             from_name: `${formData.firstName} ${formData.lastName}`,
             from_email: formData.email,
             message: formData.message,
+            to_email: "kidsdesigncompanyng@gmail.com",
         },
-        '8-2qWSYToSW4LP7-H'
+        "YOUR_PUBLIC_KEY" // Replace with your EmailJS public key
         ).then((result) => {
         
         setSuccessMessage("Message has been sent successfully!");
@@ -186,7 +188,7 @@ const Contact = () => {
             <p className="flex gap-3 items-center">
               <img src={call} alt="call" className="w-[20px] sm:w-[24px]" />
               <span className="font-semibold text-[18px] sm:text-[24px] text-right">
-                Call: +234 806 322 4027
+                Call: <CopyablePhone phoneNumber="+234 903123 8704" />
               </span>
               
             </p>

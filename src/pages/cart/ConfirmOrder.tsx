@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiArrowRight, FiInfo, FiPhone } from "react-icons/fi";
+import CopyablePhone from '@/components/CopyablePhone';
 
 const ConfirmOrder = () => {
   const navigate = useNavigate();
@@ -783,14 +784,11 @@ const ConfirmOrder = () => {
                 size={16}
                 onClick={handlePhoneClick}
               />
-              <a
-                href="tel:+2348063224027"
+              <CopyablePhone 
+                phoneNumber="+234 903 123 8704" 
                 className="text-blue-500 underline hover:text-blue-700 cursor-pointer"
-                onClick={handlePhoneClick}
-              >
-                +234 806 322 4027
-              </a>{" "}
-              or message us{" "}
+              />
+              {" "}or message us{" "}
               <a
                 href="https://wa.me/message/SJIYCBTVPXA6G1"
                 target="_blank"
