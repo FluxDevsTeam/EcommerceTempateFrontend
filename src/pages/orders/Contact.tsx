@@ -68,15 +68,15 @@ const Contact = () => {
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length === 0) {
         emailjs.send(
-        "YOUR_SERVICE_ID", // Replace with your EmailJS service ID
-        "YOUR_TEMPLATE_ID", // Replace with your EmailJS template ID
+        "template_84fde4r",
+        "template_bky3h07",
         {
             from_name: `${formData.firstName} ${formData.lastName}`,
             from_email: formData.email,
             message: formData.message,
             to_email: "kidsdesigncompanyng@gmail.com",
         },
-        "YOUR_PUBLIC_KEY" // Replace with your EmailJS public key
+        "Wx7WXc6lpS8NOV7mq"
         ).then((result) => {
         
         setSuccessMessage("Message has been sent successfully!");
