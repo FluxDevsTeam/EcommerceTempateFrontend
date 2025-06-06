@@ -222,30 +222,30 @@ const EditProduct: React.FC = () => {
 
       const formattedData = {
         name: data.name || "",
-        description: data.description || "",
-        sub_category: data.sub_category.id || "",
-        colour: data.colour || "",
+        description: data?.description || "",
+        sub_category: data?.sub_category?.id,
+        colour: data?.colour || "",
         image1: null,
         image2: null,
         image3: null,
-        undiscounted_price: data.undiscounted_price || null,
-        is_available: data.is_available ?? false,
-        latest_item: data.latest_item ?? false,
-        latest_item_position: data.latest_item_position || null,
+        undiscounted_price: data?.undiscounted_price || null,
+        is_available: data?.is_available ?? false,
+        latest_item: data?.latest_item ?? false,
+        latest_item_position: data?.latest_item_position || null,
         weightSizePair,
-        top_selling_items: data.top_selling_items ?? false,
-        top_selling_position: data.top_selling_position || null,
-        unlimited: data.unlimited ?? false,
-        production_days: data.production_days || null,
-        total_quantity: data.total_quantity || null,
+        top_selling_items: data?.top_selling_items ?? false,
+        top_selling_position: data?.top_selling_position || null,
+        unlimited: data?.unlimited ?? false,
+        production_days: data?.production_days || null,
+        total_quantity: data?.total_quantity || null,
       };
 
       setInitialFormData(formattedData);
       setFormData(formattedData);
       setPreviewImages([
-        data.image1 || "",
-        data.image2 || "",
-        data.image3 || "",
+        data?.image1 || "",
+        data?.image2 || "",
+        data?.image3 || "",
       ]);
     } catch (error) {
       console.error("Error fetching product:", error);

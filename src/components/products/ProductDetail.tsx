@@ -2,7 +2,11 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import Suggested from "./Suggested";
-import { addToLocalCart, isItemInLocalCart, isItemInUserCart } from "../../utils/cartStorage";
+import {
+  addToLocalCart,
+  isItemInLocalCart,
+  isItemInUserCart,
+} from "../../utils/cartStorage";
 
 import DescriptionList from "./DescriptionList";
 
@@ -81,7 +85,9 @@ const ProductDetail = () => {
   });
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  const [itemsInCart, setItemsInCart] = useState<{[key: string]: boolean}>({});
+  const [itemsInCart, setItemsInCart] = useState<{ [key: string]: boolean }>(
+    {}
+  );
 
   // Fetch product data
   const {
@@ -106,7 +112,9 @@ const ProductDetail = () => {
       // Set the first in-stock size as default if none selected
       if (product.sizes && product.sizes.length > 0 && !selectedSize) {
         // Find first in-stock size
-        const inStockSize = product.sizes.find(size => product.unlimited || size.quantity > 0);
+        const inStockSize = product.sizes.find(
+          (size) => product.unlimited || size.quantity > 0
+        );
         // If there's an in-stock size, select it, otherwise select the first size
         if (inStockSize) {
           setSelectedSize(inStockSize.size);
@@ -121,15 +129,20 @@ const ProductDetail = () => {
   useEffect(() => {
     const checkCartItems = async () => {
       if (product && selectedSize) {
-        const selectedSizeData = product.sizes.find(size => size.size === selectedSize);
+        const selectedSizeData = product.sizes.find(
+          (size) => size.size === selectedSize
+        );
         if (selectedSizeData) {
           const key = `${product.id}-${selectedSizeData.id}`;
-          const isInCart = await isItemInUserCart(product.id, selectedSizeData.id);
-          setItemsInCart(prev => ({ ...prev, [key]: isInCart }));
+          const isInCart = await isItemInUserCart(
+            product.id,
+            selectedSizeData.id
+          );
+          setItemsInCart((prev) => ({ ...prev, [key]: isInCart }));
         }
       }
     };
-    
+
     checkCartItems();
   }, [product, selectedSize]);
 
@@ -173,7 +186,8 @@ const ProductDetail = () => {
       setModalConfig({
         isOpen: true,
         title: "Error",
-        message: "Selected size details not available. Please select a valid size.",
+        message:
+          "Selected size details not available. Please select a valid size.",
         type: "error",
       });
       return;
@@ -217,13 +231,17 @@ const ProductDetail = () => {
         sizeName: selectedSizeData.size,
         quantity: quantity,
         maxQuantity: selectedSizeData.quantity,
-        sizeUndiscountedPrice: selectedSizeData.undiscounted_price ? parseFloat(selectedSizeData.undiscounted_price) : (product.undiscounted_price || parseFloat(selectedSizeData.price) || product.price), // Pass size-specific undiscounted price
+        sizeUndiscountedPrice: selectedSizeData.undiscounted_price
+          ? parseFloat(selectedSizeData.undiscounted_price)
+          : product.undiscounted_price ||
+            parseFloat(selectedSizeData.price) ||
+            product.price, // Pass size-specific undiscounted price
         subCategoryId: product.sub_category?.id,
         subCategoryName: product.sub_category?.name,
       });
 
       const key = `${product.id}-${selectedSizeData.id}`;
-      setItemsInCart(prev => ({ ...prev, [key]: true }));
+      setItemsInCart((prev) => ({ ...prev, [key]: true }));
 
       setModalConfig({
         isOpen: true,
@@ -255,7 +273,6 @@ const ProductDetail = () => {
         try {
           cartUuid = await createNewCart(accessToken);
         } catch (error) {
-          
           setModalConfig({
             isOpen: true,
             title: "Error",
@@ -285,19 +302,20 @@ const ProductDetail = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        
+
         setModalConfig({
           isOpen: true,
           title: "Notice",
-          message: errorData.error || "Failed to add item to cart. Please try again.",
+          message:
+            errorData.error || "Failed to add item to cart. Please try again.",
           type: "error",
         });
         setIsAddingToCart(false);
-        return; 
+        return;
       }
 
       const key = `${product.id}-${selectedSizeData.id}`;
-      setItemsInCart(prev => ({ ...prev, [key]: true }));
+      setItemsInCart((prev) => ({ ...prev, [key]: true }));
 
       setModalConfig({
         isOpen: true,
@@ -306,7 +324,6 @@ const ProductDetail = () => {
         type: "success",
       });
     } catch (error) {
-      
       setModalConfig({
         isOpen: true,
         title: "Error",
@@ -327,7 +344,7 @@ const ProductDetail = () => {
   useEffect(() => {
     if (modalConfig.isOpen) {
       const timer = setTimeout(() => {
-        setModalConfig(prev => ({ ...prev, isOpen: false }));
+        setModalConfig((prev) => ({ ...prev, isOpen: false }));
       }, 1000);
 
       return () => clearTimeout(timer);
@@ -391,12 +408,12 @@ const ProductDetail = () => {
   const isSizeInCart = (productId: number, sizeId: number): boolean => {
     const key = `${productId}-${sizeId}`;
     const accessToken = localStorage.getItem("accessToken");
-    
+
     // For guest users, check local storage directly
     if (!accessToken) {
       return isItemInLocalCart(productId, sizeId);
     }
-    
+
     // For authenticated users, use the cached result from state
     return itemsInCart[key] || false;
   };
@@ -532,7 +549,11 @@ const ProductDetail = () => {
                           setSelectedSize(item.size);
                           setQuantity(1); // Reset quantity when size changes
                         }}
-                        disabled={!product.unlimited && item.quantity <= 0 && !isSizeInCart(product.id, item.id)}
+                        disabled={
+                          !product.unlimited &&
+                          item.quantity <= 0 &&
+                          !isSizeInCart(product.id, item.id)
+                        }
                         className={`p-2 text-xs sm:text-sm border rounded-xl transition-colors ${
                           item.size === selectedSize
                             ? "bg-blue-200 text-blue-800 border-blue-300" // Selected: light blue background
@@ -587,24 +608,25 @@ const ProductDetail = () => {
                 >
                   +
                 </button>
-              <button
-                onClick={handleAddToCart}
-                className={`w-full py-2.5 text-white rounded-xl transition-colors cursor-pointer ${
-                  (!isInStock || isAddingToCart)
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-customBlue hover:brightness-90"
-                }`}
-                type="button"
-                disabled={!isInStock || isAddingToCart}
-              >
-                {isAddingToCart
-                  ? "Adding..."
-                  : !isInStock
-                  ? "Out of Stock"
-                  : selectedSizeData && isSizeInCart(product.id, selectedSizeData.id)
-                  ? "Item in Cart"
-                  : "Add to Cart"}
-              </button>
+                <button
+                  onClick={handleAddToCart}
+                  className={`w-full py-2.5 text-white rounded-xl transition-colors cursor-pointer ${
+                    !isInStock || isAddingToCart
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-customBlue hover:brightness-90"
+                  }`}
+                  type="button"
+                  disabled={!isInStock || isAddingToCart}
+                >
+                  {isAddingToCart
+                    ? "Adding..."
+                    : !isInStock
+                    ? "Out of Stock"
+                    : selectedSizeData &&
+                      isSizeInCart(product.id, selectedSizeData.id)
+                    ? "Item in Cart"
+                    : "Add to Cart"}
+                </button>
               </div>
 
               {/* Add to Cart */}
@@ -634,9 +656,9 @@ const ProductDetail = () => {
             <DescriptionList
               details={{
                 Category: product.sub_category?.category?.name || "N/A",
-                Subcategory: product.sub_category?.name || 'N/A',
+                Subcategory: product.sub_category?.name || "N/A",
                 // Weight: product.weight || 'N/A',
-                Color: product.colour || 'N/A',
+                Color: product.colour || "N/A",
               }}
             />
           </div>
@@ -644,10 +666,10 @@ const ProductDetail = () => {
         </div>
       </div>
       <div className="px-0 md:px-8 ">
-          <Suggested
-            subcategory_id={product.sub_category.id}
-            excludeProductIds={[product.id]}
-          />
+        <Suggested
+          subcategory_id={product.sub_category?.id | 0}
+          excludeProductIds={[product.id]}
+        />
       </div>
     </div>
   );

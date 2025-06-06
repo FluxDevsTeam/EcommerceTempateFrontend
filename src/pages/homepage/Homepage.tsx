@@ -1,12 +1,12 @@
-import ImageGrid from "./components/ImageGrid";
-import TopSelling from "./components/TopSelling";
-import ImageSlider from "./components/ImageSlider";
+import ImageGrid from "../homepage/components/ImageGrid";
+import TopSelling from "../homepage/components/TopSelling";
+import ImageSlider from "../homepage/components/ImageSlider";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchProducts } from "./api/apiService";
-import { WishData } from "../../pages/orders/api";
-import type { WishItem } from "../../pages/orders/types";
+import { fetchProducts } from "../homepage/api/apiService";
+import { WishData } from "../orders/api";
+import type { WishItem } from "../orders/types";
 
-import { ProductAPIResponse, ProductItem } from "./types/data-types";
+import { ProductAPIResponse, ProductItem } from "../homepage/types/data-types";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import banner from "/images/banner.png";
@@ -46,17 +46,17 @@ const Homepage = () => {
     setCurrentTopSellingPage(1);
     setTopSellingItems([]);
     // setHasMoreTopSellingItems(true); // Will be set by the data effect below
-    
+
     // useQuery will refetch automatically as pageSize is in its queryKey.
     // The effect below will then process the new 'data' for page 1.
   }, [pageSize]);
 
   const { data, isLoading, isError } = useQuery<ProductAPIResponse, Error>({
-    queryKey: ["products", 1, pageSize], 
-    queryFn: () => fetchProducts(1, pageSize), 
+    queryKey: ["products", 1, pageSize],
+    queryFn: () => fetchProducts(1, pageSize),
     enabled: !!pageSize, // Ensure pageSize is determined before fetching
   });
-  
+
   // Effect to process fetched data from useQuery (primarily for page 1)
   useEffect(() => {
     if (data) {
@@ -91,7 +91,6 @@ const Homepage = () => {
         const wishlistRes = await WishData();
         setWishlistItems(wishlistRes.results);
       } catch (err) {
-        
       } finally {
         setWishlistLoading(false);
       }
@@ -108,20 +107,19 @@ const Homepage = () => {
     const nextPage = currentPage + 1;
 
     try {
-      const newData = await fetchProducts(nextPage, pageSize); 
+      const newData = await fetchProducts(nextPage, pageSize);
       if (newData?.latest_items?.results) {
         setLatestItems((prevItems) => [
           ...prevItems,
           ...newData.latest_items.results,
         ]);
-        setHasMoreItems(!!newData.latest_items?.next); 
+        setHasMoreItems(!!newData.latest_items?.next);
         setCurrentPage(nextPage);
-        queryClient.setQueryData(["products", nextPage, pageSize], newData); 
+        queryClient.setQueryData(["products", nextPage, pageSize], newData);
       } else {
         setHasMoreItems(false);
       }
     } catch (error) {
-      
     } finally {
       setIsLoadingMore(false);
     }
@@ -134,29 +132,25 @@ const Homepage = () => {
     const nextPage = currentTopSellingPage + 1;
 
     try {
-      const newData = await fetchProducts(nextPage, pageSize); 
+      const newData = await fetchProducts(nextPage, pageSize);
       if (newData?.top_selling_items?.results) {
         setTopSellingItems((prevItems) => [
           ...prevItems,
           ...newData.top_selling_items.results,
         ]);
-        setHasMoreTopSellingItems(
-          !!newData.top_selling_items?.next 
-        );
+        setHasMoreTopSellingItems(!!newData.top_selling_items?.next);
         setCurrentTopSellingPage(nextPage);
-        queryClient.setQueryData(["products", nextPage, pageSize], newData); 
+        queryClient.setQueryData(["products", nextPage, pageSize], newData);
       } else {
         setHasMoreTopSellingItems(false);
       }
     } catch (error) {
-      
     } finally {
       setIsLoadingMoreTopSelling(false);
     }
   };
 
-  useEffect(() => {
-  }, [isLoading, wishlistLoading]);
+  useEffect(() => {}, [isLoading, wishlistLoading]);
 
   useEffect(() => {
     if (!isLoading && !wishlistLoading) {
@@ -213,11 +207,13 @@ const Homepage = () => {
         <div className="flex flex-col justify-center items-center space-y-4 md:space-y-6 max-w-xl w-full px-2 md:px-0 md:col-start-1">
           <div className="w-full space-y-3 md:space-y-4 lg:space-y-6 text-center md:text-left">
             <h1 className="text-[22px] font-bold leading-[1.3] tracking-[-0.02em] sm:text-3xl md:text-4xl lg:text-5xl text-gray-900 px-3 md:px-0">
-              <span className="block mb-1">Furnish with Fun, Discover What Your Little Ones Love!
+              <span className="block mb-1">
+                Furnish with Fun, Discover What Your Little Ones Love!
               </span>
             </h1>
             <p className="hidden md:block text-base sm:text-lg md:text-xl text-gray-600 leading-relaxed max-w-[90%] mx-auto md:mx-0">
-              Exclusive Deals. Stress-Free Shopping for Your Kids' Perfect Space.
+              Exclusive Deals. Stress-Free Shopping for Your Kids' Perfect
+              Space.
             </p>
           </div>
         </div>

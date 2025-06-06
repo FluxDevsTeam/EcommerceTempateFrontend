@@ -10,7 +10,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { toast } from "react-toastify";
 import logo from "/images/logo.png";
-import LoginWithGoogle from "./LoginWithGoogle";
+import GoogleLoginButton from "./LoginWithGoogle";
 
 // Define the schema for form validation
 const loginSchema = z.object({
@@ -33,7 +33,7 @@ const Login = () => {
   const location = useLocation();
 
   useEffect(() => {
-    
+    console.log("Login page location state:", location.state);
   }, [location.state]);
 
   const {
@@ -163,7 +163,7 @@ const Login = () => {
           <div className="w-[50%] h-1 bg-neutral-900" />
         </div>
 
-        {/* {/* <Button variant="outline" className="w-full p-5">
+        {/* <Button variant="outline" className="w-full p-5">
           <img
             src="./images/Symbol.svg.png"
             alt="Google logo"
@@ -172,7 +172,7 @@ const Login = () => {
         </Button> */}
 
         {/* <button className="w-full p-5 bg-white border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"> */}
-            <LoginWithGoogle />
+            <GoogleLoginButton></GoogleLoginButton>
         {/* </button> */}
         
 

@@ -91,7 +91,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
                   <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 leading-tight line-clamp-3">
                     {image.name}
                   </h3>
-                  <div className="h-1 w-24 bg-blue-600"></div>
+                  <div className="h-1 w-44 bg-blue-600"></div>
                   <p className="text-gray-600 text-lg lg:text-xl">
                     Discover our exclusive collection
                   </p>

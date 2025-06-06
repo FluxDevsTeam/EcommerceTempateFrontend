@@ -90,7 +90,7 @@ const AppContent: React.FC = () => {
           <Route path="/cart/error/" element={<PaymentFailed />} />
           <Route path="/orders/:id" element={<Confirm />} />
           <Route path="/general-settings" element={<GeneralSettings />} />
-          <Route path="/confirm-order" element={<ConfirmOrder />} />  
+          <Route path="/confirm-order" element={<ConfirmOrder />} />
         </Route>
       </Route>
 

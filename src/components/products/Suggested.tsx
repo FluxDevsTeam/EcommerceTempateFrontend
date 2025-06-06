@@ -24,7 +24,7 @@ import { getLocalCart, LocalCartItem } from '../../utils/cartStorage';
 
 interface SuggestedProps {
   onSuggestedItemClick?: (image: string) => void;
-  subcategory_id?: number;
+  subcategory_id?: number ;
   second_subcategory_id?: number;
   excludeProductIds?: number[];
   isCartContext?: boolean;
