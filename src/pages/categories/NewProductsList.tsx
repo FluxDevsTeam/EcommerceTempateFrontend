@@ -53,7 +53,7 @@ interface NewProductsListProps {
 }
 
 const fetchProducts = async (page = 1): Promise<ApiResponse> => {
-  const response = await fetch(`http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/?is_available=true&page_size=16&page=${page}`);
+  const response = await fetch(`https://api.kidsdesigncompany.com/api/v1/product/item/?is_available=true&page_size=16&page=${page}`);
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
@@ -82,9 +82,9 @@ const NewProductsList = ({ sortOption }: NewProductsListProps) => {
     const fetchWishlist = async () => {
       try {
         const wishlistRes = await WishData();
-        setWishlistItems(wishlistRes);
+        setWishlistItems(wishlistRes.results);
       } catch (err) {
-        console.error('Error loading wishlist:', err);
+        
       } finally {
         setWishlistLoading(false);
       }

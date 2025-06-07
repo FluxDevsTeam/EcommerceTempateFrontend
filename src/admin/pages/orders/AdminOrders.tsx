@@ -49,7 +49,7 @@ const AdminOrders = () => {
   ? orders
   : orders.filter((order) => order.status === statusFilter);
 
-  const getPageUrl = (page: number) => `http://kidsdesignecommerce.pythonanywhere.com/api/v1/admin/order/?page=${page}&page_size=${ITEMS_PER_PAGE}`;
+  const getPageUrl = (page: number) => `https://api.kidsdesigncompany.com/api/v1/admin/order/?page=${page}&page_size=${ITEMS_PER_PAGE}`;
 
 const loadOrders = async (url?: string, status = statusFilter) => {
   try {
@@ -79,7 +79,7 @@ const loadOrders = async (url?: string, status = statusFilter) => {
       setCurrentPage(pageFromResponse);
       setTotalPages(Math.ceil(data.count / ITEMS_PER_PAGE));
   } catch (err) {
-      console.error("Error loading orders:", err);
+      
   }
 };
 
@@ -249,7 +249,7 @@ const loadOrders = async (url?: string, status = statusFilter) => {
               setOrders(updatedOrders);
               setSelectedOrder({ ...selectedOrder, status: upperStatus });
               } catch (error) {
-                console.error("Failed to update order status in backend:", error);
+                
                 alert("Failed to change status. Please try again.")
               } finally {
                 setIsUpdatingStatus(false);

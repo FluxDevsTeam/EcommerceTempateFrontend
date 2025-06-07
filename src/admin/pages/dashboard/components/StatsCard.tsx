@@ -5,10 +5,16 @@ import axios from 'axios';
 import { formatNumberWithCommas, formatCurrency } from '../../../utils/formatting';
 
 interface StatsData {
-  total_available_products: string;
-  total_payments_this_year: number;
-  total_sales_this_year: number;
-  total_users: number;
+  data: {
+    total_available_products: string;
+    total_payments_this_year: number;
+    total_sales_this_year: number;
+    total_users: number;
+    monthly_data: Array<{
+      month: string;
+      total: number;
+    }>;
+  }
 }
 
 export default function StatsGrid() {
@@ -27,7 +33,7 @@ export default function StatsGrid() {
         }
 
         const response = await axios.get(
-          'http://kidsdesignecommerce.pythonanywhere.com/api/v1/admin/dashboard/',
+          'https://api.kidsdesigncompany.com/api/v1/admin/dashboard/',
           {
             headers: {
               'Authorization': `JWT ${token}`,
@@ -36,21 +42,9 @@ export default function StatsGrid() {
           }
         );
         
-        if (response.data ) {
-          setStats(response.data.data);
-          console.log('stats:', response.data);
-        } else {
-          setStats(null);
-        }
+        setStats(response.data);
       } catch (err: any) {
-        console.error('Error fetching stats:', err);
         setError(err.response?.data?.message || err.message || 'Failed to fetch statistics.');
-        
-        // Optional: Handle 401 unauthorized errors
-        if (err.response?.status === 401) {
-          // You might want to redirect to login or refresh the token here
-          console.log('Unauthorized - redirecting to login');
-        }
       } finally {
         setLoading(false);
       }
@@ -95,29 +89,28 @@ export default function StatsGrid() {
 
   return (
     <div className="grid grid-cols-2 mt-0 lg:grid-cols-4 gap-2 md:gap-4 mb-2">
-     
       <StatCard 
         title="Total Products"
-        value={formatNumberWithCommas(stats.total_available_products)} 
+        value={formatNumberWithCommas(parseInt(stats.data.total_available_products))} 
         icon={<Package className="text-indigo-500" />} 
         description="Available in stock"
       />
 
       <StatCard 
         title="Total Payments"
-        value={formatCurrency(stats.total_payments_this_year)} 
+        value={formatCurrency(stats.data.total_payments_this_year)} 
         icon={<Banknote className="text-emerald-500" />} 
         description="This fiscal year"
       />
       <StatCard 
         title="Total Sales"
-        value={formatNumberWithCommas(stats.total_sales_this_year)} 
+        value={formatNumberWithCommas(stats.data.total_sales_this_year)} 
         icon={<TrendingUp className="text-amber-500" />} 
         description="All-time sales count"
       />
       <StatCard 
         title="Total Users"
-        value={formatNumberWithCommas(stats.total_users)} 
+        value={formatNumberWithCommas(stats.data.total_users)} 
         icon={<Users className="text-sky-500" />} 
         description="Registered platform users"
       />

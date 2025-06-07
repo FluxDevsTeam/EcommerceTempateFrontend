@@ -44,7 +44,7 @@ export interface ApiResponse {
   results: Product[];
 }
 
-export const baseURL = 'http://kidsdesignecommerce.pythonanywhere.com';
+export const baseURL = 'https://api.kidsdesigncompany.com';
 
 // Utility Functions
 export const buildQueryParams = (params: Record<string, string>) => {
@@ -73,7 +73,7 @@ export const formatDate = (dateString: string) => {
       day: "numeric",
     });
   } catch (e) {
-    console.error("Error formatting date:", e);
+    
     return "Invalid Date";
   }
 };

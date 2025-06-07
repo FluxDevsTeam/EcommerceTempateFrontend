@@ -102,7 +102,7 @@ const AddNewProduct: React.FC = () => {
 
       try {
         const initialResponse = await fetch(
-          "http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/sub-category/?page_size=100",
+          "https://api.kidsdesigncompany.com/api/v1/product/sub-category/?page_size=100",
           {
             headers: {
               Authorization: `JWT ${accessToken}`,
@@ -124,7 +124,7 @@ const AddNewProduct: React.FC = () => {
         for (let page = 1; page <= totalPages; page++) {
           fetchPromises.push(
             fetch(
-              `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/sub-category/?page=${page}&page_size=${itemsPerPage}`,
+              `https://api.kidsdesigncompany.com/api/v1/product/sub-category/?page=${page}&page_size=${itemsPerPage}`,
               {
                 headers: {
                   Authorization: `JWT ${accessToken}`,
@@ -146,7 +146,7 @@ const AddNewProduct: React.FC = () => {
 
         setCategories(allCategories);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        
         setModalConfig({
           isOpen: true,
           title: "Error",
@@ -256,7 +256,7 @@ const AddNewProduct: React.FC = () => {
 
     try {
       const response = await fetch(
-        "http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/",
+        "https://api.kidsdesigncompany.com/api/v1/product/item/",
         {
           method: "POST",
           headers: {
@@ -268,14 +268,14 @@ const AddNewProduct: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Server error response:", errorData);
+        
         throw new Error(
           errorData.message || `Failed to add product: ${response.statusText}`
         );
       }
 
       const data = await response.json();
-      console.log("Product added successfully:", data);
+      
 
       setNewProductId(data.id);
       setModalConfig({
@@ -285,7 +285,7 @@ const AddNewProduct: React.FC = () => {
         type: "success",
       });
     } catch (error) {
-      console.error("Error adding product:", error);
+      
       setModalConfig({
         isOpen: true,
         title: "Error",

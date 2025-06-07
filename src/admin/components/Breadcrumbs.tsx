@@ -17,7 +17,7 @@ const Breadcrumbs = ({ items }: BreadcrumbsProps) => {
   }
 
   return (
-    <nav aria-label="breadcrumb" className="hidden md:block text-sm text-gray-600 mb-4 md:mb-6">
+    <nav aria-label="breadcrumb" className="text-sm text-gray-600 mb-4 md:mb-6">
       <ol className="list-none p-0 inline-flex items-center space-x-1.5">
         {items.map((item, index) => (
           <li key={index} className="inline-flex items-center">
@@ -39,4 +39,4 @@ const Breadcrumbs = ({ items }: BreadcrumbsProps) => {
   );
 };
 
-export default Breadcrumbs; 
+export default Breadcrumbs;

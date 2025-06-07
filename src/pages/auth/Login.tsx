@@ -33,7 +33,7 @@ const Login = () => {
   
 
   useEffect(() => {
-    console.log("Login page location state:", location.state);
+    
   }, [location.state]);
   
   const {
@@ -49,7 +49,7 @@ const Login = () => {
       setIsSubmitting(true);
       clearError(); // Clear previous errors
       
-      console.log(`Attempting login with email: ${data.email}`);
+      
       
       // Call login service
       await login(data.email, data.password);
@@ -70,7 +70,7 @@ const Login = () => {
       navigate(from, { replace: true });
 
     } catch (err: any) {
-      console.error('Login error:', err);
+      
       toast.error(error || 'Login failed. Please check your credentials.');
     } finally {
       setIsSubmitting(false);
@@ -160,14 +160,14 @@ const Login = () => {
           <div className="w-[50%] h-1 bg-neutral-900" />
         </div>
         
-        <Button variant="outline" className="w-full p-5">
+        {/* <Button variant="outline" className="w-full p-5">
           <img 
             src="./images/Symbol.svg.png" 
             alt="Google logo" 
             className="mr-2 h-4 w-4" 
           />
           Continue with Google
-        </Button>
+        </Button> */}
 
         <p className="text-sm pt-4">Is it your first time here? <Link to='/signup' className='underline'>SignUp</Link> here</p>
       </div>

@@ -3,6 +3,7 @@ import { useState } from "react";
 import Sidebar from "@/admin/components/Sidebar";
 import AdminHeader from "@/admin/components/AdminHeader";
 import Breadcrumbs from "@/admin/components/Breadcrumbs";
+import BackButton from "@/admin/components/BackButton";
 import { ReactNode } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import AdminRouteGuard from "./AdminRouteGuard";
@@ -75,7 +76,7 @@ const generateBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [activePath, setActivePath] = useState<string>("/dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
   const location = useLocation();
 
   const handleNavClick = (path: string) => {
@@ -108,6 +109,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           toggleCollapse={toggleCollapse}
         />
 
+        {/* Overlay for mobile menu */}
+        {isMobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+            onClick={toggleMobileMenu}
+          ></div>
+        )}
+
         {/* Main content area */}
         <div className={`flex-1 overflow-x-hidden md:transition-all md:duration-300 ${isCollapsed ? 'md:ml-[70px]' : 'md:ml-64'}`}>
           {/* Admin Header */}
@@ -118,7 +127,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           
           {/* Page Content */}
           <div className="p-4 md:p-6 lg:p-8">
-            <Breadcrumbs items={breadcrumbItems} />
+            <BackButton />
             {children || <Outlet />}
           </div>
         </div>

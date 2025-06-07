@@ -38,7 +38,7 @@ const Producter = () => {
     const fetchData = async () => {
       try {
         const [productRes, wishlistRes] = await Promise.all([
-          fetch('http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/').then(res => res.json()), // Ensure res.json() is called here
+          fetch('https://api.kidsdesigncompany.com/api/v1/product/item/').then(res => res.json()), // Ensure res.json() is called here
           WishData()
         ]);
 
@@ -47,7 +47,7 @@ const Producter = () => {
 
         setWishlistItems(wishlistRes);
       } catch (err) {
-        console.error('Error loading data:', err);
+        
         setError('Something went wrong');
       } finally {
         setLoading(false);

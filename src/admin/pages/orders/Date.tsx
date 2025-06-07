@@ -11,8 +11,8 @@ const formatEstimatedDelivery = (estimated: string): string => {
       });
       return `${formattedDates.join(' - ')}`;
     } catch (e) {
-        console.log(e)
-      console.error("Invalid estimated delivery:", estimated);
+        
+      
       return "Estimated delivery: N/A";
     }
   };

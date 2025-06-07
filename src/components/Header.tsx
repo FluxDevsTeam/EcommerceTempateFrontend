@@ -74,13 +74,13 @@ const Header = () => {
         }
 
         // Fetch all categories at once without page_size limitation
-        const response = await fetch('http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/category/');
+        const response = await fetch('https://api.kidsdesigncompany.com/api/v1/product/category/');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setCategories(data.results);
         localStorage.setItem('cachedCategories', JSON.stringify(data.results));
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        
         if (!localStorage.getItem('cachedCategories')) {
           setTimeout(fetchCategories, 5000);
         }
@@ -92,7 +92,7 @@ const Header = () => {
         try {
           await refreshUserData();
         } catch (err) {
-          console.error("Failed to refresh user data:", err);
+          
         }
       }
     };
@@ -178,7 +178,7 @@ const Header = () => {
       
       window.location.href = '/';
     } catch (error) {
-      console.error("Logout failed", error);
+      
     } finally {
       setIsLoggingOut(false);
     }
@@ -223,7 +223,7 @@ const Header = () => {
         return storedUser?.first_name || "User";
       }
     } catch (error) {
-      console.error("Error reading user from localStorage:", error);
+      
     }
     
     return "User";
@@ -233,15 +233,15 @@ const Header = () => {
   const displayName = getDisplayName();
 
   const renderDesktopCategoryLinks = () => {
-    const firstFourCategories = categories.slice(0, 4);
-    const remainingCategories = categories.slice(4);
+    const firstThreeCategories = categories.slice(0, 3);
+    const remainingCategories = categories.slice(3);
     
     return (
       <>
         <Link to='/new-arrivals' className="hover:text-gray-600 transition-colors">
           <li>New Arrivals</li>
         </Link>
-        {firstFourCategories.map((category) => (
+        {firstThreeCategories.map((category) => (
           <Link 
             key={category.id}
             to={`/category/${category.id}`}

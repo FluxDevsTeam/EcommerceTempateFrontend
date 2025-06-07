@@ -16,7 +16,7 @@ const Order = () => {
   const [nextUrl, setNextUrl] = useState<string | null>(null);
   const [prevUrl, setPrevUrl] = useState<string | null>(null);
 
-  const getPageUrl = (page: number) => `http://kidsdesignecommerce.pythonanywhere.com/api/v1/orders/item/?page=${page}`;
+  const getPageUrl = (page: number) => `https://api.kidsdesigncompany.com/api/v1/orders/item/?page=${page}`;
   
   const loadOrders = async (url?: string) => {
     try {
@@ -41,7 +41,7 @@ const Order = () => {
         }
 
     } catch (err) {
-     console.error("Error fetching customers:", err);
+     
         setError("Failed to load customers.");
       } finally {
         setLoading(false);

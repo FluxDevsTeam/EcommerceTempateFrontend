@@ -97,7 +97,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const [editingCategory, setEditingCategory] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const baseURL = `http://kidsdesignecommerce.pythonanywhere.com`;
+  const baseURL = `https://api.kidsdesigncompany.com`;
 
   const fetchProducts = async (page: number) => {
     setLoading(true);
@@ -163,9 +163,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       setTotalProducts(data.count);
       setNextPageUrl(data.next);
       setPrevPageUrl(data.previous);
-    } catch (err) {
-      console.error("Error fetching products:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch products");
+    } catch (error) {
+      // Remove console.error
+      setError(error instanceof Error ? error.message : "Failed to fetch products");
     } finally {
       setLoading(false);
     }
@@ -500,46 +500,47 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   return (
     <div className="w-full">
       <div className="bg-white p-4 rounded-lg shadow-sm">
-        <div className="flex flex-row justify-between items-center mb-6">
-          <h2
-            style={{ fontSize: "clamp(14px, 3vw, 22px)" }}
-            className="font-semibold text-gray-800"
-          >
-            My Products List
-          </h2>
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-3 sm:space-y-0">
+  <h2
+    style={{ fontSize: "clamp(12px, 3vw, 18px)" }}
+    className="font-semibold text-gray-800 text-center sm:text-left"
+  >
+    My Products List
+  </h2>
 
-          <div className="flex gap-2">
-            <button
-              className="flex items-center justify-center space-x-2 bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit"
-              onClick={() => navigate("/admin/admin-categories")}
-            >
-              <span
-                className="text-xs md:text-sm whitespace-nowrap"
-                style={{ fontSize: "clamp(8px, 3vw, 14px)" }}
-              >
-                Category
-              </span>
-            </button>
-            <button
-              className="flex items-center justify-center space-x-2 bg-gray-700 text-white px-2 py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit"
-              onClick={() => navigate("/admin/add-new-product")}
-            >
-              <FaPlus style={{ fontSize: "clamp(0.5px, 3vw, 15px)" }} />
-              <span
-                style={{ fontSize: "clamp(7px, 3vw, 14px)" }}
-                className="hidden md:inline-block"
-              >
-                Add New Product
-              </span>
-              <span
-                style={{ fontSize: "clamp(9px, 3vw, 14px)" }}
-                className="inline-block md:hidden"
-              >
-                Add Product
-              </span>
-            </button>
-          </div>
-        </div>
+  <div className="flex flex-wrap justify-center sm:justify-end gap-1 sm:gap-2">
+    <button
+      className="flex items-center justify-center space-x-1 sm:space-x-2 bg-gray-700 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit text-xs sm:text-sm"
+      onClick={() => navigate("/admin/admin-categories")}
+    >
+      <span className="whitespace-nowrap">Category</span>
+    </button>
+    <button
+      className="flex items-center justify-center space-x-1 sm:space-x-2 bg-gray-700 text-white px-2 sm:px-2 py-1.5 sm:py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit text-xs sm:text-sm"
+      onClick={() => navigate("/admin/add-new-product")}
+    >
+      <FaPlus style={{ fontSize: "clamp(8px, 2vw, 12px)" }} />
+      <span
+        style={{ fontSize: "clamp(8px, 2vw, 12px)" }}
+        className="hidden sm:inline-block"
+      >
+        Add New Product
+      </span>
+      <span
+        style={{ fontSize: "clamp(8px, 2vw, 12px)" }}
+        className="inline-block sm:hidden"
+      >
+        Add Product
+      </span>
+    </button>
+    <button
+      onClick={() => navigate("/admin/products/Prioritize")}
+      className="px-2 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs sm:text-sm whitespace-nowrap"
+    >
+      Product Prioritization
+    </button>
+  </div>
+</div>
 
         {/* Top Controls */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0">

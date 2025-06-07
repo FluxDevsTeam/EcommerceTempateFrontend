@@ -1,3 +1,5 @@
+# KidsDesignEcommerceFrontend
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
@@ -29,26 +31,91 @@ export default tseslint.config({
     },
   },
 })
+
+## Project File Tree
+
 ```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+.gitignore
+README.md
+components.json
+eslint.config.js
+index.html
+package-lock.json
+package.json
+postcss.config.js
+public\
+├── _redirects
+├── images\
+│   ├── Empty-rafiki 1 (1).png
+│   ├── Frame 1618876995 (1).png
+│   ├── Frame 1618876996.png
+│   ├── Symbol.svg.png
+│   ├── Vector (2).png
+│   ├── Vector (3).png
+│   ├── banner.png
+│   ├── beautiful-smiling-young-blonde-woman-pointing-sunglasses-holding-shopping-bags-credit-card-pink-wall 1 (1).png
+│   ├── beautiful-smiling-young-blonde-woman-pointing-sunglasses-holding-shopping-bags-credit-card-pink-wall 1.png
+│   ├── image 39 (1).png
+│   ├── image2.png
+│   ├── logo.png
+│   ├── shutterstock_2081336278@2x 1 (2).png
+│   ├── shutterstock_2081336278@2x 1 (3).png
+│   └── shutterstock_2081336278@2x 1 (4).png
+└── vite.svg
+src\
+├── App.css
+├── App.tsx
+├── admin\
+│   ├── components\
+│   ├── pages\
+│   └── utils\
+├── api\
+│   └── axios.ts
+├── assets\
+│   └── react.svg
+├── card\
+│   ├── Ade.tsx
+│   ├── Card.tsx
+│   ├── SuggestedCard.tsx
+│   ├── SuggestedWish.tsx
+│   ├── Wish.tsx
+│   ├── api.tsx
+│   ├── types.tsx
+│   └── wishListApi.tsx
+├── components\
+│   ├── Breadcrumb.tsx
+│   ├── Footer.tsx
+│   ├── Header.tsx
+│   ├── Pagination.tsx
+│   ├── ProfileDropdown.tsx
+│   ├── ScrollToTop.tsx
+│   ├── SearchInput.tsx
+│   ├── SortDropdown.tsx
+│   ├── products\
+│   └── ui\
+├── index.css
+├── lib\
+│   └── utils.ts
+├── main.tsx
+├── pages\
+│   ├── auth\
+│   ├── cart\
+│   ├── categories\
+│   ├── filters\
+│   ├── homepage\
+│   └── orders\
+├── routing\
+│   ├── AdminPrivateRoute.tsx
+│   ├── PrivateRoute.tsx
+│   └── route.ts
+├── types\
+│   └── api-types.ts
+├── utils\
+│   └── cartStorage.ts
+└── vite-env.d.ts
+tailwind.config.js
+tsconfig.app.json
+tsconfig.json
+tsconfig.node.json
+vite.config.ts
 ```

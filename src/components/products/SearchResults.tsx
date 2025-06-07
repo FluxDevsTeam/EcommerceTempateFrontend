@@ -7,7 +7,7 @@ import { WishData } from '@/card/wishListApi';
 import { WishItem } from '@/card/types';
 
 // Full search API endpoint
-const SEARCH_API_URL = "http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/search/";
+const SEARCH_API_URL = "https://api.kidsdesigncompany.com/api/v1/product/item/search/";
 
 export interface Category {
   id: number;
@@ -135,7 +135,7 @@ const SearchResults = () => {
     const fetchWishlist = async () => {
       try {
         const wishlistRes = await WishData();
-        setWishlistItems(wishlistRes);
+        setWishlistItems(wishlistRes.results);
       } catch (err) {
         console.error('Error loading wishlist:', err);
       } finally {

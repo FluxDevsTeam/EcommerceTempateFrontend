@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { fetchSuggestedProducts} from "@/pages/homepage/api/apiService";
+import { fetchSuggestedProductsDetails} from "@/pages/homepage/api/apiService";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -22,7 +22,7 @@ const SuggestedProductDetails: React.FC<SuggestedProductDetailsProps> = ({
   // Fetch suggested products
   const { data, isLoading, isError } = useQuery({
     queryKey: ['Suggested'],
-    queryFn: fetchSuggestedProducts
+    queryFn: fetchSuggestedProductsDetails
   });
 
   // Fetch wishlist data
@@ -30,7 +30,7 @@ const SuggestedProductDetails: React.FC<SuggestedProductDetailsProps> = ({
     const fetchWishlist = async () => {
       try {
         const wishlistRes = await WishData();
-        setWishlistItems(wishlistRes);
+        setWishlistItems(wishlistRes.results);
       } catch (err) {
         console.error('Error loading wishlist:', err);
       } finally {

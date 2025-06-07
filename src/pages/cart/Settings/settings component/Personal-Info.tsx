@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 const PersonalInfo = () => {
-  const baseURL = `http://kidsdesignecommerce.pythonanywhere.com`;
+  const baseURL = `https://api.kidsdesigncompany.com`;
 
   const [personalInfo, setPersonalInfo] = useState({
     new_first_name: "",
@@ -52,7 +52,7 @@ const PersonalInfo = () => {
         });
   
         const logData = await response.json();
-        console.log(logData);
+        
   
         setUserProfileDeets(logData);
       } catch (error) {}
@@ -113,7 +113,7 @@ const PersonalInfo = () => {
       setInfoSubmitResponseStatus(response.status);
 
       const logData = await response.json();
-      console.log(logData);
+      
 
       const message = logData?.data || logData?.message || logData?.detail || (response.ok ? "Request submitted. Please verify with your password." : "Request failed.");
       setInfoSubmitMsg(message);
@@ -170,7 +170,7 @@ const PersonalInfo = () => {
       );
 
       const logData = await response.json();
-      console.log(logData);
+      
 
       const message = logData?.data || logData?.message || logData?.detail || (response.ok ? "Profile updated successfully!" : "Verification failed.");
       setPasswordSubmitMsg(message);
@@ -346,7 +346,7 @@ const PersonalInfo = () => {
               onClick={() => {
                 setIsInfoSubmitMsgOpen(false);
               }}
-              className="w-full px-4 py-2 bg-black text-white rounded-md hover:bg-gray-700 transition-colors"
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               Close
             </button>

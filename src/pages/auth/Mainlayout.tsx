@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import { Outlet } from "react-router-dom";
 import Footer from "@/components/Footer";
 import Breadcrumbs from "@/components/Breadcrumb";
+import WhatsAppFloat from "@/components/WhatsAppFloat";
 
 
 const MainLayout: React.FC = () => {
@@ -13,6 +14,7 @@ const MainLayout: React.FC = () => {
         <div className='md:block hidden'>    <Breadcrumbs/> </div>
           <Outlet /> 
         </main>
+        <WhatsAppFloat />
         <Footer />
       </div>
     );

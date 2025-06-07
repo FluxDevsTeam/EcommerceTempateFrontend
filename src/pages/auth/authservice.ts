@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 
-const API_URL = 'http://kidsdesignecommerce.pythonanywhere.com';
+const API_URL = 'https://api.kidsdesigncompany.com';
 
 // Type definitions for API responses
 interface AuthResponse {
@@ -101,7 +101,7 @@ api.interceptors.request.use(
       config.headers.Authorization = `JWT ${token}`;
       
       // For debugging
-      console.log("Adding auth header:", `JWT ${token}`);
+      
     }
     return config;
   },
@@ -111,13 +111,13 @@ api.interceptors.request.use(
 const authService = {
   // Signup
   signup: async (userData: UserSignup): Promise<any> => {
-    console.log("Signup payload:", JSON.stringify(userData, null, 2));
+    
     try {
       const response = await api.post('/auth/signup/', userData);
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
-      console.error("Signup error details:", axiosError.response?.data);
+      
       throw error;
     }
   },
@@ -125,13 +125,13 @@ const authService = {
   // Resend OTP for signup
   resendSignupOTP: async (email: string): Promise<any> => {
     try {
-      console.log(`API call - Resend OTP for: ${email}`);
+      
       const response = await api.post('/auth/signup/resend-otp/', { email });
-      console.log('Resend OTP response:', response.data);
+      
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
-      console.error("Resend OTP error:", axiosError.response?.data);
+      
       throw error;
     }
   },
@@ -139,13 +139,13 @@ const authService = {
   // Verify OTP for signup
   verifySignupOTP: async (email: string, otp: string): Promise<any> => {
     try {
-      console.log(`API call - Verify OTP for: ${email} with code: ${otp}`);
+      
       const response = await api.post('/auth/signup/verify-otp/', { email, otp });
-      console.log('Verify OTP response:', response.data);
+      
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
-      console.error("Verify OTP error:", axiosError.response?.data);
+      
       throw error;
     }
   },
@@ -153,7 +153,7 @@ const authService = {
   // Login
   login: async (credentials: Login): Promise<AuthResponse> => {
     try {
-      console.log(`API call - Login with email: ${credentials.email}`);
+      
       const response = await api.post<AuthResponse>('/auth/login/', credentials);
       
       // Store tokens in localStorage
@@ -179,13 +179,13 @@ const authService = {
           user: userResponse
         };
       } catch (profileError) {
-        console.error("Failed to fetch user profile:", profileError);
+        
       }
       
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
-      console.error("Login error:", axiosError.response?.data);
+      
       throw error;
     }
   },
@@ -204,7 +204,7 @@ const authService = {
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
-      console.error("Token refresh error:", axiosError.response?.data);
+      
       throw error;
     }
   },
@@ -217,7 +217,7 @@ const authService = {
         await api.post('/auth/logout/', { refresh_token: refreshToken });
       }
     } catch (error) {
-      console.error('Logout error:', error);
+      
     } finally {
       // Always clear local storage, even if API call fails
       localStorage.removeItem('accessToken');
@@ -240,7 +240,7 @@ const authService = {
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
-      console.error("Forgot password request error:", axiosError.response?.data);
+      
       throw error;
     }
   },
@@ -252,7 +252,7 @@ const authService = {
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
-      console.error("Resend forgot password OTP error:", axiosError.response?.data);
+      
       throw error;
     }
   },
@@ -264,21 +264,21 @@ const authService = {
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
-      console.error("Verify forgot password OTP error:", axiosError.response?.data);
+      
       throw error;
     }
   },
   
   // Set new password after forgot password flow
   setNewPassword: async (data: { email: string; new_password: string; confirm_password: string }): Promise<any> => {
-    console.log("Sending request with payload:", data);
+    
     
     try {
       const response = await api.post('/auth/forgot-password/set-new-password/', data);
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
-      console.error("Set new password error:", axiosError.response?.data);
+      
       throw error;
     }
   },
@@ -290,7 +290,7 @@ const authService = {
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
-      console.error("Request password change error:", axiosError.response?.data);
+      
       throw error;
     }
   },
@@ -302,7 +302,7 @@ const authService = {
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
-      console.error("Resend password change OTP error:", axiosError.response?.data);
+      
       throw error;
     }
   },
@@ -314,7 +314,7 @@ const authService = {
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
-      console.error("Verify password change error:", axiosError.response?.data);
+      
       throw error;
     }
   },
@@ -332,7 +332,7 @@ const authService = {
       return userData;
     } catch (error) {
       const axiosError = error as AxiosError;
-      console.error("Get profile error:", axiosError.response?.data);
+      
       
       // If it's a 401 error, the interceptor should have already tried refreshing the token
       throw new Error('Failed to fetch user profile');
@@ -347,7 +347,7 @@ const authService = {
       try {
         return JSON.parse(userJson);
       } catch (e) {
-        console.error("Error parsing user data:", e);
+        
         return null;
       }
     }

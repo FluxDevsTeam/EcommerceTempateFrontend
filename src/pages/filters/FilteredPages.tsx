@@ -95,9 +95,9 @@ const ProductsPage: React.FC = () => {
     const fetchWishlist = async () => {
       try {
         const wishlistRes = await WishData();
-        setWishlistItems(wishlistRes);
+        setWishlistItems(wishlistRes.results);
       } catch (err) {
-        console.error('Wishlist fetch error:', err);
+        
       } finally {
         setWishlistLoading(false);
       }
@@ -119,7 +119,7 @@ const ProductsPage: React.FC = () => {
         apiParams.append('page', currentPage.toString());
 
         const response = await fetch(
-          `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/?is_available=true&page_size=16&${apiParams}`
+          `https://api.kidsdesigncompany.com/api/v1/product/item/?is_available=true&page_size=16&${apiParams}`
         );
 
         if (!response.ok) throw new Error('Failed to fetch products');
@@ -208,7 +208,7 @@ const ProductsPage: React.FC = () => {
           <p className="text-xl text-gray-600">No products found matching your filters.</p>
           <Button
             onClick={() => navigate('/products')}
-            className="mt-4 bg-black text-white px-6 py-2 rounded-full"
+            className="mt-4 bg-customBlue text-white px-6 py-2 rounded-full"
           >
             View All Products
           </Button>

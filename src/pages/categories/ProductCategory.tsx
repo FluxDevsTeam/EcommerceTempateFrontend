@@ -52,7 +52,7 @@ interface ApiResponse {
 // Fetch functions
 const fetchCategoryProducts = async (categoryId: number, page = 1): Promise<ApiResponse> => {
   const response = await fetch(
-    `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/?is_available=true&category=${categoryId}&page_size=16&page=${page}`
+    `https://api.kidsdesigncompany.com/api/v1/product/item/?is_available=true&category=${categoryId}&page_size=16&page=${page}`
   );
   if (!response.ok) throw new Error('Failed to fetch products.');
   return response.json();
@@ -60,7 +60,7 @@ const fetchCategoryProducts = async (categoryId: number, page = 1): Promise<ApiR
 
 const fetchCategoryDetails = async (categoryId: number): Promise<Category> => {
   const response = await fetch(
-    `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/category/${categoryId}/`
+    `https://api.kidsdesigncompany.com/api/v1/product/category/${categoryId}/`
   );
   if (!response.ok) throw new Error('Failed to fetch category.');
   return response.json();
@@ -104,9 +104,9 @@ const ProductCategory = () => {
     const fetchWishlist = async () => {
       try {
         const wishlistRes = await WishData();
-        setWishlistItems(wishlistRes);
+        setWishlistItems(wishlistRes.results);
       } catch (err) {
-        console.error('Error loading wishlist:', err);
+        
       } finally {
         setWishlistLoading(false);
       }

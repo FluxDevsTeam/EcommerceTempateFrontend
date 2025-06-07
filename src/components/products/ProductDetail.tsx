@@ -6,7 +6,7 @@ import { addToLocalCart, isItemInLocalCart, isItemInUserCart } from "../../utils
 
 import DescriptionList from "./DescriptionList";
 
-const baseURL = "http://kidsdesignecommerce.pythonanywhere.com";
+const baseURL = "https://api.kidsdesigncompany.com";
 
 // Define TypeScript interfaces for the API responses
 interface Category {
@@ -56,7 +56,7 @@ interface ProductDetailParams {
 
 const fetchProduct = async (id: number): Promise<Product> => {
   const response = await fetch(
-    `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/${id}/`
+    `https://api.kidsdesigncompany.com/api/v1/product/item/${id}/`
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");
@@ -217,7 +217,9 @@ const ProductDetail = () => {
         sizeName: selectedSizeData.size,
         quantity: quantity,
         maxQuantity: selectedSizeData.quantity,
-        sizeUndiscountedPrice: selectedSizeData.undiscounted_price ? parseFloat(selectedSizeData.undiscounted_price) : (product.undiscounted_price || parseFloat(selectedSizeData.price) || product.price) // Pass size-specific undiscounted price
+        sizeUndiscountedPrice: selectedSizeData.undiscounted_price ? parseFloat(selectedSizeData.undiscounted_price) : (product.undiscounted_price || parseFloat(selectedSizeData.price) || product.price), // Pass size-specific undiscounted price
+        subCategoryId: product.sub_category?.id,
+        subCategoryName: product.sub_category?.name,
       });
 
       const key = `${product.id}-${selectedSizeData.id}`;
@@ -253,7 +255,7 @@ const ProductDetail = () => {
         try {
           cartUuid = await createNewCart(accessToken);
         } catch (error) {
-          console.error("Error creating cart:", error);
+          
           setModalConfig({
             isOpen: true,
             title: "Error",
@@ -283,7 +285,7 @@ const ProductDetail = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Error adding to cart:", errorData);
+        
         setModalConfig({
           isOpen: true,
           title: "Notice",
@@ -304,7 +306,7 @@ const ProductDetail = () => {
         type: "success",
       });
     } catch (error) {
-      console.error("Error during cart operation:", error);
+      
       setModalConfig({
         isOpen: true,
         title: "Error",
@@ -320,6 +322,17 @@ const ProductDetail = () => {
   const handleCloseModal = () => {
     setModalConfig({ ...modalConfig, isOpen: false });
   };
+
+  // Add useEffect for auto-closing modal
+  useEffect(() => {
+    if (modalConfig.isOpen) {
+      const timer = setTimeout(() => {
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [modalConfig.isOpen]);
 
   if (!id || isNaN(productId)) {
     return <div className="text-center py-8">Product ID not provided</div>;
@@ -411,16 +424,6 @@ const ProductDetail = () => {
                 {modalConfig.title}
               </h2>
               <p className="mb-6">{modalConfig.message}</p>
-              <button
-                onClick={handleCloseModal}
-                className={`w-full py-2 px-4 text-white rounded ${
-                  modalConfig.type === "success"
-                    ? "bg-customBlue hover:bg-blue-700"
-                    : "bg-red-500 hover:bg-red-600"
-                }`}
-              >
-                {modalConfig.type === "success" ? "Continue" : "Close"}
-              </button>
             </div>
           </div>
         )}
@@ -440,7 +443,7 @@ const ProductDetail = () => {
                 <img
                   src={img}
                   alt={`Thumbnail ${index + 1}`}
-                  className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-cover"
+                  className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-cover rounded-lg"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = "https://via.placeholder.com/100";
@@ -456,7 +459,7 @@ const ProductDetail = () => {
               <img
                 src={mainImage}
                 alt="Main Product"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain rounded-2xl"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = "https://via.placeholder.com/500";
@@ -615,13 +618,13 @@ const ProductDetail = () => {
             <h2 className="text-lg sm:text-xl font-medium">Description</h2>
             <p
               className={`text-gray-700 text-xs sm:text-sm ${
-                !isDescriptionExpanded ? "max-md:line-clamp-5" : ""
+                !isDescriptionExpanded ? "max-md:line-clamp-6 line-clamp-6" : ""
               }`}
             >
               {product.description}
             </p>
             <button
-              className="md:hidden text-blue-800 text-sm sm:text-base cursor-pointer"
+              className="text-blue-800 text-sm sm:text-base cursor-pointer"
               onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
             >
               {isDescriptionExpanded ? "view less" : "view more"}
@@ -632,7 +635,7 @@ const ProductDetail = () => {
               details={{
                 Category: product.sub_category?.category?.name || "N/A",
                 Subcategory: product.sub_category?.name || 'N/A',
-                Weight: product.weight || 'N/A',
+                // Weight: product.weight || 'N/A',
                 Color: product.colour || 'N/A',
               }}
             />
@@ -641,7 +644,10 @@ const ProductDetail = () => {
         </div>
       </div>
       <div className="px-0 md:px-8 ">
-        <Suggested />
+          <Suggested
+            subcategory_id={product.sub_category.id}
+            excludeProductIds={[product.id]}
+          />
       </div>
     </div>
   );
