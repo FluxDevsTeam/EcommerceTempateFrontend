@@ -88,7 +88,13 @@ const Signup = () => {
     <div className="flex flex-col items-center justify-center p-4 w-full my-6">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold">SHOP.CO</h1>
+         <Link to="/">
+                   <img 
+                     src="/images/logo.png" 
+                     alt="SHOP.CO Logo" 
+                     className="h-10 w-auto mx-auto cursor-pointer"
+                   />
+                 </Link>
         </div>
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -215,7 +221,7 @@ const Signup = () => {
           
           <Button 
             type="submit" 
-            className="w-full bg-black text-white hover:bg-gray-800"
+            className="w-full bg-[#0057b7] text-white hover:bg-[#004494]"
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Creating Account...' : 'Create Account'}

@@ -9,7 +9,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { toast } from 'react-toastify';
-import logo from '/images/logo.png'
+
 
 
 // Define the schema for form validation
