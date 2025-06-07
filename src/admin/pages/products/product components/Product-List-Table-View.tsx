@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import PaginatedDropdown from "./PaginatedDropdown";
 import type { Product } from "../utils/productUtils";
 import { fetchProducts } from "../utils/productUtils";
+import { formatCurrency, formatNumberWithCommas } from "../../../utils/formatting";
 
 // Define interfaces for auxiliary data structures
 interface Category {
@@ -81,13 +82,13 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
     productName: "",
   });
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [sortBy, setSortBy] = useState<string>("");  const [categories, setCategories] = useState<Category[]>([]);
+  const [sortBy, setSortBy] = useState<string>("");
+  const [categories, setCategories] = useState<Category[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [showPriceFilter, setShowPriceFilter] = useState(false);
-  const [dbPriceRange, setDbPriceRange] = useState<[number, number]>([0, 0]);
-  const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([
-    0, 0,
-  ]);
+  const [dbPriceRange, setDbPriceRange] = useState<[number, number]>([0, 1000]); // Initial broad range, will be updated
+const [isDbPriceRangeInitialized, setIsDbPriceRangeInitialized] = useState(false);
+  const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([0, 1000]);
   const [showEditCategoryModal, setShowEditCategoryModal] = useState(false);
   const [selectedCategoryForEdit, setSelectedCategoryForEdit] = useState<{
     id: number;
@@ -97,7 +98,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
   const [editingCategory, setEditingCategory] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
+  const baseURL = `http://kidsdesignecommerce.pythonanywhere.com`;
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -134,7 +135,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
       }
     };
 
-    if (isVisible) {
+    if (isVisible && isDbPriceRangeInitialized) { // Only load products if dbPriceRange is initialized
       if (searchQuery) setCurrentPage(1);
       loadProducts();
     }
@@ -145,7 +146,100 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
     sortBy,
     priceRange,
     searchQuery,
+    isDbPriceRangeInitialized, // Add as dependency
   ]);
+
+  // Effect to fetch initial min/max prices for the slider
+  useEffect(() => {
+    const fetchMinMaxPrices = async () => {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        setError("Authentication error: No access token for fetching price range.");
+        setIsDbPriceRangeInitialized(true); // Allow product loading even if price range fetch fails
+        return;
+      }
+      try {
+        // Fetch all products to determine min/max prices from their sizes
+        // This might need to handle pagination if the API returns paginated results for all items
+        // For simplicity, assuming a single call or a manageable number of pages
+        let allProducts: any[] = [];
+        let nextPage = `${baseURL}/api/v1/product/item/?page_size=100`; // Fetch 100 items per page
+
+        while (nextPage) {
+          const response = await fetch(nextPage, {
+            headers: {
+              Authorization: `JWT ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          });
+          if (!response.ok) {
+            throw new Error(`Failed to fetch products for price range: ${response.statusText}`);
+          }
+          const data = await response.json();
+          allProducts = allProducts.concat(data.results);
+          nextPage = data.next;
+        }
+
+        if (allProducts.length === 0) {
+          setDbPriceRange([0, 1000]); // Default if no products
+          setTempPriceRange([0, 1000]);
+          setIsDbPriceRangeInitialized(true);
+          return;
+        }
+
+        let minPrice = Infinity;
+        let maxPrice = -Infinity;
+
+        allProducts.forEach(product => {
+          if (product.sizes && product.sizes.length > 0) {
+            product.sizes.forEach((size: any) => {
+              const price = parseFloat(size.price);
+              if (!isNaN(price)) {
+                if (price < minPrice) minPrice = price;
+                if (price > maxPrice) maxPrice = price;
+              }
+            });
+          } else {
+            // Fallback to product-level price if sizes are not available or empty
+            const productPrice = parseFloat(product.price);
+            if (!isNaN(productPrice)) {
+              if (productPrice < minPrice) minPrice = productPrice;
+              if (productPrice > maxPrice) maxPrice = productPrice;
+            }
+          }
+        });
+        
+        if (minPrice === Infinity || maxPrice === -Infinity) { // If no valid prices found
+            minPrice = 0;
+            maxPrice = 1000;
+        }
+        if (minPrice === maxPrice) { // If all items have the same price, or only one item
+            maxPrice = minPrice + 100; // Add a small range for the slider
+        }
+
+
+        setDbPriceRange([minPrice, maxPrice]);
+        setTempPriceRange([minPrice, maxPrice]); // Initialize temp range with actual db range
+        setPriceRange([minPrice, maxPrice]); // Also initialize applied priceRange
+
+      } catch (err) {
+        console.error("Error fetching min/max prices:", err);
+        setError("Failed to load price range data. Using default.");
+        // Fallback to a default range if API call fails
+        setDbPriceRange([0, 1000]);
+        setTempPriceRange([0, 1000]);
+      } finally {
+        setIsDbPriceRangeInitialized(true);
+      }
+    };
+
+    if (isVisible) {
+        fetchMinMaxPrices();
+    }
+  }, [isVisible, baseURL]);
+
+
+  // Fetch categories from the API
 
   // Fetch categories from the API
   const fetchCategories = async () => {
@@ -246,6 +340,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
         setOpenPopoverId(null);
       }
     };
+    
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
@@ -390,7 +485,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                 options={categories}
                 value={selectedCategory}
                 onChange={(value) => setSelectedCategory(String(value))}
-                placeholder="All Categories"
+                placeholder="All Sub-Categories"
                 className="w-full"
               />
             </div>
@@ -458,62 +553,53 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                 <div className="absolute z-50 mt-2 p-6 bg-white border rounded-lg shadow-lg w-80">
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-4">
-                      Price Range: ₦{tempPriceRange[0].toLocaleString()} - ₦
-                      {tempPriceRange[1].toLocaleString()}
+                      Price Range: {formatCurrency(tempPriceRange[0])} - {formatCurrency(tempPriceRange[1])}
                     </label>
                     <div className="relative h-8">
-                      {/* Base track */}
-                      <div className="absolute w-full top-3 h-2 bg-gray-200 rounded-full"></div>
-
-                      {/* Active track */}
+                    {/* Custom Two-Handle Slider */}
+                    <div className="relative w-full h-full flex items-center">
+                      {/* Track */}
+                      <div className="absolute w-full h-2 bg-gray-200 rounded-full top-1/2 -translate-y-1/2"></div>
+                      {/* Highlighted Range */}
                       <div
-                        className="absolute top-3 h-2 bg-blue-500 rounded-full"
+                        className="absolute h-2 bg-blue-500 rounded-full top-1/2 -translate-y-1/2"
                         style={{
-                          left: `${
-                            ((tempPriceRange[0] - dbPriceRange[0]) /
-                              (dbPriceRange[1] - dbPriceRange[0])) *
-                            100
-                          }%`,
-                          width: `${
-                            ((tempPriceRange[1] - tempPriceRange[0]) /
-                              (dbPriceRange[1] - dbPriceRange[0])) *
-                            100
-                          }%`,
+                          left: `${dbPriceRange[1] === dbPriceRange[0] ? 0 : ((tempPriceRange[0] - dbPriceRange[0]) / (dbPriceRange[1] - dbPriceRange[0])) * 100}%`,
+                          width: `${dbPriceRange[1] === dbPriceRange[0] ? 100 : ((tempPriceRange[1] - tempPriceRange[0]) / (dbPriceRange[1] - dbPriceRange[0])) * 100}%`,
                         }}
                       ></div>
-
-                      {/* Range inputs */}
-                      <div className="relative">
-                        <input
-                          type="range"
-                          min={dbPriceRange[0]}
-                          max={dbPriceRange[1]}
-                          value={tempPriceRange[0]}
-                          onChange={(e) => {
-                            const value = Math.min(
-                              Number(e.target.value),
-                              tempPriceRange[1] - 1
-                            );
-                            setTempPriceRange([value, tempPriceRange[1]]);
-                          }}
-                          className="absolute w-full h-8 appearance-none bg-transparent [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-30 hover:[&::-webkit-slider-thumb]:border-blue-600"
-                        />
-                        <input
-                          type="range"
-                          min={dbPriceRange[0]}
-                          max={dbPriceRange[1]}
-                          value={tempPriceRange[1]}
-                          onChange={(e) => {
-                            const value = Math.max(
-                              Number(e.target.value),
-                              tempPriceRange[0] + 1
-                            );
-                            setTempPriceRange([tempPriceRange[0], value]);
-                          }}
-                          className="absolute w-full h-8 appearance-none bg-transparent [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-30 hover:[&::-webkit-slider-thumb]:border-blue-600"
-                        />
-                      </div>
+                      {/* Min Handle */}
+                      <input
+                        type="range"
+                        min={dbPriceRange[0]}
+                        max={dbPriceRange[1]}
+                        value={tempPriceRange[0]}
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+                          // Ensure min handle doesn't cross max handle, allowing a minimum gap (e.g., 1 unit)
+                          const newMin = Math.min(value, tempPriceRange[1] - (dbPriceRange[1] > dbPriceRange[0] ? 1 : 0));
+                          setTempPriceRange([newMin, tempPriceRange[1]]);
+                        }}
+                        className="absolute w-full h-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-10 hover:[&::-webkit-slider-thumb]:border-blue-600"
+                        style={{ zIndex: tempPriceRange[0] > (dbPriceRange[1] - dbPriceRange[0]) / 2 ? 5 : 4 }} // Higher z-index if closer to end
+                      />
+                      {/* Max Handle */}
+                      <input
+                        type="range"
+                        min={dbPriceRange[0]}
+                        max={dbPriceRange[1]}
+                        value={tempPriceRange[1]}
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+                          // Ensure max handle doesn't cross min handle, allowing a minimum gap (e.g., 1 unit)
+                          const newMax = Math.max(value, tempPriceRange[0] + (dbPriceRange[1] > dbPriceRange[0] ? 1 : 0));
+                          setTempPriceRange([tempPriceRange[0], newMax]);
+                        }}
+                        className="absolute w-full h-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-10 hover:[&::-webkit-slider-thumb]:border-blue-600"
+                        style={{ zIndex: tempPriceRange[1] < (dbPriceRange[1] - dbPriceRange[0]) / 2 ? 5 : 4 }} // Higher z-index if closer to start
+                      />
                     </div>
+                  </div>
                     {/* Number inputs */}
                     <div className="flex justify-between mt-8">
                       <div className="relative w-32">
@@ -647,7 +733,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                     }
                   >
                     <td className="px-4 py-3">
-                      {(currentPage - 1) * itemsPerPage + index + 1}
+                      {formatNumberWithCommas((currentPage - 1) * itemsPerPage + index + 1)}
                     </td>
                     {/* <td className="px-4 py-3">{product.id}</td> */}
                     <td className="px-4 py-3">
@@ -663,14 +749,14 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                       {product.unlimited ? (
                         <span className="text-blue-600">Unlimited</span>
                       ) : (
-                        <span>{product.total_quantity || "0"}</span>
+                        <span>{formatNumberWithCommas(product.total_quantity || 0)}</span>
                       )}
                     </td>
                     <td className="px-4 py-3 min-w-[120px] whitespace-nowrap">
-                      ₦ {product.price}
+                      {formatCurrency(product.price)}
                     </td>
                     <td className="px-4 py-3 min-w-[120px] whitespace-nowrap">
-                      {product.production_days} days
+                      {formatNumberWithCommas(product.production_days || 0)} days
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -735,9 +821,9 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
         {/* Update Pagination Section */}
         <div className="flex flex-col sm:flex-row justify-between items-center mt-4 space-y-4 sm:space-y-0">
           <div className="text-sm text-gray-600 text-center sm:text-left w-full sm:w-auto">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-            {Math.min(currentPage * itemsPerPage, totalProducts)} of{" "}
-            {totalProducts} entries
+            Showing {formatNumberWithCommas((currentPage - 1) * itemsPerPage + 1)} to{" "}
+            {formatNumberWithCommas(Math.min(currentPage * itemsPerPage, totalProducts))} of{" "}
+            {formatNumberWithCommas(totalProducts)} entries
           </div>
           <div className="flex items-center gap-2 justify-center sm:justify-start">
             <button
@@ -783,7 +869,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                           : "border hover:bg-gray-50"
                       }`}
                     >
-                      {page}
+                      {formatNumberWithCommas(page)}
                     </button>
                   </React.Fragment>
                 ))}

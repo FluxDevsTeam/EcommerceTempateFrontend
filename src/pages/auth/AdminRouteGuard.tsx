@@ -1,24 +1,25 @@
 // src/components/AdminRouteGuard.tsx
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 
 const AdminRouteGuard = ({ children }: { children: React.ReactNode }) => {
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const verifyAuth = async () => {
       const token = localStorage.getItem('accessToken');
       
       if (!token) {
-        navigate('/login');
+        navigate('/login', { state: { from: location }, replace: true });
         return;
       }
 
       try {
         await axios.get(
-          'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/dashboard/',
+          'http://kidsdesignecommerce.pythonanywhere.com/api/v1/admin/dashboard/',
           {
             headers: {
               'Authorization': `JWT ${token}`,
@@ -29,12 +30,12 @@ const AdminRouteGuard = ({ children }: { children: React.ReactNode }) => {
         setIsAuthorized(true);
       } catch (err: any) {
         localStorage.removeItem('accessToken');
-        navigate('/login');
+        navigate('/login', { state: { from: location }, replace: true });
       }
     };
 
     verifyAuth();
-  }, [navigate]);
+  }, [navigate, location]);
 
   if (isAuthorized === null) {
     return (

@@ -5,10 +5,9 @@ import { useState, useEffect } from 'react';
 import Card from '@/card/Card';
 import PaginationComponent from '@/components/Pagination';
 import SortDropdown from './SortButton';
-import { WishData } from '@/card/wishListApi';
-import { WishItem } from '@/card/types';
+import { WishData } from '../orders/api';
+import type { WishItem } from '../orders/types';
 
-// Interfaces
 export interface Category {
   id: number;
   name: string;
@@ -53,7 +52,7 @@ interface ApiResponse {
 // Fetch functions
 const fetchCategoryProducts = async (categoryId: number, page = 1): Promise<ApiResponse> => {
   const response = await fetch(
-    `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?category=${categoryId}&page_size=12&page=${page}`
+    `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/?is_available=true&category=${categoryId}&page_size=16&page=${page}`
   );
   if (!response.ok) throw new Error('Failed to fetch products.');
   return response.json();
@@ -61,7 +60,7 @@ const fetchCategoryProducts = async (categoryId: number, page = 1): Promise<ApiR
 
 const fetchCategoryDetails = async (categoryId: number): Promise<Category> => {
   const response = await fetch(
-    `https://ecommercetemplate.pythonanywhere.com/api/v1/product/category/${categoryId}/`
+    `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/category/${categoryId}/`
   );
   if (!response.ok) throw new Error('Failed to fetch category.');
   return response.json();
@@ -160,7 +159,7 @@ const ProductCategory = () => {
     return new Date(b.date_created).getTime() - new Date(a.date_created).getTime();
   });
 
-  const itemsPerPage = 12;
+  const itemsPerPage = 16; // Match API page_size
   const totalPages = Math.ceil(productsData.count / itemsPerPage);
 
   return (
@@ -195,15 +194,17 @@ const ProductCategory = () => {
       </div>
 
       {/* Pagination */}
-      <div className="mt-6">
-        <PaginationComponent
-          currentPage={currentPage}
-          totalPages={totalPages}
-          hasNextPage={Boolean(productsData.next)}
-          hasPreviousPage={Boolean(productsData.previous)}
-          handlePageChange={handlePageChange}
-        />
-      </div>
+      {productsData.results.length > 0 && (
+        <div className="mt-6">
+          <PaginationComponent
+            currentPage={currentPage}
+            totalPages={totalPages}
+            hasNextPage={Boolean(productsData.next)}
+            hasPreviousPage={Boolean(productsData.previous)}
+            handlePageChange={handlePageChange}
+          />
+        </div>
+      )}
     </div>
   );
 };

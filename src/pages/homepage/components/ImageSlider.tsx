@@ -54,7 +54,10 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
       <Slider {...settings}>
         {allImages.map((image) => (
           <div key={image.id} className="slide-item relative px-2">
-            <div className="relative w-full cursor-pointer overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 bg-gray-50">
+            <div 
+              className="relative w-full cursor-pointer overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 bg-gray-50"
+              onClick={() => handleClick(image.id.split("-")[0])}
+            >
               <div className="flex flex-col md:flex-row items-center min-h-[300px] md:min-h-[400px]">
                 {/* Mobile text overlay */}{" "}
                 <div className="absolute bottom-5 left-0 h-1/3 right-0 md:hidden z-10 rounded-b-lg bg-gradient-to-b from-white/0 to-black/80">

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Wish from './Wish';
-import { addWishItem, deleteWishItem } from './api';
-import { CardProps, WishItem } from './types';
+import { addWishItem, deleteWishItem, getWishlistFromLocalStorage } from '../pages/orders/api';
+import { CardProps, WishItem as ApiWishItem } from './types';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../pages/auth/AuthContext';
 
 
 const Card: React.FC<CardProps> = ({
@@ -12,36 +13,50 @@ const Card: React.FC<CardProps> = ({
   removeOnUnlike = false, // Optional control for wishlist pages
   isSuggested = false,
 }) => {
+  const { isAuthenticated } = useAuth();
   const [liked, setLiked] = useState(isInitiallyLiked);
   const [wishItemId, setWishItemId] = useState<number | null>(initialWishItemId ?? null);
   const [visible, setVisible] = useState(true);
-const navigate = useNavigate();
-const handleToggle = async () => {
-  try {
-    const storedWishList = JSON.parse(localStorage.getItem('wishlist') || '[]');
+  const navigate = useNavigate();
 
-    if (liked && wishItemId) {
-      setLiked(false);
-      localStorage.setItem(
-        'wishlist',
-        JSON.stringify(storedWishList.filter((id: number) => id !== product.id))
-      );
-
-      await deleteWishItem(wishItemId);
-      setWishItemId(null);
-
-      if (removeOnUnlike) setVisible(false);
-    } else {
-      setLiked(true);
-      localStorage.setItem('wishlist', JSON.stringify([...storedWishList, product.id]));
-
-      const newItem: WishItem = await addWishItem(product.id);
-      setWishItemId(newItem.id);
+  useEffect(() => {
+    if (!isAuthenticated && !isInitiallyLiked) {
+      const localWishlist = getWishlistFromLocalStorage();
+      const isInLocalWishlist = localWishlist.some(item => item.product.id === product.id);
+      if (isInLocalWishlist) {
+        setLiked(true);
+        const localItem = localWishlist.find(item => item.product.id === product.id);
+        if (localItem) setWishItemId(localItem.id);
+      }
     }
-  } catch (error) {
-    console.error('Error toggling wishlist:', error);
-  }
-};
+  }, [isAuthenticated, product.id, isInitiallyLiked]);
+
+  const handleToggle = async () => {
+    try {
+      if (liked) {
+        setLiked(false);
+        if (isAuthenticated && wishItemId) {
+          await deleteWishItem(wishItemId);
+        } else if (!isAuthenticated) {
+          await deleteWishItem(wishItemId ?? 0, product.id);
+        }
+        setWishItemId(null);
+        if (removeOnUnlike) setVisible(false);
+      } else {
+        setLiked(true);
+        let newItem: ApiWishItem;
+        if (isAuthenticated) {
+          newItem = await addWishItem(product.id);
+        } else {
+          newItem = await addWishItem(product);
+        }
+        setWishItemId(newItem.id);
+      }
+    } catch (error) {
+      console.error('Error toggling wishlist:', error);
+      setLiked(!liked);
+    }
+  };
 
   if (!visible) return null;
 
@@ -55,7 +70,7 @@ const handleToggle = async () => {
 
 
   return (
-    <div className="mb-10 cursor-pointer "    
+    <div className="mb-2 cursor-pointer "    
    >
       <div className="relative w-fit mb-4 rounded-lg">
         <img

@@ -3,7 +3,7 @@ import validator from "validator";
 import OtpInput from "react-otp-input";
 
 const ChangeEmail = () => {
-  const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
+  const baseURL = `http://kidsdesignecommerce.pythonanywhere.com`;
 
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 

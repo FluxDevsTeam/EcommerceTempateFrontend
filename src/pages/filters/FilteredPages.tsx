@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import Card from "@/card/Card";
 import PaginationComponent from '@/components/Pagination';
 import SortDropdown from './FilterDropDown';
-import { WishData } from '@/card/wishListApi';
-import { WishItem } from '@/card/types';
+import { WishData } from '../../pages/orders/api';
+import type { WishItem } from '../../pages/orders/types';
 
+// Interfaces (unchanged)
 export interface Category {
   id: number;
   name: string;
@@ -67,12 +68,10 @@ const ProductsPage: React.FC = () => {
 
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
-
   const currentFilters = useMemo(() => {
     const subcategories = searchParams.get('subcategories')?.split(',').map(Number) || [];
     const minPrice = parseInt(searchParams.get('minPrice') || '0', 10);
     const maxPrice = parseInt(searchParams.get('maxPrice') || '1000000', 10);
-
 
     return {
       selectedSubCategories: subcategories,
@@ -80,20 +79,18 @@ const ProductsPage: React.FC = () => {
     };
   }, [searchParams]);
 
-  
   const displayProducts = useMemo(() => {
     const products = [...productsData.results];
     switch (sortOption) {
       case 'highest':
         return products.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
       case 'lowest':
-        return products.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+        return products.sort((a, b) => parseFloat(a.price) - parseFloat(a.price));
       default:
         return products.sort((a, b) => b.id - a.id); // latest
     }
   }, [productsData.results, sortOption]);
 
-  
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
@@ -122,11 +119,15 @@ const ProductsPage: React.FC = () => {
         apiParams.append('page', currentPage.toString());
 
         const response = await fetch(
-          `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?${apiParams}`
+          `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/?is_available=true&page_size=16&${apiParams}`
         );
 
         if (!response.ok) throw new Error('Failed to fetch products');
         const data: ApiResponse<Product> = await response.json();
+        // Validate pagination data
+        if (typeof data.count !== 'number' || !Array.isArray(data.results)) {
+          throw new Error('Invalid pagination data');
+        }
         setProductsData(data);
       } catch (err) {
         setError('Failed to load products');
@@ -157,8 +158,9 @@ const ProductsPage: React.FC = () => {
     });
   }, [setSearchParams]);
 
+  const itemsPerPage = 16; // Match API page_size
   const totalPages = useMemo(() => {
-    return productsData.count ? Math.ceil(productsData.count / 10) : 1;
+    return productsData.count ? Math.ceil(productsData.count / itemsPerPage) : 1;
   }, [productsData.count]);
 
   return (
@@ -192,7 +194,6 @@ const ProductsPage: React.FC = () => {
             ₦ {currentFilters.priceRange[0]} - ₦ {currentFilters.priceRange[1]}
           </div>
         )}
-       
       </div>
 
       {/* Loading / error / no results */}

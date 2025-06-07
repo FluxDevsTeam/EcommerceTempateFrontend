@@ -40,6 +40,10 @@ const Header = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const categoriesPerPage = 5;
   
+  // Add new state for desktop dropdown pagination
+  const [dropdownCurrentPage, setDropdownCurrentPage] = useState(0);
+  const dropdownCategoriesPerPage = 5;
+  
   const { currentUser, isAuthenticated, refreshUserData, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,6 +57,13 @@ const Header = () => {
     }
   }, [isMobileMenuOpen]);
 
+  // Reset dropdown page when dropdown is opened
+  useEffect(() => {
+    if (isMoreDropdownOpen) {
+      setDropdownCurrentPage(0);
+    }
+  }, [isMoreDropdownOpen]);
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -62,7 +73,8 @@ const Header = () => {
           setCategories(JSON.parse(cachedCategories));
         }
 
-        const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/category/?page_size=20');
+        // Fetch all categories at once without page_size limitation
+        const response = await fetch('http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/category/');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setCategories(data.results);
@@ -252,16 +264,69 @@ const Header = () => {
             {isMoreDropdownOpen && (
               <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 transition-all duration-200 ease-out">
                 <div className="py-1">
-                  {remainingCategories.map((category) => (
-                    <Link
-                      key={category.id}
-                      to={`/category/${category.id}`}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 capitalize transition-colors"
-                      onClick={() => setIsMoreDropdownOpen(false)}
-                    >
-                      {category.name.toLowerCase()}
-                    </Link>
-                  ))}
+                  {/* Calculate total pages for dropdown pagination */}
+                  {(() => {
+                    const totalDropdownPages = Math.ceil(remainingCategories.length / dropdownCategoriesPerPage);
+                    const startIndex = dropdownCurrentPage * dropdownCategoriesPerPage;
+                    const endIndex = Math.min(startIndex + dropdownCategoriesPerPage, remainingCategories.length);
+                    const currentDropdownItems = remainingCategories.slice(startIndex, endIndex);
+                    
+                    return (
+                      <>
+                        {currentDropdownItems.map((category) => (
+                          <Link
+                            key={category.id}
+                            to={`/category/${category.id}`}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 capitalize transition-colors"
+                            onClick={() => setIsMoreDropdownOpen(false)}
+                          >
+                            {category.name.toLowerCase()}
+                          </Link>
+                        ))}
+                        
+                        {/* Pagination controls for dropdown */}
+                        {totalDropdownPages > 1 && (
+                          <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200 px-4 py-2">
+                            <button 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setDropdownCurrentPage(prev => Math.max(0, prev - 1));
+                              }}
+                              disabled={dropdownCurrentPage === 0}
+                              className={`px-3 py-2 rounded-md text-xs ${
+                                dropdownCurrentPage === 0 
+                                  ? 'text-gray-400 cursor-not-allowed' 
+                                  : 'text-blue-600 hover:bg-blue-50'
+                              }`}
+                            >
+                              Back
+                            </button>
+                            
+                            <span className="text-xs text-gray-500">
+                              {dropdownCurrentPage + 1} of {totalDropdownPages}
+                            </span>
+                            
+                            <button 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setDropdownCurrentPage(prev => Math.min(totalDropdownPages - 1, prev + 1));
+                              }}
+                              disabled={dropdownCurrentPage === totalDropdownPages - 1}
+                              className={`px-3 py-2 rounded-md text-xs ${
+                                dropdownCurrentPage === totalDropdownPages - 1
+                                  ? 'text-gray-400 cursor-not-allowed' 
+                                  : 'text-blue-600 hover:bg-blue-50'
+                              }`}
+                            >
+                            Next
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()} 
                 </div>
               </div>
             )}
@@ -308,13 +373,13 @@ const Header = () => {
                   setCurrentPage(prev => Math.max(0, prev - 1));
                 }}
                 disabled={currentPage === 0}
-                className={`px-3 py-1 rounded-md text-sm ${
+                className={`px-4 py-2 rounded-md text-base ${
                   currentPage === 0 
                     ? 'text-gray-400 cursor-not-allowed' 
                     : 'text-blue-600 hover:bg-blue-50'
                 }`}
               >
-                Previous
+                «
               </button>
               
               <span className="text-xs text-gray-500">
@@ -327,13 +392,13 @@ const Header = () => {
                   setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));
                 }}
                 disabled={currentPage === totalPages - 1}
-                className={`px-3 py-1 rounded-md text-sm ${
+                className={`px-4 py-2 rounded-md text-base ${
                   currentPage === totalPages - 1
                     ? 'text-gray-400 cursor-not-allowed' 
                     : 'text-blue-600 hover:bg-blue-50'
                 }`}
               >
-                Next
+                »
               </button>
             </div>
           )}

@@ -16,7 +16,7 @@ const Order = () => {
   const [nextUrl, setNextUrl] = useState<string | null>(null);
   const [prevUrl, setPrevUrl] = useState<string | null>(null);
 
-  const getPageUrl = (page: number) => `https://ecommercetemplate.pythonanywhere.com/api/v1/orders/item/?page=${page}`;
+  const getPageUrl = (page: number) => `http://kidsdesignecommerce.pythonanywhere.com/api/v1/orders/item/?page=${page}`;
   
   const loadOrders = async (url?: string) => {
     try {
@@ -70,65 +70,73 @@ const Order = () => {
   }
 
   return (
-    <div className="w-full min-h-full flex flex-col px-6  md:px-24  py-12 md:py-0 ">
-      <h2 className="text-3xl font-semibold capitalize tracking mb-8">My Orders</h2>
+    <div className="w-full min-h-full grid grid-cols-1 md:grid-cols-1 gap-4 md:gap-6 px-4 sm:px-6 md:px-8 lg:px-12 py-6 md:py-8 max-w-3xl mx-auto">
+      <h2 className="text-xl md:text-2xl font-semibold capitalize col-span-1 mb-2 md:mb-4 pt-5">My Orders</h2>
+
+      {orders.length === 0 && !loading && (
+        <div className="col-span-1 text-center py-10 text-gray-500">
+          You have no orders yet.
+        </div>
+      )}
 
       {orders.map((order: OrderData) => (
-        <div key={order.id} className="mb-14">
-          <h4 className="text-[#344054] font-bold text-[16px] sm:text-[25px] mb-6">Order ID: {order.id}</h4>
-          <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center mb-6">
-            <p className="flex gap-2 items-center">
-              <span className="text-[#667085] text-sm leading-5">Order date:</span>
-              <span className="text-[#1D2939]">{order.order_date}</span>
+        <div key={order.id} className="border border-gray-200 rounded-lg p-3 flex flex-col h-full">
+          <div className="flex justify-between items-center mb-1.5">
+            <h3 className="text-gray-700 font-semibold text-xs sm:text-sm truncate pr-2">Order ID: {order.id}</h3>
+            <span className={`text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full w-fit whitespace-nowrap ${order.status.toLowerCase() === 'delivered' ? 'bg-green-100 text-green-700' : order.status.toLowerCase() === 'shipped' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}`}>
+              {order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}
+            </span>
+          </div>
+          <div className="text-[10px] sm:text-xs text-gray-500 mb-2.5 space-y-0.5">
+            <p className="flex items-center">
+              <span className="font-medium text-gray-600 mr-1">Date:</span>
+              <span>{order.order_date}</span>
             </p>
-            <p className="flex gap-2 items-center">
-              <FontAwesomeIcon icon={faCalendar} className="text-black w-5" />
-              <span>Estimated Delivery: {formatEstimatedDelivery(order.estimated_delivery)}</span>
+            <p className="flex items-center">
+              <FontAwesomeIcon icon={faCalendar} className="text-gray-400 w-2.5 h-2.5 mr-1" />
+              <span className="font-medium text-gray-600 mr-1">Est. Delivery:</span> 
+              <span>{formatEstimatedDelivery(order.estimated_delivery)}</span>
             </p>
           </div>
 
-          <div className="mb-4 flex flex-col">
-            {/* <span className="text-[20px] inline-block leading-[30px] mb-2">Status</span> */}
-            <span className="bg-[#72D3E940] inline-block rounded-2xl pl-2 py-1 w-[150px]">{order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}</span>
-          </div>
-
-          <ul className="flex flex-col gap-6 sm:gap-3">
+          <ul className="flex flex-col gap-1.5 mb-0 flex-grow min-h-[60px]">
             {order.order_items.map((item: OrderItem) => (
-              <li key={item.id} className="flex flex-wrap items-center gap-5 sm:gap-20 p-4 rounded-xl">
-                <div className="bg-[#F0EEED] max-w-[120px] sm:max-w-[200px] rounded-2xl overflow-hidden">
-                  <img src={item.image1} className="w-[400px]" alt={item.name} />
+              <li key={item.id} className="flex items-start gap-2 pt-1.5 border-t border-gray-100 first:border-t-0 first:pt-0">
+                <div className="bg-gray-100 w-10 h-10 sm:w-12 sm:h-12 rounded overflow-hidden flex-shrink-0">
+                  <img src={item.image1} className="w-full h-full object-cover" alt={item.name} />
                 </div>
-                <div className="basis-[40%] sm:basis-[30%]">
-                  <p className="text-base sm:text-2xl leading-8 mb-2 line-clamp-2">{item.name}</p>
-                  <p className="leading-4 text-[#667085] capitalize">
+                <div className="flex-grow min-w-0">
+                  <p className="text-[11px] sm:text-xs font-medium text-gray-700 mb-0 line-clamp-2">{item.name}</p>
+                  <p className="text-[10px] sm:text-[11px] text-gray-500 capitalize">
                     {item.colour} | {item.size}
                   </p>
                 </div>
-                <div className="">
-                  <p className="font-semibold text-lg leading-[30px] text-right">₦{item.price}</p>
-                  <p className="text-[#667085] text-right">Qty: {item.quantity}</p>
+                <div className="text-[10px] sm:text-xs text-right flex-shrink-0 ml-auto">
+                  <p className="font-semibold text-gray-700">₦{item.price}</p>
+                  <p className="text-gray-500">Qty: {item.quantity}</p>
+                <div className="mt-auto pt-2 border-t border-gray-100 flex justify-end">
+            <Link to={`/orders/${order.id}`} className="text-[10px] sm:text-xs inline-block px-2 py-1 text-white bg-customBlue rounded hover:bg-customBlue-dark transition-colors whitespace-nowrap">
+              Track Order
+            </Link>
+            </div>
                 </div>
-                <Link to={`/orders/${order.id}`}className="basis-[50%] sm:basis-auto inline-block text-white bg-customBlue px-4 sm:px-16 py-2 ml-5 sm:py-4 rounded-2xl">Track Order</Link>
-                {/* <div>
-                  <p className="text-[20px] leading-[30px] mb-1.5">Expected Delivery</p>
-                  <span>{formatEstimatedDelivery(order.estimated_delivery)}</span>
-                </div> */}
               </li>
-              
             ))}
           </ul>
-          <hr className="mt-10 border-t border-t-gray-300" />
-          <hr className="mt-5 border-t border-t-gray-300" />
-        </div>
+          </div>
       ))}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        nextPageUrl={nextUrl}
-        prevPageUrl={prevUrl}
-        onPageChange={loadOrders}
-        getPageUrl={getPageUrl}
-      />
+      { (nextUrl || prevUrl) &&
+        <div className="col-span-1 mt-4">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              nextPageUrl={nextUrl}
+              prevPageUrl={prevUrl}
+              onPageChange={loadOrders}
+              getPageUrl={getPageUrl}
+            />
+        </div>
+      }
     </div>
   );
 };

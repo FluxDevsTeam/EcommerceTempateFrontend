@@ -32,7 +32,7 @@ const ConfirmOrder = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string>("paystack");
   const [error, setError] = useState<string | null>(null);
-  const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
+  const baseURL = `http://kidsdesignecommerce.pythonanywhere.com`;
   const [availableStates, setAvailableStates] = useState<string[]>([]);
 
   const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
@@ -270,6 +270,17 @@ const ConfirmOrder = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Helper function to format numbers with commas
+  const formatCurrency = (amount: number | undefined | null): string => {
+    if (amount === undefined || amount === null || isNaN(amount)) {
+      return "N/A";
+    }
+    return amount.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   };
 
   const formatDeliveryDate = (dates: string[] | undefined): string => {
@@ -592,7 +603,7 @@ const ConfirmOrder = () => {
                 <div className="flex justify-between">
                   <span>Subtotal</span>
                   <span className="font-semibold">
-                    &#8358; {orderSummary?.subtotal?.toFixed(2) ?? "N/A"}
+                    &#8358; {formatCurrency(orderSummary?.subtotal)}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -609,14 +620,14 @@ const ConfirmOrder = () => {
                   <span>Delivery Fee</span>
                   <span className="font-semibold">
                     &#8358;
-                    {Number(orderSummary?.delivery_fee)?.toFixed(2) ?? "N/A"}
+                    {formatCurrency(Number(orderSummary?.delivery_fee))}
                   </span>
                 </div>
                 <div className="border-t pt-4 mt-4">
                   <div className="flex justify-between">
                     <span className="font-bold">Total</span>
                     <span className="font-bold">
-                      &#8358; {orderSummary?.total?.toFixed(2) ?? "N/A"}
+                      &#8358; {formatCurrency(orderSummary?.total)}
                     </span>
                   </div>
                   <div className="text-sm text-gray-500 mt-2">

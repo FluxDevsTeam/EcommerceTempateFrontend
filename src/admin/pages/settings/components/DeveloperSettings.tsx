@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import axios from "axios"; // Missing axios import
+import axios from "axios";
 
-// Define interfaces for our data structures
 interface DeveloperSettingsData {
   brand_name: string;
   contact_us: string;
@@ -35,9 +34,9 @@ const DeveloperSettings: React.FC = () => {
   const [initialData, setInitialData] = useState<DeveloperSettingsData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
-  const [showModal, setShowModal] = useState<boolean>(false);
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
+  const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false); // Changed to false to open by default
 
   useEffect(() => {
     fetchDeveloperSettings();
@@ -47,8 +46,8 @@ const DeveloperSettings: React.FC = () => {
     try {
       const token = localStorage.getItem('accessToken');
       setLoading(true);
-      const response = await axios.get<DeveloperSettingsData>( // Changed from DeveloperSettings to DeveloperSettingsData
-        'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/developer-settings/',
+      const response = await axios.get<DeveloperSettingsData>(
+        'http://kidsdesignecommerce.pythonanywhere.com/api/v1/admin/developer-settings/',
         {
           headers: {
             'Authorization': `JWT ${token}`,
@@ -106,7 +105,7 @@ const DeveloperSettings: React.FC = () => {
   };
 
   const handleSaveConfirm = (): void => {
-    setShowModal(false);
+    setShowConfirmModal(false);
     handleSave();
   };
 
@@ -115,7 +114,7 @@ const DeveloperSettings: React.FC = () => {
       setLoading(true);
       
       const apiFormData = {
-        brand_name: formData.brand_name, // Fixed field names to match API expectations
+        brand_name: formData.brand_name,
         contact_us: formData.contact_us,
         terms_of_service: formData.terms_of_service,
         backend_base_route: formData.backend_base_route,
@@ -126,7 +125,7 @@ const DeveloperSettings: React.FC = () => {
       const token = localStorage.getItem('accessToken');
 
       await axios.patch(
-        'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/developer-settings/',
+        'http://kidsdesignecommerce.pythonanywhere.com/api/v1/admin/developer-settings/',
         apiFormData,
         {
           headers: {
@@ -136,12 +135,12 @@ const DeveloperSettings: React.FC = () => {
         }
       );
       
-      setSuccessMessage('Developer settings updated successfully');
+      setShowSuccessModal(true);
       setError(null);
       setInitialData(formData);
       
       setTimeout(() => {
-        setSuccessMessage(null);
+        setShowSuccessModal(false);
       }, 3000);
     } catch (err) {
       setError('Failed to update developer settings');
@@ -149,7 +148,7 @@ const DeveloperSettings: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   const hasChanges = (): boolean => {
     if (!initialData) return false;
@@ -184,12 +183,6 @@ const DeveloperSettings: React.FC = () => {
         </div>
       )}
 
-      {successMessage && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          {successMessage}
-        </div>
-      )}
-
       <div className="mb-4">
         <div
           className="flex justify-between items-center cursor-pointer p-2 hover:bg-gray-50 rounded"
@@ -214,7 +207,7 @@ const DeveloperSettings: React.FC = () => {
           </svg>
         </div>
 
-        {isCollapsed && ( // Changed from isCollapsed to !isCollapsed to show content when not collapsed
+        {!isCollapsed && (
           <div className="mt-4 transition-all duration-300 ease-in-out">
             <div className="mb-6 bg-gray-100 p-4 rounded-lg shadow border border-gray-200">
               <h3 className="font-medium text-lg mb-3">Current Developer Settings</h3>
@@ -237,7 +230,7 @@ const DeveloperSettings: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Terms of Service</p>
-                  <p className="font-medium truncate">{initialData?.terms_of_service|| 'Not set'}</p>
+                  <p className="font-medium truncate">{initialData?.terms_of_service || 'Not set'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Backend Base URL</p>
@@ -253,7 +246,7 @@ const DeveloperSettings: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Order Route</p>
-                  <p className="font-medium truncate">{initialData?.order_route_frontend|| 'Not set'}</p>
+                  <p className="font-medium truncate">{initialData?.order_route_frontend || 'Not set'}</p>
                 </div>
               </div>
             </div>
@@ -377,7 +370,7 @@ const DeveloperSettings: React.FC = () => {
 
             <div className="flex justify-end space-x-4 mt-8">
               <button
-                className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleCancel}
                 disabled={loading || !hasChanges()}
                 type="button"
@@ -385,8 +378,8 @@ const DeveloperSettings: React.FC = () => {
                 Cancel
               </button>
               <button
-                className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
-                onClick={() => setShowModal(true)}
+                className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:cursor-not-allowed"
+                onClick={() => setShowConfirmModal(true)}
                 disabled={loading || !hasChanges()}
                 type="button"
               >
@@ -398,7 +391,7 @@ const DeveloperSettings: React.FC = () => {
       </div>
 
       {/* Confirmation Modal */}
-      {showModal && (
+      {showConfirmModal && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
             <h3 className="text-lg font-medium mb-4">Confirm Changes</h3>
@@ -408,7 +401,7 @@ const DeveloperSettings: React.FC = () => {
             <div className="flex justify-end space-x-4">
               <button
                 className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-                onClick={() => setShowModal(false)}
+                onClick={() => setShowConfirmModal(false)}
                 type="button"
               >
                 Cancel
@@ -419,6 +412,27 @@ const DeveloperSettings: React.FC = () => {
                 type="button"
               >
                 Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-lg font-medium mb-4 text-green-700">Success</h3>
+            <p className="mb-6">
+              Developer settings updated successfully!
+            </p>
+            <div className="flex justify-end">
+              <button
+                className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+                onClick={() => setShowSuccessModal(false)}
+                type="button"
+              >
+                OK
               </button>
             </div>
           </div>

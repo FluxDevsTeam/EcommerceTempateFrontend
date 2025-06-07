@@ -19,21 +19,56 @@ const SuggestedCard: React.FC<CardProps> = ({
   const navigate = useNavigate();
 
   const handleToggle = async () => {
+  const wasLiked = liked;
+  const previousWishItemId = wishItemId;
+
+  // Optimistically update the UI
+  if (liked && wishItemId) {
+    setWishItemId(null);
+    setLiked(false);
+    if (removeOnUnlike) setVisible(false);
+  } else {
+    setLiked(true);
+  }
+
+  // Queue the API call to ensure sequential execution
+  const executeApiCall = async () => {
     try {
-      if (liked && wishItemId) {
-        await deleteWishItem(wishItemId);
-        setWishItemId(null);
-        setLiked(false);
-        if (removeOnUnlike) setVisible(false);
+      if (wasLiked && previousWishItemId) {
+        await deleteWishItem(previousWishItemId);
       } else {
         const newItem: WishItem = await addWishItem(product.id);
         setWishItemId(newItem.id);
-        setLiked(true);
       }
     } catch (error) {
       console.error("Error toggling wishlist:", error);
+      // Revert UI state if API call fails
+      setLiked(wasLiked);
+      setWishItemId(previousWishItemId);
+      if (removeOnUnlike) setVisible(true);
     }
   };
+
+  // Add the API call to the queue
+  apiCallQueue.push(executeApiCall);
+  if (!isProcessingQueue) {
+    processApiCallQueue();
+  }
+};
+
+let apiCallQueue: (() => Promise<void>)[] = [];
+let isProcessingQueue = false;
+
+const processApiCallQueue = async () => {
+  isProcessingQueue = true;
+  while (apiCallQueue.length > 0) {
+    const nextCall = apiCallQueue.shift();
+    if (nextCall) {
+      await nextCall();
+    }
+  }
+  isProcessingQueue = false;
+};
 
   if (!visible) return null;
 
@@ -53,7 +88,7 @@ const SuggestedCard: React.FC<CardProps> = ({
         />
         <Wish color="red" liked={liked} onToggle={handleToggle} />
       </div>
-      <div className="space-y-0.5">
+      <div className="space-y-0.5 mt-3">
         <p className="text-md font-medium line-clamp-1">{product.name}</p>
         <div className="">
           {typeof product.price === "number" && product.price > 0 && (

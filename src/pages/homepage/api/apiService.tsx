@@ -3,10 +3,10 @@ import { ProductItemsResponse } from "../types/data-types";
 
 
 
-export const fetchProducts = async (page = 1): Promise<ProductAPIResponse> => {
+export const fetchProducts = async (page = 1, pageSize = 12): Promise<ProductAPIResponse> => {
   try {
     const res = await fetch(
-      `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/homepage/?page=${page}&page_size=16&latest_item=true&top_selling_items=true`
+      `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/homepage/?page=${page}&page_size=${pageSize}&latest_item=true&top_selling_items=true`
     );
     
     if (!res.ok) {
@@ -26,7 +26,7 @@ export const fetchProducts = async (page = 1): Promise<ProductAPIResponse> => {
 
 
   export const fetchSuggestedProducts = async () :Promise<ProductItemsResponse>   => {
-    const res = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/suggestions/');
+    const res = await fetch('http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/suggestions/');
     if (!res.ok) throw new Error('Failed to fetch');
     return res.json();
   };
@@ -34,7 +34,7 @@ export const fetchProducts = async (page = 1): Promise<ProductAPIResponse> => {
   export const fetchSuggestedProductsDetails = async (subCategoryId: any)=> {
     try {
       const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/suggestions/?sub_category_id=${subCategoryId}`
+        `http://kidsdesignecommerce.pythonanywhere.com/api/v1/product/item/suggestions/?sub_category_id=${subCategoryId}`
       );
       if (!response.ok) {
         throw new Error('Failed to fetch suggested products');

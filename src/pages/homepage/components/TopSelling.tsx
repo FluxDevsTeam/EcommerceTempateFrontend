@@ -1,6 +1,7 @@
 import { ProductItem } from "../types/data-types";
 import Card from "@/card/Card";
 import { useEffect } from "react";
+import { useMediaQuery } from 'react-responsive';
 
 interface LatestItemsProps {
   product: ProductItem[];
@@ -21,26 +22,28 @@ const TopSelling: React.FC<LatestItemsProps> = ({
   onLoadMore
 }) => {
   // Auto-load more items when scrolling to bottom
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop + 100 >= 
-        document.documentElement.offsetHeight && 
-        hasMoreItems && 
-        !isLoadingMore
-      ) {
-        onLoadMore();
-      }
-    };
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     if (
+  //       window.innerHeight + document.documentElement.scrollTop + 100 >= 
+  //       document.documentElement.offsetHeight && 
+  //       hasMoreItems && 
+  //       !isLoadingMore
+  //     ) {
+  //       onLoadMore();
+  //     }
+  //   };
+  //
+  //   window.addEventListener('scroll', handleScroll);
+  //   return () => window.removeEventListener('scroll', handleScroll);
+  // }, [hasMoreItems, isLoadingMore, onLoadMore]);
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [hasMoreItems, isLoadingMore, onLoadMore]);
+  const isTabletAndAbove = useMediaQuery({ query: '(min-width: 768px)' });
 
   return (
     <div className="px-3 py-8 md:py-12 space-y-5">
-      <p className="text-3xl md:text-5xl font-medium leading-tight text-center mb-6 sm:mb-8 md:mb-10">
-        Top Selling Items
+      <p className="text-xl md:text-3xl font-medium leading-tight text-center mb-6 sm:mt-8 md:mb-10">
+        TOP SELLING ITEMS
       </p>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 md:space-x-8 space-x-0 mb-8 sm:mb-16">
@@ -57,7 +60,8 @@ const TopSelling: React.FC<LatestItemsProps> = ({
         })}
       </div>
 
-      <div className="flex justify-center items-center mt-6 sm:mt-8">
+      {/* <div className="flex justify-center items-center mt-0"> */}
+      <div className="flex justify-center items-center" style={{marginTop: isTabletAndAbove ? '46px' : "0px"}}>
         {hasMoreItems ? (
           <button 
             onClick={onLoadMore}
@@ -70,7 +74,7 @@ const TopSelling: React.FC<LatestItemsProps> = ({
                 Loading...
               </span>
             ) : (
-              "Load More"
+              <span>Load More...</span>
             )}
           </button>
         ) : (
