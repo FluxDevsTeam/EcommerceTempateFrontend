@@ -91,7 +91,7 @@ export default function StatsGrid() {
     <div className="grid grid-cols-2 mt-0 lg:grid-cols-4 gap-2 md:gap-4 mb-2">
       <StatCard 
         title="Total Products"
-        value={stats.data.total_available_products.toString()} 
+        value={formatNumberWithCommas(parseInt(stats.data.total_available_products))} 
         icon={<Package className="text-indigo-500" />} 
         description="Available in stock"
       />
@@ -104,13 +104,13 @@ export default function StatsGrid() {
       />
       <StatCard 
         title="Total Sales"
-        value={stats.data.total_sales_this_year.toString()} 
+        value={formatNumberWithCommas(stats.data.total_sales_this_year)} 
         icon={<TrendingUp className="text-amber-500" />} 
         description="All-time sales count"
       />
       <StatCard 
         title="Total Users"
-        value={stats.data.total_users.toString()} 
+        value={formatNumberWithCommas(stats.data.total_users)} 
         icon={<Users className="text-sky-500" />} 
         description="Registered platform users"
       />
