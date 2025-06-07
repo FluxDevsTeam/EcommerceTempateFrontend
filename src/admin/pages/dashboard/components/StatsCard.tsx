@@ -5,10 +5,16 @@ import axios from 'axios';
 import { formatNumberWithCommas, formatCurrency } from '../../../utils/formatting';
 
 interface StatsData {
-  total_available_products: string;
-  total_payments_this_year: number;
-  total_sales_this_year: number;
-  total_users: number;
+  data: {
+    total_available_products: string;
+    total_payments_this_year: number;
+    total_sales_this_year: number;
+    total_users: number;
+    monthly_data: Array<{
+      month: string;
+      total: number;
+    }>;
+  }
 }
 
 export default function StatsGrid() {
@@ -36,22 +42,9 @@ export default function StatsGrid() {
           }
         );
         
-        if (response.ok) {
-          
-          setStats(response.data);
-        } else if (response.status === 401) {
-          
-          navigate('/login');
-        }
+        setStats(response.data);
       } catch (err: any) {
-        
         setError(err.response?.data?.message || err.message || 'Failed to fetch statistics.');
-        
-        // Optional: Handle 401 unauthorized errors
-        if (err.response?.status === 401) {
-          // You might want to redirect to login or refresh the token here
-          
-        }
       } finally {
         setLoading(false);
       }
@@ -96,29 +89,28 @@ export default function StatsGrid() {
 
   return (
     <div className="grid grid-cols-2 mt-0 lg:grid-cols-4 gap-2 md:gap-4 mb-2">
-     
       <StatCard 
         title="Total Products"
-        value={formatNumberWithCommas(stats.total_available_products)} 
+        value={stats.data.total_available_products.toString()} 
         icon={<Package className="text-indigo-500" />} 
         description="Available in stock"
       />
 
       <StatCard 
         title="Total Payments"
-        value={formatCurrency(stats.total_payments_this_year)} 
+        value={formatCurrency(stats.data.total_payments_this_year)} 
         icon={<Banknote className="text-emerald-500" />} 
         description="This fiscal year"
       />
       <StatCard 
         title="Total Sales"
-        value={formatNumberWithCommas(stats.total_sales_this_year)} 
+        value={stats.data.total_sales_this_year.toString()} 
         icon={<TrendingUp className="text-amber-500" />} 
         description="All-time sales count"
       />
       <StatCard 
         title="Total Users"
-        value={formatNumberWithCommas(stats.total_users)} 
+        value={stats.data.total_users.toString()} 
         icon={<Users className="text-sky-500" />} 
         description="Registered platform users"
       />
