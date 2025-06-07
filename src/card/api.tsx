@@ -5,7 +5,7 @@ const JWT_TOKEN = localStorage.getItem('accessToken')
 // DELETE wish item by ID
 export const deleteWishItem = async (id: number): Promise<void> => {
   try {
-    const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/wishlist/${id}/`, {
+    const response = await fetch(`https://api.kidsdesigncompany.com/api/v1/wishlist/${id}/`, {
       method: 'DELETE',
       headers: {
         'Authorization': `JWT ${JWT_TOKEN}`,
@@ -26,7 +26,7 @@ export const deleteWishItem = async (id: number): Promise<void> => {
 // ADD new wish item (returns full WishItem with `id` and `product`)
 export const addWishItem = async (productId: number): Promise<WishItem> => {
   try {
-    const response = await fetch('https://ecommercetemplate.pythonanywhere.com/api/v1/wishlist/', {
+    const response = await fetch('https://api.kidsdesigncompany.com/api/v1/wishlist/', {
       method: 'POST',
       headers: {
         'Authorization': `JWT ${JWT_TOKEN}`,

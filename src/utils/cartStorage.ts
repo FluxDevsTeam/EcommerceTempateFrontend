@@ -133,7 +133,7 @@ export const isItemInUserCart = async (productId: number, sizeId: number): Promi
   }
 };
 
-const baseURL = "https://ecommercetemplate.pythonanywhere.com";
+const baseURL = "https://api.kidsdesigncompany.com";
 
 export const migrateLocalCartToUserCart = async (accessToken: string): Promise<boolean> => {
   try {

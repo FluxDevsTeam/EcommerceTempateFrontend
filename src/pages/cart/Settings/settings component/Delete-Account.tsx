@@ -36,7 +36,7 @@ const DeleteAccount = () => {
 
     try {
       const response = await fetch(
-        'https://ecommercetemplate.pythonanywhere.com/auth/profile/delete-account/',
+        'https://api.kidsdesigncompany.com/auth/profile/delete-account/',
         {
           method: 'POST',
           headers: {

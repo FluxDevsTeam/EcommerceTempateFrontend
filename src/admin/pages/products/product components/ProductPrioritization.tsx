@@ -99,7 +99,7 @@ const ProductPrioritization: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?page_size=50`,
+        `https://api.kidsdesigncompany.com/api/v1/product/item/?page_size=50`,
         { headers }
       );
 
@@ -157,7 +157,7 @@ const ProductPrioritization: React.FC = () => {
 
       try {
         const response = await fetch(
-          `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/admin-search/?search=${encodeURIComponent(query)}`,
+          `https://api.kidsdesigncompany.com/api/v1/product/item/admin-search/?search=${encodeURIComponent(query)}`,
           { headers }
         );
 
@@ -196,7 +196,7 @@ const ProductPrioritization: React.FC = () => {
     if (!headers) return [];
 
     let allProducts: Product[] = [];
-    let nextPage: string | null = `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?page_size=100`;
+    let nextPage: string | null = `https://api.kidsdesigncompany.com/api/v1/product/item/?page_size=100`;
 
     try {
       while (nextPage) {
@@ -233,7 +233,7 @@ const ProductPrioritization: React.FC = () => {
       for (const product of allProducts) {
         if (!updatedProducts.some(p => p.id === product.id)) {
           await fetch(
-            `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${product.id}/`,
+            `https://api.kidsdesigncompany.com/api/v1/product/item/${product.id}/`,
             {
               method: 'PATCH',
               headers,
@@ -250,7 +250,7 @@ const ProductPrioritization: React.FC = () => {
         const newPosition = index < 50 ? index + 1 : null;
         if (product[positionField] !== newPosition) {
           const response = await fetch(
-            `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${product.id}/`,
+            `https://api.kidsdesigncompany.com/api/v1/product/item/${product.id}/`,
             {
               method: 'PATCH',
               headers,
@@ -293,7 +293,7 @@ const ProductPrioritization: React.FC = () => {
       const positionField = activeTab === 'top_selling' ? 'top_selling_position' : 'latest_item_position';
       const flagField = activeTab === 'top_selling' ? 'top_selling_items' : 'latest_item';
       const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${productId}/`,
+        `https://api.kidsdesigncompany.com/api/v1/product/item/${productId}/`,
         {
           method: 'PATCH',
           headers,
@@ -337,7 +337,7 @@ const ProductPrioritization: React.FC = () => {
 
       for (const product of allProducts) {
         const response = await fetch(
-          `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${product.id}/`,
+          `https://api.kidsdesigncompany.com/api/v1/product/item/${product.id}/`,
           {
             method: 'PATCH',
             headers,
@@ -411,7 +411,7 @@ const ProductPrioritization: React.FC = () => {
       const newPosition = products.filter((p) => p[positionField] !== null).length < 50 ? products.length + 1 : null;
 
       const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${result.id}/`,
+        `https://api.kidsdesigncompany.com/api/v1/product/item/${result.id}/`,
         {
           method: 'PATCH',
           headers,

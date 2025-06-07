@@ -51,11 +51,11 @@ interface ProductDetailParams {
   id: string;
 }
 
-const baseURL = "https://ecommercetemplate.pythonanywhere.com";
+const baseURL = "https://api.kidsdesigncompany.com";
 
 const fetchProduct = async (id: number): Promise<Product> => {
   const response = await fetch(
-    `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${id}/`
+    `https://api.kidsdesigncompany.com/api/v1/product/item/${id}/`
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");

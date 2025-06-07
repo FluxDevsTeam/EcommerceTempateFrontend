@@ -44,7 +44,7 @@ export interface ApiResponse {
   results: Product[];
 }
 
-export const baseURL = 'https://ecommercetemplate.pythonanywhere.com';
+export const baseURL = 'https://api.kidsdesigncompany.com';
 
 // Utility Functions
 export const buildQueryParams = (params: Record<string, string>) => {
