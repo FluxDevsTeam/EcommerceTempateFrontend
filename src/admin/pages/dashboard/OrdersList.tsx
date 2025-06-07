@@ -68,7 +68,7 @@ const OrdersList: React.FC = () => {
         }
 
         const response = await axios.get(
-          `https://ecommercetemplate.pythonanywhere.com/api/v1/admin/order/?page=${page}&page_size=${ITEMS_PER_PAGE}`,
+          `https://api.kidsdesigncompany.com/api/v1/admin/order/?page=${page}&page_size=${ITEMS_PER_PAGE}`,
           {
             headers: {
               'Authorization': `JWT ${token}`,

@@ -50,7 +50,7 @@ const AdminCategories = () => {
     type: "success" as "success" | "error",
   });
 
-  const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
+  const baseURL = `https://api.kidsdesigncompany.com`;
 
   // Debounce the search input
   useEffect(() => {

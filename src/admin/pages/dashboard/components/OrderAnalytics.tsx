@@ -33,7 +33,7 @@ const OrderAnalytics = () => {
         }
 
         const response = await axios.get(
-          'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/dashboard/',
+          'https://api.kidsdesigncompany.com/api/v1/admin/dashboard/',
           {
             headers: {
               'Authorization': `JWT ${token}`,

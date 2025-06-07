@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 
-const API_URL = 'https://ecommercetemplate.pythonanywhere.com';
+const API_URL = 'https://api.kidsdesigncompany.com';
 
 // Type definitions for API responses
 interface AuthResponse {

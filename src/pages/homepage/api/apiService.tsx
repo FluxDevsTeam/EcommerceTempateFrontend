@@ -18,7 +18,7 @@ interface Product {
 }
 
 // Base API URL
-const BASE_URL = 'https://ecommercetemplate.pythonanywhere.com/api/v1';
+const BASE_URL = 'https://api.kidsdesigncompany.com/api/v1';
 
 // Helper to handle API errors
 const handleApiError = async (response: Response, customMessage: string) => {

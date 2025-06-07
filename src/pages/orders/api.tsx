@@ -1,7 +1,7 @@
 // api.tsx
 import type { WishItem } from './types';
 
-const BASE_URL = 'https://ecommercetemplate.pythonanywhere.com/api/v1';
+const BASE_URL = 'https://api.kidsdesigncompany.com/api/v1';
 const WISHLIST_LOCAL_STORAGE_KEY = 'wishlistItems';
 const CART_LOCAL_STORAGE_KEY = 'cart';
 
