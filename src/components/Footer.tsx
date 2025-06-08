@@ -57,14 +57,16 @@ const Footer = () => {
           {/* Legal */}
           <div className="font-poppins max-md:mt-5">
             <h3 className="font-semibold">LEGAL</h3>
-            <ul className="mt-2 space-y-2 text-gray-600">
-              <Link to='/contact-us'><li>Customer Support</li></Link>
-              <Link to='/terms-of-service'><li>Privacy Policy</li></Link>
-            </ul>
+            {/* <div className="mt-2 space-y-2 text-gray-600"> */}
+            <div className="mt-2 flex flex-col space-y-2 text-gray-600">
+
+              <Link to='/contact-us'>Customer Support</Link>
+              <Link to='/terms-of-service'>Privacy Policy</Link>
+            </div>
           </div>
 
           {/* Help */}
-          <div className="font-poppins max-md:mt-4">
+          <div className="font-poppins max-md:mt-5">
             <h3 className="font-semibold">HELP</h3>
             <div className="mt-2 flex flex-col space-y-2 text-gray-600">
               <Link to='/contact-us'>Contact</Link>

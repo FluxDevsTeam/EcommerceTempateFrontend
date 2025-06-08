@@ -138,7 +138,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(false);
       return response;
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Signup failed. Please try again.';
+      const errorMessage = err.message || 'Signup failed. Please try again.';
       setError(errorMessage);
       setLoading(false);
       throw err;
@@ -191,7 +191,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(false);
       return response;
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Login failed. Please check your credentials.';
+      const errorMessage = err.message || 'Login failed. Please try again.';
       setError(errorMessage);
       setLoading(false);
       throw err;

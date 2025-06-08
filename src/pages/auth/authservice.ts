@@ -45,6 +45,21 @@ interface Login {
   password: string;
 }
 
+// Add these helper functions at the top of the file
+const isNetworkError = (error: any): boolean => {
+  return !error.response && !error.status && error.message === 'Network Error';
+};
+
+const handleServiceError = (error: any): never => {
+  if (isNetworkError(error)) {
+    throw new Error('Unable to connect to the server. Please check your internet connection.');
+  }
+  
+  // Handle other types of errors
+  const message = error.response?.data?.message || error.message;
+  throw new Error(message || 'An unexpected error occurred');
+};
+
 // Create typed axios instance
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
@@ -115,10 +130,8 @@ const authService = {
     try {
       const response = await api.post('/auth/signup/', userData);
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -129,10 +142,8 @@ const authService = {
       const response = await api.post('/auth/signup/resend-otp/', { email });
       
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -143,10 +154,8 @@ const authService = {
       const response = await api.post('/auth/signup/verify-otp/', { email, otp });
       
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -183,10 +192,8 @@ const authService = {
       }
       
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -202,10 +209,8 @@ const authService = {
       }
       
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -238,10 +243,8 @@ const authService = {
       });
       
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -250,10 +253,8 @@ const authService = {
     try {
       const response = await api.post('/auth/forgot-password/resend-otp/', { email });
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -262,10 +263,8 @@ const authService = {
     try {
       const response = await api.post('/auth/forgot-password/verify-otp/', { email, otp });
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -276,10 +275,8 @@ const authService = {
     try {
       const response = await api.post('/auth/forgot-password/set-new-password/', data);
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -288,10 +285,8 @@ const authService = {
     try {
       const response = await api.post('/auth/password-change/request-password-change/', data);
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -300,10 +295,8 @@ const authService = {
     try {
       const response = await api.post('/auth/password-change/resend-otp/');
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -312,10 +305,8 @@ const authService = {
     try {
       const response = await api.post('/auth/password-change/verify-password-change/', { otp });
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
  
@@ -330,12 +321,8 @@ const authService = {
       localStorage.setItem('user', JSON.stringify(userData));
       
       return userData;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      
-      
-      // If it's a 401 error, the interceptor should have already tried refreshing the token
-      throw new Error('Failed to fetch user profile');
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   

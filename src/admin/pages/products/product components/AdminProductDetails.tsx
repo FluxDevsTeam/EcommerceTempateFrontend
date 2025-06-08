@@ -8,6 +8,7 @@ import { FaThList, FaEdit, FaTh, FaPlus, FaTrash } from "react-icons/fa";
 import Modal from "../../../../components/ui/Modal";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { formatCurrency } from "@/admin/utils/formatting";
 
 interface Size {
   id: number;
@@ -409,11 +410,11 @@ const AdminProductDetails: React.FC = () => {
                 </h2>
                 <div className="mt-2 flex items-baseline gap-2">
                   <span className="text-3xl font-bold text-gray-900">
-                    ₦ {product.price}
+                    {formatCurrency(product.price)}
                   </span>
                   {product.undiscounted_price > product.price && (
                     <span className="text-lg text-gray-500 line-through">
-                      ₦{product.undiscounted_price}
+                      {formatCurrency(product.undiscounted_price)}
                     </span>
                   )}
                 </div>
@@ -524,11 +525,10 @@ const AdminProductDetails: React.FC = () => {
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-600">Price</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">₦ {size.price}</span>
-                        {Number(size.undiscounted_price) >
-                          Number(size.price) && (
+                        <span className="font-medium">{formatCurrency(size.price)}</span>
+                        {Number(size.undiscounted_price) > Number(size.price) && (
                           <span className="text-gray-400 line-through">
-                            ₦ {size.undiscounted_price}
+                            {formatCurrency(size.undiscounted_price)}
                           </span>
                         )}
                       </div>

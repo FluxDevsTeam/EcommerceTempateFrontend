@@ -421,7 +421,7 @@ const AddNewProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Weight & Size
+                    Weight & Size (Lagos - Kano)
                   </label>
                   <select
                     name="weightSizePair"

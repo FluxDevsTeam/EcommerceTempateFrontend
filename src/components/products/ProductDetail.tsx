@@ -420,7 +420,7 @@ const ProductDetail = () => {
 
   return (
     <div>
-      <div className="w-full min-h-screen md:mt-6 px-4 md:px-8 py-0 lg:px-12">
+      <div className="w-full min-h-screen md:mt-6 px-4 pl-6 md:px-8 py-0 lg:px-12">
         {/* Success/Error Modal */}
         {modalConfig.isOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -608,9 +608,11 @@ const ProductDetail = () => {
                 >
                   +
                 </button>
+
+                {/* Add to Cart */}
                 <button
                   onClick={handleAddToCart}
-                  className={`w-full py-2.5 text-white rounded-xl transition-colors cursor-pointer ${
+                  className={`w-full py-2.5 px-3 text-white rounded-xl transition-colors cursor-pointer ${
                     !isInStock || isAddingToCart
                       ? "bg-gray-400 cursor-not-allowed"
                       : "bg-customBlue hover:brightness-90"
@@ -629,7 +631,6 @@ const ProductDetail = () => {
                 </button>
               </div>
 
-              {/* Add to Cart */}
             </div>
           </div>
         </div>
@@ -639,18 +640,20 @@ const ProductDetail = () => {
           <div className="md:w-[60%] w-full gap-4 space-y-2.5">
             <h2 className="text-lg sm:text-xl font-medium">Description</h2>
             <p
-              className={`text-gray-700 text-xs sm:text-sm ${
-                !isDescriptionExpanded ? "max-md:line-clamp-6 line-clamp-6" : ""
+              className={`product-description text-gray-700 text-xs sm:text-sm ${
+                !isDescriptionExpanded ? "line-clamp-6" : ""
               }`}
             >
               {product.description}
             </p>
-            <button
-              className="text-blue-800 text-sm sm:text-base cursor-pointer"
-              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-            >
-              {isDescriptionExpanded ? "view less" : "view more"}
-            </button>
+            {product.description.length > 300 && (
+              <span
+                className={` text-blue-800 text-xs cursor-pointer`}
+                onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+              >
+                {isDescriptionExpanded ? "view less" : "view full description"}
+              </span>
+            )}
           </div>
           <div className="md:w-[30%] mx-auto w-full flex justify-center items-center">
             <DescriptionList
@@ -665,6 +668,7 @@ const ProductDetail = () => {
           {/* Conditional rendering for Suggested or SuggestedProductDetails */}
         </div>
       </div>
+
       <div className="px-0 md:px-8 ">
         <Suggested
           subcategory_id={product.sub_category?.id | 0}

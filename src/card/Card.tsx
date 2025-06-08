@@ -5,6 +5,7 @@ import Wish from './Wish';
 import { addWishItem, deleteWishItem, getWishlistFromLocalStorage, WishData, addToWishlistLocalStorage, removeFromWishlistLocalStorage } from '../pages/orders/api';
 import { CardProps, WishItem } from './types';
 import { useAuth } from '../pages/auth/AuthContext';
+import { useMediaQuery } from 'react-responsive';
 
 const Card: React.FC<CardProps> = ({
   product,
@@ -159,13 +160,16 @@ const Card: React.FC<CardProps> = ({
     }
   };
 
+  const is390pxAndAbove = useMediaQuery({ query: '(min-width: 390px)' });
+
+
   return (
     <div className="mb-2 cursor-pointer">
-      <div className="relative w-fit mb-4 overflow-hidden rounded-2xl">
+      <div className="relative w-full mb-4 overflow-hidden rounded-2xl">
         <img
           src={product.image1}
           alt={product.name}
-          className="w-full rounded-2xl md:w-auto h-[150px] lg:h-[220px] object-contain hover:scale-105 transition-transform duration-300"
+          className={`w-full  h-[120px] ${is390pxAndAbove ? "w-[130px] h-130px" : ""} rounded-2xl hover:scale-105 transition-transform duration-300 mx-auto lg:w-[160px] lg:h-[160px] xl:h-[210px] xl:w-[210px]`}
           onClick={handleProductClick}
         />
         <Wish

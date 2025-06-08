@@ -553,7 +553,7 @@ const EditProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Weight & Size
+                    Weight & Size (Lagos - Kano)
                   </label>
                   <select
                     name="weightSizePair"
@@ -992,7 +992,7 @@ const EditProduct: React.FC = () => {
                       </h2>
                       <div className="flex items-baseline space-x-4">
                         <span className="text-2xl font-bold text-gray-900">
-                          ₦{formData.undiscounted_price || "0.00"}
+                          {formData.undiscounted_price ? formatCurrency(formData.undiscounted_price) : "₦0"}
                         </span>
                       </div>
                     </div>
