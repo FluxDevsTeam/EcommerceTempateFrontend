@@ -15,7 +15,11 @@ export default {
       },
       scrollSnapAlign: {
         'start': 'start',
-      }
+      },
+      screens: {
+        'xxs': '320px',
+        'xs': '375px',
+      },
     },
   },
   plugins: [],

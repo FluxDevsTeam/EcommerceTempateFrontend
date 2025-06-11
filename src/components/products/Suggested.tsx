@@ -324,11 +324,14 @@ const Suggested: React.FC<SuggestedProps> = memo(({
     };
   }, [fetchSuggestions]);
 
-  const CustomPrevArrow = (props: any) => (
+  // Update arrow components to handle all Slick props
+  const CustomPrevArrow = ({ currentSlide, slideCount, ...props }: any) => (
     <button
       {...props}
       className="hidden md:flex absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-6 z-10 items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-110"
       aria-label="Previous"
+      data-currentslide={currentSlide}
+      data-slidecount={slideCount}
     >
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M15 5L7 12L15 19" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -336,11 +339,13 @@ const Suggested: React.FC<SuggestedProps> = memo(({
     </button>
   );
 
-  const CustomNextArrow = (props: any) => (
+  const CustomNextArrow = ({ currentSlide, slideCount, ...props }: any) => (
     <button
       {...props}
       className="hidden md:flex absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-6 z-10 items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-110"
       aria-label="Next"
+      data-currentslide={currentSlide}
+      data-slidecount={slideCount}
     >
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M9 5L17 12L9 19" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -356,11 +361,11 @@ const Suggested: React.FC<SuggestedProps> = memo(({
       {
         breakpoint: 1650,
         settings: {
-          infinite: products.length > 6,
+          infinite: products.length > 5,
           dots: true,
-          slidesToShow: 6,
-          slidesToScroll: 5,
-          arrows: products.length > 6,
+          slidesToShow: 5,
+          slidesToScroll: 4,
+          arrows: products.length > 5,
         },
       },
       {
