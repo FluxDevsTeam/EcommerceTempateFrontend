@@ -225,18 +225,26 @@ const Suggested: React.FC<SuggestedProps> = memo(({
       let suggestedProducts: Product[] = [];
       let currentPage = 1;
       let hasMore = true;
-      while (hasMore) {
+      const ITEM_LIMIT = 50;
+
+      while (hasMore && suggestedProducts.length < ITEM_LIMIT) {
         try {
           const params = {
             page: currentPage.toString(),
-            page_size: '20',
+            page_size: '60',
             subcategory_id,
             second_subcategory_id,
           };
           const suggestedResponse = await fetchSuggestedProductsDetails(params);
 
           if (suggestedResponse.results && Array.isArray(suggestedResponse.results)) {
-            suggestedProducts.push(...suggestedResponse.results);
+            const remainingSlots = ITEM_LIMIT - suggestedProducts.length;
+            const newProducts = suggestedResponse.results.slice(0, remainingSlots);
+            suggestedProducts.push(...newProducts);
+
+            if (suggestedProducts.length >= ITEM_LIMIT) {
+              break;
+            }
           } else {
             break;
           }

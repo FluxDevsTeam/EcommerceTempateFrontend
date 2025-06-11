@@ -172,7 +172,7 @@ const Login = () => {
         </Button> */}
 
         {/* <button className="w-full p-5 bg-white border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"> */}
-            <GoogleLoginButton></GoogleLoginButton>
+            {/* <GoogleLoginButton></GoogleLoginButton> */}
         {/* </button> */}
         
 

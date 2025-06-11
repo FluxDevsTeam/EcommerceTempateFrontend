@@ -210,7 +210,7 @@ import { SubCategory } from "@/card/types";interface WishItem {
       </Link>
     </div>
   ) : (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 mb-8 md:space-x-8 space-x-0 sm:mb-16">
+    <div className="grid grid-cols-2 sm:grid-cols-4 px-4 sm:gap-8 mb-8 md:space-x-8 space-x-0 sm:mb-16">
       {wishlistItems.map((item) => (
         <Card
           key={typeof item.id === 'string' ? item.id : `${item.id}_${item.product.id}`}
