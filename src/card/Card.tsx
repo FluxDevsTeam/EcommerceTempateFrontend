@@ -169,7 +169,7 @@ const Card: React.FC<CardProps> = ({
         <img
           src={product.image1}
           alt={product.name}
-          className={`w-full  h-[120px] ${is390pxAndAbove ? "w-[130px] h-130px" : ""} rounded-2xl hover:scale-105 transition-transform duration-300 mx-auto lg:w-[160px] lg:h-[160px] xl:h-[210px] xl:w-[210px]`}
+          className={`w-[170px]  h-[170px] ${is390pxAndAbove ? "w-[130px] h-130px" : ""} rounded-2xl hover:scale-105 transition-transform duration-300 mx-auto lg:w-[160px] lg:h-[160px] xl:h-[220px] xl:w-[220px]`}
           onClick={handleProductClick}
         />
         <Wish
@@ -178,10 +178,10 @@ const Card: React.FC<CardProps> = ({
           onToggle={handleToggle}
         />
       </div>
-      <p className="text-[15px] font-medium sm:text-[20px] capitalize mb-2 line-clamp-1">
+      <p className="text-[15px] font-medium sm:text-[20px] capitalize lg:mx-2 mb-2 line-clamp-1">
         {product.name}
       </p>
-      <div className="gap-2 sm:gap-4">
+      <div className="gap-2 lg:mx-2 sm:gap-4">
         {typeof product.price === 'number' && product.price > 0 && (
           <span className="text-[14px] sm:text-[20px]">
             ₦{formatPrice(product.price)}

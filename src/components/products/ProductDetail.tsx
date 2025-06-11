@@ -9,6 +9,7 @@ import {
 } from "../../utils/cartStorage";
 
 import DescriptionList from "./DescriptionList";
+import { useMediaQuery } from "react-responsive";
 
 const baseURL = "https://api.kidsdesigncompany.com";
 
@@ -72,6 +73,7 @@ const ProductDetail = () => {
   const { id } = useParams<keyof ProductDetailParams>() as ProductDetailParams;
   const productId = parseInt(id);
   const navigate = useNavigate();
+  const is390pxAndAbove = useMediaQuery({ query: "(min-width: 390px)" });
 
   // Group all useState hooks together at the top
   const [mainImage, setMainImage] = useState<string>("");
@@ -420,7 +422,7 @@ const ProductDetail = () => {
 
   return (
     <div>
-      <div className="w-full min-h-screen md:mt-6 px-4 pl-6 md:px-8 py-0 lg:px-12">
+      <div className="w-full min-h-screen md:mt-6 px-9 md:px-8 py-0 lg:px-12">
         {/* Success/Error Modal */}
         {modalConfig.isOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -446,47 +448,50 @@ const ProductDetail = () => {
         )}
 
         {/* Product Main Section */}
-        <div className="flex flex-col lg:flex-row lg-pt-0 justify-center items-start gap-6">
-          {/* Thumbnail Images (Left Column) */}
-          <div className="flex sm:mt-3 mx-auto lg:my-auto md:flex-col gap-3 order-1">
-            {images.map((img, index) => (
-              <div
-                key={index}
-                className={`bg-gray-100 p-1.5 rounded-md cursor-pointer hover:opacity-90 ${
-                  mainImage === img ? "ring-2 ring-blue-500" : ""
-                }`}
-                onClick={() => setMainImage(img)}
-              >
+        <div className="flex flex-col md:flex-col lg:flex-row lg-pt-0 justify-center items-start lg:gap-12 gap-6">
+          {/* Images Section Container - Only flex on md */}
+          <div className="w-full flex flex-col md:flex-row lg:flex-row lg:w-auto md:gap-8 lg:gap-3 gap-4">
+            {/* Thumbnail Images */}
+            <div className="flex mx-auto md:flex-col lg:flex-col gap-5 order-1 lg:my-2 lg:mr-2">
+              {images.map((img, index) => (
+                <div
+                  key={index}
+                  className={`bg-gray-100 p-1.5 rounded-md cursor-pointer hover:opacity-90 ${
+                    mainImage === img ? "ring-2 ring-blue-500" : ""
+                  }`}
+                  onClick={() => setMainImage(img)}
+                >
+                  <img
+                    src={img}
+                    alt={`Thumbnail ${index + 1}`}
+                    className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain rounded-lg"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "https://via.placeholder.com/100";
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Main Product Image */}
+            <div className="rounded-lg md:mt-0 mt-14 max-w-md mx-auto md:order-2 md:flex-1 lg:flex-none">
+              {mainImage && (
                 <img
-                  src={img}
-                  alt={`Thumbnail ${index + 1}`}
-                  className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-cover rounded-lg"
+                  src={mainImage}
+                  alt="Main Product"
+                  className={`w-[325px] h-[325px] rounded-2xl hover:scale-105 transition-transform duration-300 mx-auto lg:w-[350px] lg:h-[350px] xl:h-[430px] xl:w-[430px]`}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = "https://via.placeholder.com/100";
+                    target.src = "https://via.placeholder.com/500";
                   }}
                 />
-              </div>
-            ))}
+              )}
+            </div>
           </div>
 
-          {/* Main Product Image (Middle Column) */}
-          <div className="rounded-lg lg:mt-2 mt-12 max-w-sm lg:max-w-md mx-auto lg:order-2 h-[350px] md:h-[450px] flex items-center justify-center">
-            {mainImage && (
-              <img
-                src={mainImage}
-                alt="Main Product"
-                className="w-full h-full object-contain rounded-2xl"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = "https://via.placeholder.com/500";
-                }}
-              />
-            )}
-          </div>
-
-          {/* Product Info (Right Column) */}
-          <div className="flex-1 max-w-lg order-2 lg:order-3">
+          {/* Product Info Section */}
+          <div className="flex-1 w-full lg:w-auto max-w-lg order-2 lg:order-3 lg:ml-6 md:mt-8 lg:mt-0">
             <div className="space-y-2 sm:space-y-4">
               <h1 className="text-xl sm:text-2xl md:text-3xl uppercase font-medium leading-tight">
                 {product.name}
@@ -630,7 +635,6 @@ const ProductDetail = () => {
                     : "Add to Cart"}
                 </button>
               </div>
-
             </div>
           </div>
         </div>
@@ -640,7 +644,7 @@ const ProductDetail = () => {
           <div className="md:w-[60%] w-full gap-4 space-y-2.5">
             <h2 className="text-lg sm:text-xl font-medium">Description</h2>
             <p
-              className={`product-description text-gray-700 text-xs sm:text-sm ${
+              className={`product-description text-gray-700 text-sm ${
                 !isDescriptionExpanded ? "line-clamp-6" : ""
               }`}
             >

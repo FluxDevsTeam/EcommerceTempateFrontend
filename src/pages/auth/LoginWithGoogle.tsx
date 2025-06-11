@@ -9,7 +9,7 @@ const GoogleLoginButton = () => {
     try {
       // Send the Google ID token to your backend
       const response = await axios.post(
-        'https://ecommercetemplate.pythonanywhere.com/auth/google-auth/',
+        'https://api.kidsdesigncompany.com/auth/google-auth/',
         {
           id_token: credentialResponse.credential, // Google ID token
         }

@@ -6,10 +6,16 @@ export default {
   ],
   theme: {
     extend: {
-       colors: {
-      'customBlue': '#0078A5',
-     
-    }
+      colors: {
+        'customBlue': '#0078A5',
+      },
+      scrollSnapType: {
+        'x': 'x',
+        'mandatory': 'mandatory',
+      },
+      scrollSnapAlign: {
+        'start': 'start',
+      }
     },
   },
   plugins: [],

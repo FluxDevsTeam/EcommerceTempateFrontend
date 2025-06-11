@@ -49,14 +49,14 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
     dots: false,
     fade: false,
     infinite: true,
-    speed: 800,
+    speed: 600,
     slidesToShow: 1,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 4000,
+    autoplaySpeed: 3000,
     waitForAnimate: true,
     cssEase: "ease-in-out",
-    arrows: true,
+    arrows: window.innerWidth >= 768,
     nextArrow: <CustomArrow direction="right" />,
     prevArrow: <CustomArrow direction="left" />,
   };
@@ -71,7 +71,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
   };
 
   return (
-    <div className="carousel-wrapper mx-auto my-4 px-4 max-w-[1920px]">
+    <div className="carousel-wrapper mx-auto my-6 md:px-4 max-w-[1920px]">
       <Slider {...settings}>
         {allImages.map((image) => (
           <div key={image.id} className="slide-item relative px-2">
@@ -81,17 +81,17 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
             >
               <div className="flex flex-col md:flex-row items-center min-h-[300px] md:min-h-[400px]">
                 {/* Mobile text overlay */}
-                <div className="absolute bottom-5 left-0 h-1/3 right-0 md:hidden z-10 rounded-b-lg bg-gradient-to-b from-white/0 to-black/80">
-                  <h3 className="text-xl leading-8 text-white line-clamp-2 text-center capitalize">
+                <div className="absolute bottom-0 left-0 h-1/4 right-0 md:hidden z-10 rounded-b-lg bg-gradient-to-b from-white/0 to-black/60">
+                  <h3 className="text-xl leading-8 mt-2 text-white line-clamp-2 px-10 text-center capitalize">
                     {image.name.toUpperCase()}
                   </h3>
                 </div>
                 {/* Desktop text content */}
                 <div className="hidden md:flex flex-col justify-center space-y-6 p-8 md:w-1/2 order-2 md:order-1">
-                  <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 leading-tight line-clamp-3">
-                    {image.name}
+                  <h3 className="line-clamp-3 text-3xl md:text-4xl  lg:text-5xl font-bold text-gray-800 leading-tight pb-0 mb-0 capitalize">
+                    {image.name.toUpperCase()}
                   </h3>
-                  <div className="h-1 w-44 bg-blue-600"></div>
+                  <div className="h-1 w-44 mt-0 pt-0 bg-blue-600"></div>
                   <p className="text-gray-600 text-lg lg:text-xl">
                     Discover our exclusive collection
                   </p>
@@ -106,7 +106,8 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
                   <img
                     src={image.src}
                     alt={image.alt}
-                    style={{ width: imageWidth }}
+                    className="object-contain"
+                    style={{ width: '300px', height: '300px' }}
                   />
                 </div>
               </div>

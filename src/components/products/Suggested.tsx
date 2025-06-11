@@ -341,15 +341,20 @@ const Suggested: React.FC<SuggestedProps> = memo(({
   );
 
   const settings = {
-    dots: true,
-    infinite: products.length > 6,
-    speed: 900,
-    slidesToShow: 6,
-    slidesToScroll: 5,
-    arrows: products.length > 6,
     prevArrow: <CustomPrevArrow />,
     nextArrow: <CustomNextArrow />,
+    speed: 900,
     responsive: [
+      {
+        breakpoint: 1650,
+        settings: {
+          infinite: products.length > 6,
+          dots: true,
+          slidesToShow: 6,
+          slidesToScroll: 5,
+          arrows: products.length > 6,
+        },
+      },
       {
         breakpoint: 1024,
         settings: {
@@ -366,16 +371,6 @@ const Suggested: React.FC<SuggestedProps> = memo(({
           slidesToScroll: 2,
           arrows: products.length > 3,
           infinite: products.length > 3,
-        },
-      },
-      {
-        breakpoint: 480,
-        settings: {
-          dots: false,
-          slidesToShow: 2.1,
-          slidesToScroll: 1.5,
-          arrows: false,
-          infinite: products.length > 2,
         },
       },
     ],
@@ -403,19 +398,38 @@ const Suggested: React.FC<SuggestedProps> = memo(({
         <div className="text-center text-gray-500">No suggestions available.</div>
       ) : (
         <div className="suggested-slider-container">
-          <Slider {...settings} className="mb-6 sm:mb-8">
-            {products.map(item => (
-              <div key={item.id} className="px-1">
-                <SuggestedCard
-                  product={item}
-                  isInitiallyLiked={item.isInitiallyLiked}
-                  wishItemId={item.wishItemId}
-                  onItemClick={onSuggestedItemClick}
-                  onWishlistToggle={handleWishlistToggle}
-                />
-              </div>
-            ))}
-          </Slider>
+          <div className="md:block hidden">
+            <Slider {...settings} className="mb-6 sm:mb-8">
+              {products.map(item => (
+                <div key={item.id} className="px-1">
+                  <SuggestedCard
+                    product={item}
+                    isInitiallyLiked={item.isInitiallyLiked}
+                    wishItemId={item.wishItemId}
+                    onItemClick={onSuggestedItemClick}
+                    onWishlistToggle={handleWishlistToggle}
+                  />
+                </div>
+              ))}
+            </Slider>
+          </div>
+          
+          {/* Mobile Scroll Version */}
+          <div className="md:hidden overflow-x-auto scrollbar-hide">
+            <div className="inline-flex gap-0">
+              {[...products].map((item, index) => (
+                <div key={`${item.id}-${index}`}>
+                  <SuggestedCard
+                    product={item}
+                    isInitiallyLiked={item.isInitiallyLiked}
+                    wishItemId={item.wishItemId}
+                    onItemClick={onSuggestedItemClick}
+                    onWishlistToggle={handleWishlistToggle}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
       <style jsx="true">{`
@@ -430,8 +444,14 @@ const Suggested: React.FC<SuggestedProps> = memo(({
           height: auto;
           margin-right: 8px;
         }
-        .suggested-slider-container :global(.slick-list) {
-          overflow: hidden;
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+          -webkit-overflow-scrolling: touch;
+          scroll-behavior: smooth;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
         }
         .suggested-slider-container :global(.slick-prev),
         .suggested-slider-container :global(.slick-next) {
