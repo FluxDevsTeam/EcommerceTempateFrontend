@@ -184,3 +184,16 @@ export async function syncLocalWishlistToDatabase(localWishlist: number[]): Prom
     throw error;
   }
 }
+
+// Fetch slider items
+export async function fetchSliderItems(): Promise<ApiResponse<Product>> {
+  try {
+    const response = await fetch(`${BASE_URL}/product/item/?ordering=-latest_item&ordering=-top_selling_items&page_size=30`);
+    if (!response.ok) {
+      await handleApiError(response, 'Failed to fetch slider items');
+    }
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
+}

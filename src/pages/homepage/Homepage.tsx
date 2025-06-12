@@ -2,7 +2,7 @@ import ImageGrid from "../homepage/components/ImageGrid";
 import TopSelling from "../homepage/components/TopSelling";
 import ImageSlider from "../homepage/components/ImageSlider";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchProducts } from "../homepage/api/apiService";
+import { fetchProducts, fetchSliderItems } from "../homepage/api/apiService";
 import { WishData } from "../orders/api";
 import type { WishItem } from "../orders/types";
 
@@ -25,6 +25,8 @@ const Homepage = () => {
   const [topSellingItems, setTopSellingItems] = useState<ProductItem[]>([]);
   const [hasMoreTopSellingItems, setHasMoreTopSellingItems] = useState(true);
   const [isLoadingMoreTopSelling, setIsLoadingMoreTopSelling] = useState(false);
+  const [sliderItems, setSliderItems] = useState<ProductItem[]>([]);
+  const [sliderLoading, setSliderLoading] = useState(true);
 
   const queryClient = useQueryClient();
 
@@ -99,6 +101,24 @@ const Homepage = () => {
     fetchWishlist();
   }, []);
 
+  // Add new effect for slider data
+  useEffect(() => {
+    const loadSliderData = async () => {
+      try {
+        const data = await fetchSliderItems();
+        if (data?.results) {
+          setSliderItems(data.results);
+        }
+      } catch (error) {
+        console.error('Error fetching slider items:', error);
+      } finally {
+        setSliderLoading(false);
+      }
+    };
+
+    loadSliderData();
+  }, []);
+
   // Function to load more items
   const loadMoreItems = async () => {
     if (!hasMoreItems || isLoadingMore) return;
@@ -157,7 +177,7 @@ const Homepage = () => {
     }
   }, [isLoading, wishlistLoading, latestItems, topSellingItems]);
 
-  if (isLoading || wishlistLoading) {
+  if (isLoading || wishlistLoading || sliderLoading) {
     return (
       <div className="flex justify-center items-center py-10 text-lg">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mr-3"></div>
@@ -230,7 +250,7 @@ const Homepage = () => {
             onLoadMore={loadMoreItems}
           />
         )}
-        <ImageSlider data={latestItems} />
+        <ImageSlider data={sliderItems} />
         {topSellingItems.length > 0 && (
           <TopSelling
             product={topSellingItems}
