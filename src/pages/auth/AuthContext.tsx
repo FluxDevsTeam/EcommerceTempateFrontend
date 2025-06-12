@@ -61,9 +61,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Function to refresh user data from localStorage or API
   const refreshUserData = async (): Promise<void> => {
     try {
+      // If we already have current user data, don't refresh
+      if (currentUser?.first_name) {
+        return;
+      }
+
       // First check if we have the user in localStorage
       const storedUser = authService.getCurrentUser();
-      if (storedUser) {
+      if (storedUser?.first_name) {
         setCurrentUser(storedUser);
         return;
       }
@@ -72,7 +77,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const accessToken = localStorage.getItem('accessToken');
       if (accessToken) {
         const userProfile = await authService.getUserProfile();
-        setCurrentUser(userProfile);
+        if (userProfile) {
+          setCurrentUser(userProfile);
+        }
       } else {
         setCurrentUser(null);
       }
@@ -85,46 +92,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        
         const accessToken = localStorage.getItem('accessToken');
         const refreshToken = localStorage.getItem('refreshToken');
         
-        if (accessToken && refreshToken) {
-          // First try to get user from localStorage for faster UI response
-          const storedUser = authService.getCurrentUser();
-          if (storedUser) {
-            
-            setCurrentUser(storedUser);
-          }
-          
-          // Then try to fetch fresh data from the API
-          try {
-            const userProfile = await authService.getUserProfile();
-            
-            setCurrentUser(userProfile);
-          } catch (profileError) {
-            console.error("Failed to fetch profile, using stored data or logging out:", profileError);
-            if (!storedUser) {
-              // Only log out if we don't have locally stored user data
-              await authService.logout();
-              setCurrentUser(null);
-            }
-          }
-        } else {
-          // No tokens found
-          
+        if (!accessToken || !refreshToken) {
           setCurrentUser(null);
+          return;
         }
+
+        await refreshUserData();
       } catch (err) {
-        console.error("Authentication check failed", err);
-        setError("Failed to check authentication status");
+        console.error("Auth check failed:", err);
+        setCurrentUser(null);
       } finally {
         setLoading(false);
       }
     };
-  
+
     checkAuth();
-  }, []);
+  }, []); // Run only once on mount
 
   const signup = async (userData: SignupData): Promise<any> => {
     setLoading(true);

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { BsCart } from "react-icons/bs";
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 import { IoPersonCircleOutline } from "react-icons/io5";
@@ -69,37 +69,51 @@ const Header = () => {
       try {
         // Check localStorage for cached categories
         const cachedCategories = localStorage.getItem('cachedCategories');
-        if (cachedCategories) {
+        const cachedTimestamp = localStorage.getItem('categoriesCacheTimestamp');
+        const now = Date.now();
+        const cacheExpiry = 1000 * 60 * 60; // 1 hour
+
+        // Use cached data if it exists and is not expired
+        if (cachedCategories && cachedTimestamp && (now - Number(cachedTimestamp)) < cacheExpiry) {
           setCategories(JSON.parse(cachedCategories));
+          return;
         }
 
-        // Fetch all categories at once without page_size limitation
         const response = await fetch('https://api.kidsdesigncompany.com/api/v1/product/category/');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
+        
         setCategories(data.results);
         localStorage.setItem('cachedCategories', JSON.stringify(data.results));
+        localStorage.setItem('categoriesCacheTimestamp', now.toString());
       } catch (error) {
-        
-        if (!localStorage.getItem('cachedCategories')) {
-          setTimeout(fetchCategories, 5000);
+        // If there's an error and we have cached data, use it
+        const cachedCategories = localStorage.getItem('cachedCategories');
+        if (cachedCategories) {
+          setCategories(JSON.parse(cachedCategories));
         }
       }
     };
 
-    const checkAndRefreshUserData = async () => {
-      if (localStorage.getItem('accessToken') && (!currentUser || !currentUser.first_name)) {
-        try {
-          await refreshUserData();
-        } catch (err) {
-          
-        }
-      }
-    };
-    
     fetchCategories();
-    checkAndRefreshUserData();
-  }, [location, refreshUserData, isAuthenticated, currentUser]);
+  }, []); // Empty dependency array since we only want to fetch once on mount
+
+  // Memoize the refresh function
+  const memoizedRefreshUserData = useCallback(async () => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (accessToken && (!currentUser?.first_name)) {
+      try {
+        await refreshUserData();
+      } catch (err) {
+        console.error('Error refreshing user data:', err);
+      }
+    }
+  }, [refreshUserData, currentUser?.first_name]);
+
+  // Initial auth check
+  useEffect(() => {
+    memoizedRefreshUserData();
+  }, [memoizedRefreshUserData]);
 
   useEffect(() => {
     const handleScroll = () => {
