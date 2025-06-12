@@ -123,7 +123,7 @@ const SuggestedCard: React.FC<CardProps> = ({
         <img
           src={product.image1}
           alt={product.name}
-          className={`w-[120px] h-[120px] md:w-[150px] md:h-[150px] object-contain rounded-2xl hover:scale-105 transition-transform duration-300`}
+          className={`w-[120px] h-[120px] md:w-[150px] md:h-[150px] rounded-2xl hover:scale-105 transition-transform duration-300`}
           onClick={() => {
             if (onItemClick) {
               onItemClick(product.image1);
