@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const AdminRouteGuard = ({ children }: { children: React.ReactNode }) => {
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
@@ -29,6 +30,12 @@ const AdminRouteGuard = ({ children }: { children: React.ReactNode }) => {
         );
         setIsAuthorized(true);
       } catch (err: any) {
+        if (!err.response && !err.status && err.message === 'Network Error') {
+          // Show network error message and don't remove token or redirect
+          toast.error('Unable to verify admin access. Please check your internet connection.');
+          return;
+        }
+        
         localStorage.removeItem('accessToken');
         navigate('/login', { state: { from: location }, replace: true });
       }

@@ -46,7 +46,7 @@ const ImageGrid: React.FC<LatestItemsProps> = ({
         LATEST ITEMS
       </p>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 md:space-x-8 space-x-0">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-8">
         {product.map((item) => {
           const wishlistInfo = getWishlistInfo(item.id);
           return (

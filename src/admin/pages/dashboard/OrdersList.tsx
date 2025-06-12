@@ -193,7 +193,7 @@ const OrdersList: React.FC = () => {
                   </div>
                 </td>
                 <td className="px-2.5 py-3 whitespace-nowrap text-xs text-gray-600 font-semibold">
-                {formatCurrency(order.total_amount)}
+                  {formatCurrency(order.total_amount)}
                 </td>
                 <td className="px-2.5 py-3 text-xs text-gray-500 whitespace-nowrap">
                   {(() => {

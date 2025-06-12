@@ -58,17 +58,17 @@ const AddNewProduct: React.FC = () => {
   const [categories, setCategories] = useState<SubCategory[]>([]);
 
   const weightSizePairs: WeightSizePair[] = [
-    { label: "Very Light - Very Small", weight: "Very Light", size: "Very Small" },
-    { label: "Very Light - Small", weight: "Very Light", size: "Small" },
-    { label: "Light - Small", weight: "Light", size: "Small" },
-    { label: "Light - Medium", weight: "Light", size: "Medium" },
-    { label: "Medium - Medium", weight: "Medium", size: "Medium" },
-    { label: "Medium - Large", weight: "Medium", size: "Large" },
-    { label: "Heavy - Large", weight: "Heavy", size: "Large" },
-    { label: "Heavy - Very Large", weight: "Heavy", size: "Very Large" },
-    { label: "Very Heavy - Very Large", weight: "Very Heavy", size: "Very Large" },
-    { label: "Very Heavy - XXL", weight: "Very Heavy", size: "XXL" },
-    { label: "XXHeavy - XXL", weight: "XXHeavy", size: "XXL" },
+    { label: "Very Light - Very Small (3000 - 7500)", weight: "Very Light", size: "Very Small"},
+    { label: "Very Light - Small (4000 - 8500)", weight: "Very Light", size: "Small" },
+    { label: "Light - Small (5000 - 9500)", weight: "Light", size: "Small" },
+    { label: "Light - Medium (14000 - 27000)", weight: "Light", size: "Medium" },
+    { label: "Medium - Medium (23000 - 41000)", weight: "Medium", size: "Medium" },
+    { label: "Medium - Large (32200 - 51000)", weight: "Medium", size: "Large" },
+    { label: "Heavy - Large (37000 - 55000)", weight: "Heavy", size: "Large" },
+    { label: "Heavy - Very Large (42000 - 74000)", weight: "Heavy", size: "Very Large" },
+    { label: "Very Heavy - Very Large (50000 - 92000)", weight: "Very Heavy", size: "Very Large"},
+    { label: "Very Heavy - XXL (55000 - 106000)", weight: "Very Heavy", size: "XXL" },
+    { label: "XXHeavy - XXL (69000 - 138000)", weight: "XXHeavy", size: "XXL" },
   ];
 
   const [isSearchMode, setIsSearchMode] = useState(false);
@@ -421,7 +421,7 @@ const AddNewProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Weight & Size
+                    Weight & Size (Lagos - Kano)
                   </label>
                   <select
                     name="weightSizePair"

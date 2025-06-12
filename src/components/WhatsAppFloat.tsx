@@ -25,7 +25,7 @@ const WhatsAppFloat = () => {
       aria-label="Chat with us on WhatsApp"
     >
       <IoLogoWhatsapp size={28} className="text-white" />
-      <style jsx>{`
+      <style>{`
         @keyframes floatAnimation {
           0%, 100% { transform: translateY(0) scale(1); }
           50% { transform: translateY(-10px) scale(1.05); }

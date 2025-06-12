@@ -5,6 +5,7 @@ import Wish from './Wish';
 import { addWishItem, deleteWishItem, getWishlistFromLocalStorage, WishData, addToWishlistLocalStorage, removeFromWishlistLocalStorage } from '../pages/orders/api';
 import { CardProps, WishItem } from './types';
 import { useAuth } from '../pages/auth/AuthContext';
+import { useMediaQuery } from 'react-responsive';
 
 const Card: React.FC<CardProps> = ({
   product,
@@ -159,40 +160,54 @@ const Card: React.FC<CardProps> = ({
     }
   };
 
+  // const is390pxAndAbove = useMediaQuery({ query: '(min-width: 390px)' });
+
   return (
-    <div className="mb-2 cursor-pointer">
-      <div className="relative w-fit mb-4 overflow-hidden rounded-2xl">
+    <div className="mb-2 cursor-pointer w-[130px] xxs:w-[140px] xs:w-[150px] sm:w-[170px] md:w-[130px] lg:w-[170px] xl:w-[220px] mx-auto">
+      <div className="relative mb-4 overflow-hidden rounded-2xl">
         <img
           src={product.image1}
           alt={product.name}
-          className="w-full rounded-2xl md:w-auto h-[150px] lg:h-[220px] object-contain hover:scale-105 transition-transform duration-300"
+          className={`relative w-[130px] h-[130px] xxs:w-[140px] xxs:h-[140px] xs:w-[150px] xs:h-[150px] rounded-2xl hover:scale-105 transition-transform duration-300 sm:w-[170px] sm:h-[170px] md:w-[130px] md:h-[130px] lg:w-[170px] lg:h-[170px] xl:h-[220px] xl:w-[220px]`}
           onClick={handleProductClick}
         />
-        <Wish
-          color="red"
-          liked={liked}
-          onToggle={handleToggle}
-        />
+        <div className="relative w-[130px] xxs:w-[140px] xs:w-[150px] sm:w-[170px] md:w-[130px] lg:w-[170px] xl:w-[220px]">
+          <Wish color="red" liked={liked} onToggle={handleToggle} />
+        </div>
       </div>
-      <p className="text-[15px] font-medium sm:text-[20px] capitalize mb-2 line-clamp-1">
+      <p
+        className="mb-2 font-medium capitalize line-clamp-1 px-1"
+        style={{ fontSize: "clamp(12px, 2vw, 18.5px)" }}
+      >
         {product.name}
       </p>
-      <div className="gap-2 sm:gap-4">
-        {typeof product.price === 'number' && product.price > 0 && (
-          <span className="text-[14px] sm:text-[20px]">
+      <div className="px-1">
+        {typeof product.price === "number" && product.price > 0 && (
+          <span
+            // style={{ fontSize: "clamp(11px, 1vw, 34px)" }}
+            style={{ fontSize: "clamp(12px, 2vw, 18.5px)" }}
+          >
             ₦{formatPrice(product.price)}
           </span>
         )}
 
         <br />
 
-        {typeof product.undiscounted_price === 'number' &&
+        {typeof product.undiscounted_price === "number" &&
           product.undiscounted_price > product.price && (
             <>
-              <span className="text-[10px] sm:text-[20px] text-[#00000066] line-through">
+              <span
+                className=" text-[#00000066] line-through"
+                // style={{ fontSize: "clamp(11px, 1vw, 34px)" }}
+                style={{ fontSize: "clamp(12px, 2vw, 18.5px)" }}
+              >
                 ₦{formatPrice(product.undiscounted_price)}
               </span>
-              <span className="text-red-600 bg-red-100 font-semibold w-fit text-xs sm:text-sm rounded-full px-2 py-1 ml-2">
+              <span
+                className="text-red-600 bg-red-100 font-semibold w-fit rounded-full px-2 py-1 ml-2"
+                // style={{ fontSize: "clamp(8px, 1vw, 8px)" }}
+                style={{ fontSize: "clamp(8.5px, 2vw, 12.5px)" }}
+              >
                 -
                 {Math.round(
                   ((product.undiscounted_price - product.price) /

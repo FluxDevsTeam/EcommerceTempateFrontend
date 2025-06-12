@@ -193,7 +193,9 @@ import { SubCategory } from "@/card/types";interface WishItem {
     return <p className="p-10 text-center text-red-500">{error}</p>;
   }  return (
     <div className="mt-8 md:mt-0 md:pt-0 p-4 sm:p-14">
-      <h2 className="text-3xl font-semibold capitalize tracking mb-4 sm:mb-8">
+      <h2 className="font-semibold capitalize tracking mb-4 sm:mb-8"
+        style={{ fontSize: "clamp(21px, 2vw, 29px)" }}
+      >
         Wishlist
       </h2>
 
@@ -210,7 +212,7 @@ import { SubCategory } from "@/card/types";interface WishItem {
       </Link>
     </div>
   ) : (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 mb-8 md:space-x-8 space-x-0 sm:mb-16">
+    <div className="grid grid-cols-2 mb-8 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-8">
       {wishlistItems.map((item) => (
         <Card
           key={typeof item.id === 'string' ? item.id : `${item.id}_${item.product.id}`}

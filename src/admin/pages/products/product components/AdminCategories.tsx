@@ -3,13 +3,6 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 import { IoChevronBack } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-} from "lucide-react";
-import { debounce } from "lodash";
-import {
   DndContext,
   closestCenter,
   useSensor,
@@ -38,7 +31,9 @@ const AdminCategories = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null
+  );
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 15;
@@ -48,6 +43,12 @@ const AdminCategories = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
   const [orderedCategories, setOrderedCategories] = useState<Category[]>([]);
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "success" as "success" | "error",
+  });
 
   const baseURL = `https://api.kidsdesigncompany.com`;
 
@@ -101,7 +102,9 @@ const AdminCategories = () => {
       }
     } catch (error) {
       // Remove console.error
-      setError(error instanceof Error ? error.message : "Failed to fetch categories");
+      setError(
+        error instanceof Error ? error.message : "Failed to fetch categories"
+      );
     } finally {
       setLoading(false);
     }
@@ -130,13 +133,27 @@ const AdminCategories = () => {
 
       if (!response.ok) throw new Error("Failed to add category");
 
+      setModalConfig({
+        isOpen: true,
+        title: "Success",
+        message: "Category added successfully!",
+        type: "success",
+      });
+
+      setShowAddModal(false);
       await fetchCategories();
       setNewCategoryName("");
-      setShowAddModal(false);
     } catch (error) {
       setError(
         error instanceof Error ? error.message : "Failed to add category"
       );
+      setModalConfig({
+        isOpen: true,
+        title: "Error",
+        message: `Failed to add category`,
+        type: "error",
+      });
+      setShowAddModal(false);
     } finally {
       setIsProcessing(false);
     }
@@ -162,14 +179,28 @@ const AdminCategories = () => {
 
       if (!response.ok) throw new Error("Failed to update category");
 
+      setModalConfig({
+        isOpen: true,
+        title: "Success",
+        message: "Category updated successfully!",
+        type: "success",
+      });
+
+      setShowEditModal(false);
       await fetchCategories();
       setNewCategoryName("");
-      setShowEditModal(false);
       setSelectedCategory(null);
     } catch (error) {
       setError(
         error instanceof Error ? error.message : "Failed to update category"
       );
+      setModalConfig({
+        isOpen: true,
+        title: "Error",
+        message: `Failed to add category`,
+        type: "error",
+      });
+      setShowEditModal(false);
     } finally {
       setIsProcessing(false);
     }
@@ -268,17 +299,26 @@ const AdminCategories = () => {
       setShowOrderModal(false);
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "Failed to update category order"
+        error instanceof Error
+          ? error.message
+          : "Failed to update category order"
       );
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const SortableItem = ({ category, index }: { category: Category; index: number }) => {
-    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
-      id: category.id.toString(),
-    });
+  const SortableItem = ({
+    category,
+    index,
+  }: {
+    category: Category;
+    index: number;
+  }) => {
+    const { attributes, listeners, setNodeRef, transform, transition } =
+      useSortable({
+        id: category.id.toString(),
+      });
 
     const style = {
       transform: CSS.Transform.toString(transform),
@@ -304,6 +344,45 @@ const AdminCategories = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
+        {/* success or error modal */}
+        {modalConfig.isOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div
+              className={`bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 border-t-4 ${
+                modalConfig.type === "success"
+                  ? "border-customBlue"
+                  : "border-red-500"
+              }`}
+            >
+              <h2
+                className={`text-2xl font-bold mb-4 ${
+                  modalConfig.type === "success"
+                    ? "text-customBlue"
+                    : "text-red-600"
+                }`}
+              >
+                {modalConfig.title}
+              </h2>
+              <p className="mb-6">{modalConfig.message}</p>
+              <button
+                onClick={() =>
+                  setModalConfig({
+                    ...modalConfig,
+                    isOpen: false,
+                  })
+                }
+                className={`w-full py-2 px-4 text-white rounded ${
+                  modalConfig.type === "success"
+                    ? "bg-customBlue hover:brightness-90"
+                    : "bg-red-500 hover:bg-red-600"
+                }`}
+              >
+                {modalConfig.type === "success" ? "Continue" : "Close"}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Back button and header */}
         <div className="mb-6">
           <button
@@ -379,9 +458,6 @@ const AdminCategories = () => {
         {/* Table Section */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            {error && (
-              <div className="text-center p-4 text-red-500">Error: {error}</div>
-            )}
             {loading ? (
               <div className="text-center p-4">Loading...</div>
             ) : (

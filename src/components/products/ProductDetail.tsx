@@ -2,9 +2,14 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import Suggested from "./Suggested";
-import { addToLocalCart, isItemInLocalCart, isItemInUserCart } from "../../utils/cartStorage";
+import {
+  addToLocalCart,
+  isItemInLocalCart,
+  isItemInUserCart,
+} from "../../utils/cartStorage";
 
 import DescriptionList from "./DescriptionList";
+import { useMediaQuery } from "react-responsive";
 
 const baseURL = "https://api.kidsdesigncompany.com";
 
@@ -68,6 +73,7 @@ const ProductDetail = () => {
   const { id } = useParams<keyof ProductDetailParams>() as ProductDetailParams;
   const productId = parseInt(id);
   const navigate = useNavigate();
+  const is390pxAndAbove = useMediaQuery({ query: "(min-width: 390px)" });
 
   // Group all useState hooks together at the top
   const [mainImage, setMainImage] = useState<string>("");
@@ -81,7 +87,9 @@ const ProductDetail = () => {
   });
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  const [itemsInCart, setItemsInCart] = useState<{[key: string]: boolean}>({});
+  const [itemsInCart, setItemsInCart] = useState<{ [key: string]: boolean }>(
+    {}
+  );
 
   // Fetch product data
   const {
@@ -106,7 +114,9 @@ const ProductDetail = () => {
       // Set the first in-stock size as default if none selected
       if (product.sizes && product.sizes.length > 0 && !selectedSize) {
         // Find first in-stock size
-        const inStockSize = product.sizes.find(size => product.unlimited || size.quantity > 0);
+        const inStockSize = product.sizes.find(
+          (size) => product.unlimited || size.quantity > 0
+        );
         // If there's an in-stock size, select it, otherwise select the first size
         if (inStockSize) {
           setSelectedSize(inStockSize.size);
@@ -121,15 +131,20 @@ const ProductDetail = () => {
   useEffect(() => {
     const checkCartItems = async () => {
       if (product && selectedSize) {
-        const selectedSizeData = product.sizes.find(size => size.size === selectedSize);
+        const selectedSizeData = product.sizes.find(
+          (size) => size.size === selectedSize
+        );
         if (selectedSizeData) {
           const key = `${product.id}-${selectedSizeData.id}`;
-          const isInCart = await isItemInUserCart(product.id, selectedSizeData.id);
-          setItemsInCart(prev => ({ ...prev, [key]: isInCart }));
+          const isInCart = await isItemInUserCart(
+            product.id,
+            selectedSizeData.id
+          );
+          setItemsInCart((prev) => ({ ...prev, [key]: isInCart }));
         }
       }
     };
-    
+
     checkCartItems();
   }, [product, selectedSize]);
 
@@ -173,7 +188,8 @@ const ProductDetail = () => {
       setModalConfig({
         isOpen: true,
         title: "Error",
-        message: "Selected size details not available. Please select a valid size.",
+        message:
+          "Selected size details not available. Please select a valid size.",
         type: "error",
       });
       return;
@@ -217,13 +233,17 @@ const ProductDetail = () => {
         sizeName: selectedSizeData.size,
         quantity: quantity,
         maxQuantity: selectedSizeData.quantity,
-        sizeUndiscountedPrice: selectedSizeData.undiscounted_price ? parseFloat(selectedSizeData.undiscounted_price) : (product.undiscounted_price || parseFloat(selectedSizeData.price) || product.price), // Pass size-specific undiscounted price
+        sizeUndiscountedPrice: selectedSizeData.undiscounted_price
+          ? parseFloat(selectedSizeData.undiscounted_price)
+          : product.undiscounted_price ||
+            parseFloat(selectedSizeData.price) ||
+            product.price, // Pass size-specific undiscounted price
         subCategoryId: product.sub_category?.id,
         subCategoryName: product.sub_category?.name,
       });
 
       const key = `${product.id}-${selectedSizeData.id}`;
-      setItemsInCart(prev => ({ ...prev, [key]: true }));
+      setItemsInCart((prev) => ({ ...prev, [key]: true }));
 
       setModalConfig({
         isOpen: true,
@@ -255,7 +275,6 @@ const ProductDetail = () => {
         try {
           cartUuid = await createNewCart(accessToken);
         } catch (error) {
-          
           setModalConfig({
             isOpen: true,
             title: "Error",
@@ -285,19 +304,20 @@ const ProductDetail = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        
+
         setModalConfig({
           isOpen: true,
           title: "Notice",
-          message: errorData.error || "Failed to add item to cart. Please try again.",
+          message:
+            errorData.error || "Failed to add item to cart. Please try again.",
           type: "error",
         });
         setIsAddingToCart(false);
-        return; 
+        return;
       }
 
       const key = `${product.id}-${selectedSizeData.id}`;
-      setItemsInCart(prev => ({ ...prev, [key]: true }));
+      setItemsInCart((prev) => ({ ...prev, [key]: true }));
 
       setModalConfig({
         isOpen: true,
@@ -306,7 +326,6 @@ const ProductDetail = () => {
         type: "success",
       });
     } catch (error) {
-      
       setModalConfig({
         isOpen: true,
         title: "Error",
@@ -327,7 +346,7 @@ const ProductDetail = () => {
   useEffect(() => {
     if (modalConfig.isOpen) {
       const timer = setTimeout(() => {
-        setModalConfig(prev => ({ ...prev, isOpen: false }));
+        setModalConfig((prev) => ({ ...prev, isOpen: false }));
       }, 1000);
 
       return () => clearTimeout(timer);
@@ -391,19 +410,19 @@ const ProductDetail = () => {
   const isSizeInCart = (productId: number, sizeId: number): boolean => {
     const key = `${productId}-${sizeId}`;
     const accessToken = localStorage.getItem("accessToken");
-    
+
     // For guest users, check local storage directly
     if (!accessToken) {
       return isItemInLocalCart(productId, sizeId);
     }
-    
+
     // For authenticated users, use the cached result from state
     return itemsInCart[key] || false;
   };
 
   return (
     <div>
-      <div className="w-full min-h-screen md:mt-6 px-4 md:px-8 py-0 lg:px-12">
+      <div className="w-full min-h-screen md:mt-6 px-9 md:px-8 py-0 lg:px-12">
         {/* Success/Error Modal */}
         {modalConfig.isOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -429,47 +448,50 @@ const ProductDetail = () => {
         )}
 
         {/* Product Main Section */}
-        <div className="flex flex-col lg:flex-row lg-pt-0 justify-center items-start gap-6">
-          {/* Thumbnail Images (Left Column) */}
-          <div className="flex sm:mt-3 mx-auto lg:my-auto md:flex-col gap-3 order-1">
-            {images.map((img, index) => (
-              <div
-                key={index}
-                className={`bg-gray-100 p-1.5 rounded-md cursor-pointer hover:opacity-90 ${
-                  mainImage === img ? "ring-2 ring-blue-500" : ""
-                }`}
-                onClick={() => setMainImage(img)}
-              >
+        <div className="flex flex-col md:flex-col lg:flex-row lg-pt-0 justify-center items-start lg:gap-12 gap-6">
+          {/* Images Section Container - Only flex on md */}
+          <div className="w-full flex flex-col md:flex-row lg:flex-row lg:w-auto md:gap-8 lg:gap-3 gap-4">
+            {/* Thumbnail Images */}
+            <div className="flex mx-auto md:flex-col lg:flex-col gap-5 order-1 lg:my-2 lg:mr-2">
+              {images.map((img, index) => (
+                <div
+                  key={index}
+                  className={`bg-gray-100 p-1.5 rounded-md cursor-pointer hover:opacity-90 ${
+                    mainImage === img ? "ring-2 ring-blue-500" : ""
+                  }`}
+                  onClick={() => setMainImage(img)}
+                >
+                  <img
+                    src={img}
+                    alt={`Thumbnail ${index + 1}`}
+                    className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain rounded-lg"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "https://via.placeholder.com/100";
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Main Product Image */}
+            <div className="rounded-lg md:mt-0 mt-14 max-w-md mx-auto md:order-2 md:flex-1 lg:flex-none">
+              {mainImage && (
                 <img
-                  src={img}
-                  alt={`Thumbnail ${index + 1}`}
-                  className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-cover rounded-lg"
+                  src={mainImage}
+                  alt="Main Product"
+                  className={`w-[325px] h-[325px] rounded-2xl hover:scale-105 transition-transform duration-300 mx-auto lg:w-[350px] lg:h-[350px] xl:h-[430px] xl:w-[430px]`}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = "https://via.placeholder.com/100";
+                    target.src = "https://via.placeholder.com/500";
                   }}
                 />
-              </div>
-            ))}
+              )}
+            </div>
           </div>
 
-          {/* Main Product Image (Middle Column) */}
-          <div className="rounded-lg lg:mt-2 mt-12 max-w-sm lg:max-w-md mx-auto lg:order-2 h-[350px] md:h-[450px] flex items-center justify-center">
-            {mainImage && (
-              <img
-                src={mainImage}
-                alt="Main Product"
-                className="w-full h-full object-contain rounded-2xl"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = "https://via.placeholder.com/500";
-                }}
-              />
-            )}
-          </div>
-
-          {/* Product Info (Right Column) */}
-          <div className="flex-1 max-w-lg order-2 lg:order-3">
+          {/* Product Info Section */}
+          <div className="flex-1 w-full lg:w-auto max-w-lg order-2 lg:order-3 lg:ml-6 md:mt-8 lg:mt-0">
             <div className="space-y-2 sm:space-y-4">
               <h1 className="text-xl sm:text-2xl md:text-3xl uppercase font-medium leading-tight">
                 {product.name}
@@ -532,7 +554,11 @@ const ProductDetail = () => {
                           setSelectedSize(item.size);
                           setQuantity(1); // Reset quantity when size changes
                         }}
-                        disabled={!product.unlimited && item.quantity <= 0 && !isSizeInCart(product.id, item.id)}
+                        disabled={
+                          !product.unlimited &&
+                          item.quantity <= 0 &&
+                          !isSizeInCart(product.id, item.id)
+                        }
                         className={`p-2 text-xs sm:text-sm border rounded-xl transition-colors ${
                           item.size === selectedSize
                             ? "bg-blue-200 text-blue-800 border-blue-300" // Selected: light blue background
@@ -587,27 +613,28 @@ const ProductDetail = () => {
                 >
                   +
                 </button>
-              <button
-                onClick={handleAddToCart}
-                className={`w-full py-2.5 text-white rounded-xl transition-colors cursor-pointer ${
-                  (!isInStock || isAddingToCart)
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-customBlue hover:brightness-90"
-                }`}
-                type="button"
-                disabled={!isInStock || isAddingToCart}
-              >
-                {isAddingToCart
-                  ? "Adding..."
-                  : !isInStock
-                  ? "Out of Stock"
-                  : selectedSizeData && isSizeInCart(product.id, selectedSizeData.id)
-                  ? "Item in Cart"
-                  : "Add to Cart"}
-              </button>
-              </div>
 
-              {/* Add to Cart */}
+                {/* Add to Cart */}
+                <button
+                  onClick={handleAddToCart}
+                  className={`w-full py-2.5 px-3 text-white rounded-xl transition-colors cursor-pointer ${
+                    !isInStock || isAddingToCart
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-customBlue hover:brightness-90"
+                  }`}
+                  type="button"
+                  disabled={!isInStock || isAddingToCart}
+                >
+                  {isAddingToCart
+                    ? "Adding..."
+                    : !isInStock
+                    ? "Out of Stock"
+                    : selectedSizeData &&
+                      isSizeInCart(product.id, selectedSizeData.id)
+                    ? "Item in Cart"
+                    : "Add to Cart"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -617,37 +644,40 @@ const ProductDetail = () => {
           <div className="md:w-[60%] w-full gap-4 space-y-2.5">
             <h2 className="text-lg sm:text-xl font-medium">Description</h2>
             <p
-              className={`text-gray-700 text-xs sm:text-sm ${
-                !isDescriptionExpanded ? "max-md:line-clamp-6 line-clamp-6" : ""
+              className={`product-description text-gray-700 text-sm ${
+                !isDescriptionExpanded ? "line-clamp-6" : ""
               }`}
             >
               {product.description}
             </p>
-            <button
-              className="text-blue-800 text-sm sm:text-base cursor-pointer"
-              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-            >
-              {isDescriptionExpanded ? "view less" : "view more"}
-            </button>
+            {product.description.length > 300 && (
+              <span
+                className={` text-blue-800 text-xs cursor-pointer`}
+                onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+              >
+                {isDescriptionExpanded ? "view less" : "view full description"}
+              </span>
+            )}
           </div>
           <div className="md:w-[30%] mx-auto w-full flex justify-center items-center">
             <DescriptionList
               details={{
                 Category: product.sub_category?.category?.name || "N/A",
-                Subcategory: product.sub_category?.name || 'N/A',
+                Subcategory: product.sub_category?.name || "N/A",
                 // Weight: product.weight || 'N/A',
-                Color: product.colour || 'N/A',
+                Color: product.colour || "N/A",
               }}
             />
           </div>
           {/* Conditional rendering for Suggested or SuggestedProductDetails */}
         </div>
       </div>
+
       <div className="px-0 md:px-8 ">
-          <Suggested
-            subcategory_id={product.sub_category.id}
-            excludeProductIds={[product.id]}
-          />
+        <Suggested
+          subcategory_id={product.sub_category?.id | 0}
+          excludeProductIds={[product.id]}
+        />
       </div>
     </div>
   );

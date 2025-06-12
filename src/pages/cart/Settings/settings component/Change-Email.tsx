@@ -383,18 +383,28 @@ const ChangeEmail = () => {
             <label className="block text-sm font-medium text-gray-700">
               Enter Verification Code
             </label>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <OtpInput
                 value={otpFormData.otp}
                 onChange={(otpValue: string) => setOtpFormData({ otp: otpValue })}
                 numInputs={6}
-                renderSeparator={<span className="mx-1"></span>}
+                renderSeparator={<span className="w-2"></span>}
                 renderInput={(props) => (
                   <input
                     {...props}
-                    className="w-12 h-12 text-center text-lg font-semibold border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    style={{ width: "45px" }}
+                    className="h-[45px] text-center text-xl font-bold border-2 border-gray-300 rounded-lg 
+                    focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none
+                    transition-all duration-200 shadow-sm
+                    disabled:bg-gray-50 disabled:text-gray-400
+                    [-webkit-appearance:none] [appearance:none] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    type="number"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={1}
                   />
                 )}
+                shouldAutoFocus={true}
               />
             </div>
 

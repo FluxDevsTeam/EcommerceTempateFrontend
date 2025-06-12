@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Wish from "./Wish";
+import { mobileSuggestedWish as MobileSuggestedWish } from "./Wish";
 import { 
   addWishItem, 
   deleteWishItem, 
@@ -118,12 +118,12 @@ const SuggestedCard: React.FC<CardProps> = ({
   if (!visible) return null;
 
   return (
-    <div className="w-[150px] mb-2 cursor-pointer">
+    <div className="w-[150px] h-[150px] mb-10 md:pb2 cursor-pointer">
       <div className="relative mb-2 overflow-hidden rounded-2xl">
         <img
           src={product.image1}
           alt={product.name}
-          className="w-full h-32 object-contain rounded-2xl hover:scale-105 transition-transform duration-300"
+          className={`w-[120px] h-[120px] md:w-[150px] md:h-[150px] rounded-2xl hover:scale-105 transition-transform duration-300`}
           onClick={() => {
             if (onItemClick) {
               onItemClick(product.image1);
@@ -131,7 +131,7 @@ const SuggestedCard: React.FC<CardProps> = ({
             navigate(`/suggested/${product.id}`);
           }}
         />
-        <Wish color="red" liked={liked} onToggle={handleToggle} />
+        <MobileSuggestedWish color="red" liked={liked} onToggle={handleToggle} />
       </div>
       <div className="space-y-0">
         <p className="text-sm font-medium line-clamp-1">{product.name}</p>

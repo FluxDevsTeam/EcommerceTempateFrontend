@@ -39,25 +39,17 @@ const EditProduct: React.FC = () => {
   });
 
   const weightSizePairs: WeightSizePair[] = [
-    {
-      label: "Very Light - Very Small",
-      weight: "Very Light",
-      size: "Very Small",
-    },
-    { label: "Very Light - Small", weight: "Very Light", size: "Small" },
-    { label: "Light - Small", weight: "Light", size: "Small" },
-    { label: "Light - Medium", weight: "Light", size: "Medium" },
-    { label: "Medium - Medium", weight: "Medium", size: "Medium" },
-    { label: "Medium - Large", weight: "Medium", size: "Large" },
-    { label: "Heavy - Large", weight: "Heavy", size: "Large" },
-    { label: "Heavy - Very Large", weight: "Heavy", size: "Very Large" },
-    {
-      label: "Very Heavy - Very Large",
-      weight: "Very Heavy",
-      size: "Very Large",
-    },
-    { label: "Very Heavy - XXL", weight: "Very Heavy", size: "XXL" },
-    { label: "XXHeavy - XXL", weight: "XXHeavy", size: "XXL" },
+    { label: "Very Light - Very Small (3000 - 7500)", weight: "Very Light", size: "Very Small"},
+    { label: "Very Light - Small (4000 - 8500)", weight: "Very Light", size: "Small" },
+    { label: "Light - Small (5000 - 9500)", weight: "Light", size: "Small" },
+    { label: "Light - Medium (14000 - 27000)", weight: "Light", size: "Medium" },
+    { label: "Medium - Medium (23000 - 41000)", weight: "Medium", size: "Medium" },
+    { label: "Medium - Large (32200 - 51000)", weight: "Medium", size: "Large" },
+    { label: "Heavy - Large (37000 - 55000)", weight: "Heavy", size: "Large" },
+    { label: "Heavy - Very Large (42000 - 74000)", weight: "Heavy", size: "Very Large" },
+    { label: "Very Heavy - Very Large (50000 - 92000)", weight: "Very Heavy", size: "Very Large"},
+    { label: "Very Heavy - XXL (55000 - 106000)", weight: "Very Heavy", size: "XXL" },
+    { label: "XXHeavy - XXL (69000 - 138000)", weight: "XXHeavy", size: "XXL" },
   ];
 
   // Update formData to match API input structure
@@ -222,30 +214,30 @@ const EditProduct: React.FC = () => {
 
       const formattedData = {
         name: data.name || "",
-        description: data.description || "",
-        sub_category: data.sub_category.id || "",
-        colour: data.colour || "",
+        description: data?.description || "",
+        sub_category: data?.sub_category?.id,
+        colour: data?.colour || "",
         image1: null,
         image2: null,
         image3: null,
-        undiscounted_price: data.undiscounted_price || null,
-        is_available: data.is_available ?? false,
-        latest_item: data.latest_item ?? false,
-        latest_item_position: data.latest_item_position || null,
+        undiscounted_price: data?.undiscounted_price || null,
+        is_available: data?.is_available ?? false,
+        latest_item: data?.latest_item ?? false,
+        latest_item_position: data?.latest_item_position || null,
         weightSizePair,
-        top_selling_items: data.top_selling_items ?? false,
-        top_selling_position: data.top_selling_position || null,
-        unlimited: data.unlimited ?? false,
-        production_days: data.production_days || null,
-        total_quantity: data.total_quantity || null,
+        top_selling_items: data?.top_selling_items ?? false,
+        top_selling_position: data?.top_selling_position || null,
+        unlimited: data?.unlimited ?? false,
+        production_days: data?.production_days || null,
+        total_quantity: data?.total_quantity || null,
       };
 
       setInitialFormData(formattedData);
       setFormData(formattedData);
       setPreviewImages([
-        data.image1 || "",
-        data.image2 || "",
-        data.image3 || "",
+        data?.image1 || "",
+        data?.image2 || "",
+        data?.image3 || "",
       ]);
     } catch (error) {
       console.error("Error fetching product:", error);
@@ -561,7 +553,7 @@ const EditProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Weight & Size
+                    Weight & Size (Lagos - Kano)
                   </label>
                   <select
                     name="weightSizePair"
@@ -1000,7 +992,7 @@ const EditProduct: React.FC = () => {
                       </h2>
                       <div className="flex items-baseline space-x-4">
                         <span className="text-2xl font-bold text-gray-900">
-                          ₦{formData.undiscounted_price || "0.00"}
+                          {formData.undiscounted_price ? formatCurrency(formData.undiscounted_price) : "₦0"}
                         </span>
                       </div>
                     </div>

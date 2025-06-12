@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import { HiDotsHorizontal } from "react-icons/hi";
@@ -61,7 +61,6 @@ const AdminSubCategories: React.FC = () => {
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
   const [openPopoverId, setOpenPopoverId] = useState<number | null>(null);
   const [deleteModalConfig, setDeleteModalConfig] = useState({
     isOpen: false,
@@ -70,6 +69,12 @@ const AdminSubCategories: React.FC = () => {
   });
   const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
   const [prevPageUrl, setPrevPageUrl] = useState<string | null>(null);
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "success" as "success" | "error",
+  });
 
   const fetchSubCategories = async () => {
     setLoading(true);
@@ -136,11 +141,24 @@ const AdminSubCategories: React.FC = () => {
         { category: newSubCategory.category, name: newSubCategory.name },
         { headers: { Authorization: `JWT ${accessToken}` } }
       );
+
+      setModalConfig({
+        isOpen: true,
+        title: "Success",
+        message: "Sub-category added successfully!",
+        type: "success",
+      });
       setNewSubCategory({ category: "", name: "" });
       setEditDialogOpen(false);
-      fetchSubCategories();
+      await fetchSubCategories();
     } catch (err: any) {
       setAddError(err?.response?.data?.name?.[0]);
+      setModalConfig({
+        isOpen: true,
+        title: "Error",
+        message: `Failed to add sub-category`,
+        type: "error",
+      });
     } finally {
       setAddLoading(false);
     }
@@ -168,7 +186,7 @@ const AdminSubCategories: React.FC = () => {
     setEditError(null);
     try {
       const accessToken = localStorage.getItem("accessToken");
-      const updatedSubCategory = await axios.patch(
+      await axios.patch(
         `${API_BASE_URL}${editSubCategory.id}/`,
         {
           id: editSubCategory.id,
@@ -288,6 +306,44 @@ const AdminSubCategories: React.FC = () => {
 
   return (
     <div className="w-full p-4 md:p-6 bg-gray-50 min-h-screen">
+      {modalConfig.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div
+            className={`bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 border-t-4 ${
+              modalConfig.type === "success"
+                ? "border-customBlue"
+                : "border-red-500"
+            }`}
+          >
+            <h2
+              className={`text-2xl font-bold mb-4 ${
+                modalConfig.type === "success"
+                  ? "text-customBlue"
+                  : "text-red-600"
+              }`}
+            >
+              {modalConfig.title}
+            </h2>
+            <p className="mb-6">{modalConfig.message}</p>
+            <button
+              onClick={() =>
+                setModalConfig({
+                  ...modalConfig,
+                  isOpen: false,
+                })
+              }
+              className={`w-full py-2 px-4 text-white rounded ${
+                modalConfig.type === "success"
+                  ? "bg-customBlue hover:brightness-90"
+                  : "bg-red-500 hover:bg-red-600"
+              }`}
+            >
+              {modalConfig.type === "success" ? "Continue" : "Close"}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg mb-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <h2
@@ -630,7 +686,10 @@ const AdminSubCategories: React.FC = () => {
                     onChange={(value) =>
                       editSubCategory
                         ? setEditForm((prev) => ({ ...prev, category: value }))
-                        : setNewSubCategory((prev) => ({ ...prev, category: value }))
+                        : setNewSubCategory((prev) => ({
+                            ...prev,
+                            category: value,
+                          }))
                     }
                     placeholder="Select a Category"
                     required

@@ -24,7 +24,7 @@ import { getLocalCart, LocalCartItem } from '../../utils/cartStorage';
 
 interface SuggestedProps {
   onSuggestedItemClick?: (image: string) => void;
-  subcategory_id?: number;
+  subcategory_id?: number ;
   second_subcategory_id?: number;
   excludeProductIds?: number[];
   isCartContext?: boolean;
@@ -225,18 +225,26 @@ const Suggested: React.FC<SuggestedProps> = memo(({
       let suggestedProducts: Product[] = [];
       let currentPage = 1;
       let hasMore = true;
-      while (hasMore) {
+      const ITEM_LIMIT = 50;
+
+      while (hasMore && suggestedProducts.length < ITEM_LIMIT) {
         try {
           const params = {
             page: currentPage.toString(),
-            page_size: '20',
+            page_size: '60',
             subcategory_id,
             second_subcategory_id,
           };
           const suggestedResponse = await fetchSuggestedProductsDetails(params);
 
           if (suggestedResponse.results && Array.isArray(suggestedResponse.results)) {
-            suggestedProducts.push(...suggestedResponse.results);
+            const remainingSlots = ITEM_LIMIT - suggestedProducts.length;
+            const newProducts = suggestedResponse.results.slice(0, remainingSlots);
+            suggestedProducts.push(...newProducts);
+
+            if (suggestedProducts.length >= ITEM_LIMIT) {
+              break;
+            }
           } else {
             break;
           }
@@ -316,11 +324,14 @@ const Suggested: React.FC<SuggestedProps> = memo(({
     };
   }, [fetchSuggestions]);
 
-  const CustomPrevArrow = (props: any) => (
+  // Update arrow components to handle all Slick props
+  const CustomPrevArrow = ({ currentSlide, slideCount, ...props }: any) => (
     <button
       {...props}
       className="hidden md:flex absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-6 z-10 items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-110"
       aria-label="Previous"
+      data-currentslide={currentSlide}
+      data-slidecount={slideCount}
     >
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M15 5L7 12L15 19" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -328,11 +339,13 @@ const Suggested: React.FC<SuggestedProps> = memo(({
     </button>
   );
 
-  const CustomNextArrow = (props: any) => (
+  const CustomNextArrow = ({ currentSlide, slideCount, ...props }: any) => (
     <button
       {...props}
       className="hidden md:flex absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-6 z-10 items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-110"
       aria-label="Next"
+      data-currentslide={currentSlide}
+      data-slidecount={slideCount}
     >
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M9 5L17 12L9 19" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -341,15 +354,20 @@ const Suggested: React.FC<SuggestedProps> = memo(({
   );
 
   const settings = {
-    dots: true,
-    infinite: products.length > 6,
-    speed: 900,
-    slidesToShow: 6,
-    slidesToScroll: 5,
-    arrows: products.length > 6,
     prevArrow: <CustomPrevArrow />,
     nextArrow: <CustomNextArrow />,
+    speed: 900,
     responsive: [
+      {
+        breakpoint: 1650,
+        settings: {
+          infinite: products.length > 5,
+          dots: true,
+          slidesToShow: 5,
+          slidesToScroll: 4,
+          arrows: products.length > 5,
+        },
+      },
       {
         breakpoint: 1024,
         settings: {
@@ -366,16 +384,6 @@ const Suggested: React.FC<SuggestedProps> = memo(({
           slidesToScroll: 2,
           arrows: products.length > 3,
           infinite: products.length > 3,
-        },
-      },
-      {
-        breakpoint: 480,
-        settings: {
-          dots: false,
-          slidesToShow: 2.1,
-          slidesToScroll: 1.5,
-          arrows: false,
-          infinite: products.length > 2,
         },
       },
     ],
@@ -403,19 +411,38 @@ const Suggested: React.FC<SuggestedProps> = memo(({
         <div className="text-center text-gray-500">No suggestions available.</div>
       ) : (
         <div className="suggested-slider-container">
-          <Slider {...settings} className="mb-6 sm:mb-8">
-            {products.map(item => (
-              <div key={item.id} className="px-1">
-                <SuggestedCard
-                  product={item}
-                  isInitiallyLiked={item.isInitiallyLiked}
-                  wishItemId={item.wishItemId}
-                  onItemClick={onSuggestedItemClick}
-                  onWishlistToggle={handleWishlistToggle}
-                />
-              </div>
-            ))}
-          </Slider>
+          <div className="md:block hidden">
+            <Slider {...settings} className="mb-6 sm:mb-8">
+              {products.map(item => (
+                <div key={item.id} className="px-1">
+                  <SuggestedCard
+                    product={item}
+                    isInitiallyLiked={item.isInitiallyLiked}
+                    wishItemId={item.wishItemId}
+                    onItemClick={onSuggestedItemClick}
+                    onWishlistToggle={handleWishlistToggle}
+                  />
+                </div>
+              ))}
+            </Slider>
+          </div>
+          
+          {/* Mobile Scroll Version */}
+          <div className="md:hidden overflow-x-auto scrollbar-hide">
+            <div className="inline-flex gap-0">
+              {[...products].map((item, index) => (
+                <div key={`${item.id}-${index}`}>
+                  <SuggestedCard
+                    product={item}
+                    isInitiallyLiked={item.isInitiallyLiked}
+                    wishItemId={item.wishItemId}
+                    onItemClick={onSuggestedItemClick}
+                    onWishlistToggle={handleWishlistToggle}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
       <style jsx="true">{`
@@ -430,8 +457,14 @@ const Suggested: React.FC<SuggestedProps> = memo(({
           height: auto;
           margin-right: 8px;
         }
-        .suggested-slider-container :global(.slick-list) {
-          overflow: hidden;
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+          -webkit-overflow-scrolling: touch;
+          scroll-behavior: smooth;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
         }
         .suggested-slider-container :global(.slick-prev),
         .suggested-slider-container :global(.slick-next) {
