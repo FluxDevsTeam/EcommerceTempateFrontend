@@ -2,7 +2,7 @@
 const JWT_TOKEN = localStorage.getItem('accessToken')
 const BASE_URL = 'https://api.kidsdesigncompany.com/api/v1/admin/order/';
 
-export const fetchData = async (url = `${BASE_URL}?page=1`) => {
+export const fetchData = async (url = `${BASE_URL}`) => {
   try {
     const response = await fetch(url, {
       method: 'GET',

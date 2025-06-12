@@ -234,7 +234,7 @@ const authService = {
   // Forgot password request
   requestForgotPassword: async (email: string): Promise<any> => {
     try {
-      const frontendUrl = 'https://ecommercetemplateweb.netlify.app/change-password';
+      const frontendUrl = 'https://kidsdesigncompany.com/change-password';
       
       // Pass the frontend URL to the backend so it knows where to send users
       const response = await api.post('/auth/forgot-password/request-forgot-password/', { 

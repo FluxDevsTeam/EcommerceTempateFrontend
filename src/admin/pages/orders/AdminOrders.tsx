@@ -51,7 +51,7 @@ const AdminOrders = () => {
 
   const getPageUrl = (page: number) => `https://api.kidsdesigncompany.com/api/v1/admin/order/?page=${page}&page_size=${ITEMS_PER_PAGE}`;
 
-const loadOrders = async (url?: string) => {
+const loadOrders = async (url?: string, status = statusFilter) => {
   try {
       const fetchUrl = url || getPageUrl(currentPage || 1);
       const data = await fetchData(fetchUrl);
@@ -68,7 +68,12 @@ const loadOrders = async (url?: string) => {
       newUrl.searchParams.set("page", pageFromResponse.toString());
     window.history.pushState({}, "", newUrl.toString());
 
-    setOrders(data.results);
+    const normalizedResults = data.results.map((order: Order) => ({
+      ...order,
+      status: order.status.toUpperCase(),
+    }));
+
+    setOrders(normalizedResults);
     setNextUrl(data.next);
     setPrevUrl(data.previous);
       setCurrentPage(pageFromResponse);
@@ -223,7 +228,7 @@ const loadOrders = async (url?: string) => {
         totalPages={totalPages}
         nextPageUrl={nextUrl}
         prevPageUrl={prevUrl}
-        onPageChange={loadOrders}
+        onPageChange={(url) => loadOrders(url, statusFilter)}
         getPageUrl={getPageUrl}
       />
 
