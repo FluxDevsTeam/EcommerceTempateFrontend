@@ -84,7 +84,7 @@ const Login = () => {
           <Link to="/">
             <img
               src="/images/logo.png"
-              alt="SHOP.CO Logo"
+              alt="KidsDesignCompanyLogo Logo"
               className="h-10 w-auto mx-auto cursor-pointer"
             />
           </Link>
@@ -171,9 +171,9 @@ const Login = () => {
           />
         </Button> */}
 
-        {/* <button className="w-full p-5 bg-white border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"> */}
-            {/* <GoogleLoginButton></GoogleLoginButton> */}
-        {/* </button> */}
+        <button className="w-full p-2 bg-white border border-gray-300 rounded-md hover:bg-gray-100 transition-colors">
+            <GoogleLoginButton></GoogleLoginButton>
+        </button>
         
 
         <p className="text-sm pt-4">

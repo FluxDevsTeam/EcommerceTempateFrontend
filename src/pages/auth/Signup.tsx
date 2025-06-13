@@ -9,6 +9,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { toast } from 'react-toastify';;
+import GoogleLoginButton from "./LoginWithGoogle";
 
 // Define the schema for form validation
 const signupSchema = z.object({
@@ -242,6 +243,9 @@ const Signup = () => {
           />
           Continue with Google
         </Button> */}
+          <button className="w-full p-2 bg-white border border-gray-300 rounded-md hover:bg-gray-100 transition-colors">
+            <GoogleLoginButton></GoogleLoginButton>
+          </button>
 
         <p className="text-sm pt-4">Already have an account? <Link to='/login' className='underline'>Login</Link> here</p>
       </div>
