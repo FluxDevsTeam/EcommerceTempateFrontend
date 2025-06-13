@@ -33,7 +33,7 @@ const Login = () => {
   const location = useLocation();
 
   useEffect(() => {
-    console.log("Login page location state:", location.state);
+    // Remove console.log
   }, [location.state]);
 
   const {
@@ -47,30 +47,23 @@ const Login = () => {
   const onSubmit = async (data: LoginFormData) => {
     try {
       setIsSubmitting(true);
-      clearError(); // Clear previous errors
+      clearError();
 
-      console.log(`Attempting login with email: ${data.email}`);
-
-      // Call login service
       await login(data.email, data.password);
 
-      // Modified toast with blue theme
       toast.success("Login successful!", {
         style: {
-          background: "#ffffff", // Brighter blue
+          background: "#ffffff",
           color: "#000000",
         },
         position: "top-right",
       });
 
-      // ADD logic to redirect to intended path or default to /dashboard
       const searchParams = new URLSearchParams(location.search);
       const redirectUrlFromQuery = searchParams.get("redirect");
-      const from =
-        location.state?.from?.pathname || redirectUrlFromQuery || "/dashboard";
+      const from = location.state?.from?.pathname || redirectUrlFromQuery || "/dashboard";
       navigate(from, { replace: true });
     } catch (err: any) {
-      console.error("Login error:", err);
       toast.error(error || "Login failed. Please check your credentials.");
     } finally {
       setIsSubmitting(false);
@@ -92,12 +85,12 @@ const Login = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-[13px] sm:text-sm">Email</Label>
             <Input
               id="email"
               type="email"
               placeholder="Enter Email"
-              className="p-5"
+              className="p-5 placeholder:text-xs"
               {...register("email")}
             />
             <div className="h-5">
@@ -108,13 +101,13 @@ const Login = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-[13px] sm:text-sm">Password</Label>
             <div className="relative h-auto">
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter password"
-                className="p-5"
+                className="p-5 placeholder:text-xs"
                 {...register("password")}
               />
               <Button
@@ -136,7 +129,7 @@ const Login = () => {
             </div>
           </div>
 
-          <div className="text-sm">
+          <div className="text-[13px] sm:text-sm">
             <Link to="/forgot-password">
               <p className="hover:underline">Forgot Password?</p>
             </Link>
@@ -163,18 +156,7 @@ const Login = () => {
           <div className="w-[50%] h-1 bg-neutral-900" />
         </div>
 
-        {/* <Button variant="outline" className="w-full p-5">
-          <img
-            src="./images/Symbol.svg.png"
-            alt="Google logo"
-            className="mr-2 h-4 w-4"
-          />
-        </Button> */}
-
-        <button className="w-full p-2 bg-white border border-gray-300 rounded-md hover:bg-gray-100 transition-colors">
-            <GoogleLoginButton></GoogleLoginButton>
-        </button>
-        
+        <GoogleLoginButton></GoogleLoginButton>
 
         <p className="text-sm pt-4">
           Is it your first time here?{" "}

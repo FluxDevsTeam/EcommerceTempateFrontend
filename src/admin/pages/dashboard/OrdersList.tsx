@@ -87,13 +87,8 @@ const OrdersList: React.FC = () => {
           setTotalPages(1);
         }
       } catch (err: any) {
-        
-        setError(err.response?.data?.message || err.message || 'Failed to fetch orders.');
-        
-        if (err.response?.status === 401) {
-          
-          // Potentially redirect to login page here
-        }
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch categories";
       } finally {
         setLoading(false);
       }
