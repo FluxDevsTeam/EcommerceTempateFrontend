@@ -160,7 +160,7 @@ const GoogleLoginButton = () => {
   };
 
   return (
-    <div className="px-7 md:px-16 rounded-xl">
+    <div className="flex flex-col items-center justify-center rounded-xl">
       {isGoogleCallback ? (
         <div className="text-center space-y-2">
           <div className="text-sm text-gray-600">Setting up your account...</div>
@@ -230,7 +230,7 @@ const GoogleLoginButton = () => {
                     </p>
                   )}
                 </div>
-                <div className="flex justify-end gap-3">
+                <div className="flex justify-center gap-3">
                   {/* <button
                     type="button"
                     onClick={() => {
