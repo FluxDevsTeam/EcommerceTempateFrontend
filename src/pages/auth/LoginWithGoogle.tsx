@@ -45,6 +45,7 @@ const GoogleLoginButton = () => {
   const [authData, setAuthData] = useState<GoogleAuthResponse | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [names, setNames] = useState("")
+  const [isGoogleCallback, setIsGoogleCallback] = useState(false);
 
   const backendUrl =
     import.meta.env.VITE_BACKEND_URL || "https://api.kidsdesigncompany.com";
@@ -54,6 +55,7 @@ const GoogleLoginButton = () => {
   ) => {
     try {
       setIsLoading(true);
+      setIsGoogleCallback(true);
       const decodedToken = credentialResponse.credential
         ? JSON.parse(atob(credentialResponse.credential.split(".")[1]))
         : null;
@@ -96,6 +98,7 @@ const GoogleLoginButton = () => {
       );
     } finally {
       setIsLoading(false);
+      setIsGoogleCallback(false);
     }
   };
 
@@ -157,16 +160,23 @@ const GoogleLoginButton = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <GoogleLogin
-        onSuccess={handleGoogleSuccess}
-        onError={() => {
-          console.error("Google Login Failed");
-          toast.error("Google login failed");
-        }}
-        useOneTap
-        disabled={isLoading}
-      />
+    <div className="px-7 md:px-16 rounded-xl">
+      {isGoogleCallback ? (
+        <div className="text-center space-y-2">
+          <div className="text-sm text-gray-600">Setting up your account...</div>
+          <div className="w-6 h-6 border-2 border-t-blue-500 border-r-blue-500 rounded-full animate-spin mx-auto"></div>
+        </div>
+      ) : (
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={() => {
+            console.error("Google Login Failed");
+            toast.error("Google login failed");
+          }}
+          useOneTap
+          disabled={isLoading}
+        />
+      )}
 
       {showPasswordModal && authData && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-lg flex items-center justify-center z-50 p-4">
