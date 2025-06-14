@@ -465,7 +465,7 @@ const SuggestedItemsDetails: React.FC = () => {
                 <img
                   src={mainImage}
                   alt="Main Product"
-                  className={`w-[325px] h-[325px] rounded-2xl hover:scale-105 transition-transform duration-300 mx-auto lg:w-[350px] lg:h-[350px] xl:h-[430px] xl:w-[430px]`}
+                  className={`w-[325px] h-[325px] rounded-lg hover:scale-105 transition-transform duration-300 mx-auto lg:w-[350px] lg:h-[350px] xl:h-[430px] xl:w-[430px]`}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = "https://via.placeholder.com/500";

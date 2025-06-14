@@ -164,11 +164,11 @@ const Card: React.FC<CardProps> = ({
 
   return (
     <div className="mb-2 cursor-pointer w-[130px] xxs:w-[140px] xs:w-[150px] sm:w-[170px] md:w-[130px] lg:w-[170px] xl:w-[220px] mx-auto">
-      <div className="relative mb-4 overflow-hidden rounded-2xl">
+      <div className="relative mb-4 overflow-hidden rounded-lg">
         <img
           src={product.image1}
           alt={product.name}
-          className={`relative w-[130px] h-[130px] xxs:w-[140px] xxs:h-[140px] xs:w-[150px] xs:h-[150px] rounded-2xl hover:scale-105 transition-transform duration-300 sm:w-[170px] sm:h-[170px] md:w-[130px] md:h-[130px] lg:w-[170px] lg:h-[170px] xl:h-[220px] xl:w-[220px]`}
+          className={`relative w-[130px] h-[130px] xxs:w-[140px] xxs:h-[140px] xs:w-[150px] xs:h-[150px]  hover:scale-105 transition-transform duration-300 sm:w-[170px] sm:h-[170px] md:w-[130px] md:h-[130px] lg:w-[170px] lg:h-[170px] xl:h-[220px] xl:w-[220px]`}
           onClick={handleProductClick}
         />
         <div className="relative w-[130px] xxs:w-[140px] xs:w-[150px] sm:w-[170px] md:w-[130px] lg:w-[170px] xl:w-[220px]">

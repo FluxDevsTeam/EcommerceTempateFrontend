@@ -21,7 +21,6 @@ import { SubCategory } from "@/card/types";interface WishItem {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const removeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const initialExcludeIds = useRef<number[]>([]);
   const pageSize = 16;  // Combine both fetch functions into one
@@ -104,11 +103,19 @@ import { SubCategory } from "@/card/types";interface WishItem {
 
   useEffect(() => {
     const handleWishlistUpdate = async (event: CustomEvent) => {
-      const action = event.detail?.action;
+      if (!event.detail) return;
+      
+      const action = event.detail.action;
       const isRemove = action === 'remove';
 
-      if (action === 'add' && event.detail?.newItem && currentPage === 1) {
+      if (action === 'add' && event.detail.newItem && currentPage === 1) {
         const newItem = event.detail.newItem;
+        
+        // Validate newItem has required properties
+        if (!newItem.product?.id) {
+          console.error('Invalid newItem structure:', newItem);
+          return;
+        }
         
         // Check if item was already added
         if (addedItemsRef.current.has(newItem.product.id)) {
@@ -118,32 +125,39 @@ import { SubCategory } from "@/card/types";interface WishItem {
 
         setWishlistItems(prev => {
           // Don't add if already exists
-          if (prev.some(item => item.product.id === newItem.product.id)) {
+          if (prev.some(item => item.product?.id === newItem.product?.id)) {
             return prev;
           }
           
           // Add to beginning, maintain page size
+          const newWishItem = {
+            id: typeof newItem.id === 'number' ? newItem.id : Date.now(),
+            product: newItem.product
+          };
+          
           if (prev.length >= pageSize) {
-            return [{ ...newItem, id: `${newItem.id}_${Date.now()}` }, ...prev.slice(0, pageSize - 1)];
+            return [newWishItem, ...prev.slice(0, pageSize - 1)];
           }
-          return [{ ...newItem, id: `${newItem.id}_${Date.now()}` }, ...prev];
+          return [newWishItem, ...prev];
         });
 
         // Just update total pages count
-        const data = await WishlistData(1, pageSize);
-        setTotalPages(Math.ceil(data.count / pageSize));
+        try {
+          const data = await WishlistData(1, pageSize);
+          setTotalPages(Math.ceil(data.count / pageSize));
+        } catch (err) {
+          console.error('Error updating total pages:', err);
+        }
         return;
       }
 
       // For remove actions
-      if (isRemove) {
-        const productId = event.detail?.productId;
-        setShowSuccessModal(true);
-        setTimeout(() => setShowSuccessModal(false), 2000);
+      if (isRemove && event.detail.productId) {
+        const productId = event.detail.productId;
 
         try {
           // First remove the item locally
-          setWishlistItems(prev => prev.filter(item => item.product.id !== productId));
+          setWishlistItems(prev => prev.filter(item => item.product?.id !== productId));
 
           // Get fresh data to update counts
           try {
@@ -262,15 +276,6 @@ import { SubCategory } from "@/card/types";interface WishItem {
     second_subcategory_id={stableSuggestedParams.current.secondSubCategoryId}
     excludeProductIds={stableSuggestedParams.current.excludeProductIds}
   />
-
-  {/* Success Modal */}
-  {showSuccessModal && (
-    <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-out">
-      Item successfully removed from wishlist
     </div>
-  )}
-</div>
-
   );
 };export default Wishlist;
-

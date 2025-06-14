@@ -59,13 +59,18 @@ const SuggestedCard: React.FC<CardProps> = ({
         } else {
           addToWishlistLocalStorage(product);
         }
-        // Dispatch event with fromSuggested flag
         window.dispatchEvent(new CustomEvent('wishlistUpdated', { 
           detail: { 
             productId: product.id,
             action: wasLiked ? 'remove' : 'add',
             fromSuggested: true,
-            newItem: !wasLiked ? product : undefined
+            newItem: !wasLiked ? {
+              id: Date.now(), // Temporary ID
+              product: {
+                ...product,
+                id: product.id
+              }
+            } : undefined
           }
         }));
       } else {
@@ -119,11 +124,11 @@ const SuggestedCard: React.FC<CardProps> = ({
 
   return (
     <div className="w-[150px] h-[150px] mb-10 md:pb2 cursor-pointer">
-      <div className="relative mb-2 overflow-hidden rounded-2xl">
+      <div className="relative mb-2 overflow-hidden rounded-lg">
         <img
           src={product.image1}
           alt={product.name}
-          className={`w-[120px] h-[120px] md:w-[150px] md:h-[150px] rounded-2xl hover:scale-105 transition-transform duration-300`}
+          className={`w-[120px] h-[120px] md:w-[150px] md:h-[150px] rounded-lg hover:scale-105 transition-transform duration-300`}
           onClick={() => {
             if (onItemClick) {
               onItemClick(product.image1);
