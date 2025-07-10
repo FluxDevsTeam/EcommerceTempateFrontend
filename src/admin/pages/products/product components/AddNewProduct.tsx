@@ -407,7 +407,7 @@ const AddNewProduct: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Color
+                    Color (optional)
                   </label>
                   <input
                     type="text"
@@ -441,18 +441,16 @@ const AddNewProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Production Days
+                    Production Days (optional)
                   </label>
                   <input
                     type="number"
                     name="production_days"
-                    value={formData.production_days || ""}
+                    value={formData.production_days === null || formData.production_days === undefined ? "" : formData.production_days}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        production_days: e.target.value
-                          ? Number(e.target.value)
-                          : null,
+                        production_days: e.target.value === "" ? 0 : Number(e.target.value),
                       }))
                     }
                     min="0"
@@ -666,7 +664,7 @@ const AddNewProduct: React.FC = () => {
                   <div key={num} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Additional Image {num - 1}
+                        Additional Image {num - 1} (optional)
                       </label>
                       <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors duration-200">
                         <div className="space-y-1 text-center">

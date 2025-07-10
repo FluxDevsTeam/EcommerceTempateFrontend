@@ -10,6 +10,7 @@ import {
 
 import DescriptionList from "./DescriptionList";
 import { useMediaQuery } from "react-responsive";
+import { formatNumberWithCommas } from "../../admin/utils/formatting";
 
 const baseURL = "https://api.kidsdesigncompany.com";
 
@@ -373,17 +374,6 @@ const ProductDetail = () => {
     Boolean
   );
 
-  // Calculate discount percentage
-
-  const discountedPrice = product.price;
-  const undiscountedPrice = product.undiscounted_price || product.price;
-  const discountPercentage =
-    undiscountedPrice > 0
-      ? Math.round(
-          ((undiscountedPrice - discountedPrice) / undiscountedPrice) * 100
-        )
-      : 0;
-
   // Get available quantity for selected size
   const selectedSizeData = product.sizes.find(
     (size) => size.size === selectedSize
@@ -391,8 +381,18 @@ const ProductDetail = () => {
   const availableQuantity = selectedSizeData?.quantity || 0;
   const availableSizePrice = selectedSizeData?.price || 0;
 
+  // Calculate discount percentage using selected size
+  const discountedPrice = selectedSizeData ? Number(selectedSizeData.price) : product.price;
+  const undiscountedPrice = selectedSizeData && selectedSizeData.undiscounted_price ? Number(selectedSizeData.undiscounted_price) : (product.undiscounted_price || product.price);
+  const discountPercentage =
+    undiscountedPrice > 0 && undiscountedPrice > discountedPrice
+      ? Math.round(
+          ((undiscountedPrice - discountedPrice) / undiscountedPrice) * 100
+        )
+      : 0;
+
   // Handle quantity changes
-  const handleQuantityIncrease = () => {
+  const handleQuantityIncrease = () => { 
     if (product.unlimited || quantity < availableQuantity) {
       setQuantity(quantity + 1);
     }
@@ -505,12 +505,12 @@ const ProductDetail = () => {
 
               <div className="flex flex-col md:flex-row md:items-center gap-2">
                 <span className="text-lg md:text-2xl font-normal">
-                  ₦ {selectedSizeData?.price}
+                  ₦ {selectedSizeData ? formatNumberWithCommas(selectedSizeData.price) : formatNumberWithCommas(product.price)}
                 </span>
                 <div className="flex space-x-1.5 items-center">
-                  {undiscountedPrice > product.price && (
+                  {selectedSizeData && selectedSizeData.undiscounted_price && Number(selectedSizeData.undiscounted_price) > Number(selectedSizeData.price) && (
                     <span className="text-gray-500 line-through text-xl md:text-2xl">
-                      ₦ {product.undiscounted_price}
+                      ₦ {formatNumberWithCommas(selectedSizeData.undiscounted_price)}
                     </span>
                   )}
                   {discountPercentage > 0 && (

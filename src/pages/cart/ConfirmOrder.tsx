@@ -771,8 +771,14 @@ const ConfirmOrder = () => {
                 </div>
               )}
               {!orderSummary && !isLoadingSummary && !error && (
-                <div className="text-center text-gray-500">
-                  Summary unavailable.
+                <div className="flex flex-col items-center justify-center text-center text-gray-500 py-6">
+                  <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="mx-auto mb-3">
+                    <rect x="18" y="18" width="44" height="54" rx="6" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="3"/>
+                    <rect x="28" y="12" width="24" height="12" rx="4" fill="#3B82F6" stroke="#3B82F6" strokeWidth="2"/>
+                    <path d="M30 44L38 52L50 36" stroke="#2563EB" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="font-semibold text-lg text-gray-700">Confirm your order to see the summary</span>
+                  <span className="text-sm text-gray-500 mt-1">Fill in your details and confirm to view your order summary and proceed to payment.</span>
                 </div>
               )}
             </div>
