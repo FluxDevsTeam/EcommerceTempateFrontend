@@ -206,7 +206,7 @@ const SearchResults = () => {
   const totalPages = productsData.count ? Math.ceil(productsData.count / itemsPerPage) : 1;
 
   return (
-    <div className="container mx-auto px-6 md:px-14 py-8 md:py-12">
+    <div className="container mx-auto px-4 md:px-14 py-8 md:py-12">
       {hasResults && (
         <div className="mb-6">
           <h1 className="text-xl md:text-3xl font-medium flex justify-center items-center pt-2">
@@ -228,7 +228,7 @@ const SearchResults = () => {
       {/* Products Grid */}
       {hasResults && (
         <div className="mb-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-8 sm:mb-16">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 md:gap-10">
             {productsData.results.map((item) => {
               const wishlistInfo = getWishlistInfo(item.id);
               return (

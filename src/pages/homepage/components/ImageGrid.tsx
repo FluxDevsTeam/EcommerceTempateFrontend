@@ -41,12 +41,12 @@ const ImageGrid: React.FC<LatestItemsProps> = ({
   const isTabletAndAbove = useMediaQuery({ query: '(min-width: 768px)' });
 
   return (
-    <div className="px-3 py-6 md:py-12 space-y-5">
+    <div className="py-6 md:py-12 space-y-5">
       <p className="text-xl pt-2 pb-0 md:text-3xl font-medium leading-tight text-center mb-6 sm:mb-0 md:mb-10">
         LATEST ITEMS
       </p>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 md:gap-10">
         {product.map((item) => {
           const wishlistInfo = getWishlistInfo(item.id);
           return (

@@ -179,7 +179,7 @@ const Homepage = () => {
 
   if (isLoading || wishlistLoading || sliderLoading) {
     return (
-      <div className="flex justify-center items-center py-10 text-lg">
+      <div className="flex justify-center items-center py-12 text-lg">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mr-3"></div>
         Loading...
       </div>
@@ -206,14 +206,14 @@ const Homepage = () => {
   };
 
   return (
-    <div className="w-full min-h-full px-4 md:px-12 py-4 lg:px-28">
+    <div className="w-full  py-4 px-5 md:px-16 lg:px-24">
       <div className="flex flex-col md:grid md:grid-cols-2 gap-8 lg:gap-12 container mx-auto mb-4 mt-8 md:mt-8 md:place-items-center">
-        <div className="w-full md:col-start-2 md:row-start-1 flex items-center justify-center">
-          <div className="relative w-full flex justify-center overflow-hidden">
+        <div className="w-full md:col-start-2 md:row-start-1 flex items-center justify-center ">
+          <div className="relative w-full flex justify-center">
             <img
               src={banner}
               alt="Banner image"
-              className="w-full max-w-[320px] sm:max-w-xs lg:max-w-md object-contain mx-auto"
+              className="w-full sm:max-w-xs lg:max-w-md object-contain mx-auto rounded-lg"
             />
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
               <Link to="/new-arrivals">
@@ -224,7 +224,7 @@ const Homepage = () => {
             </div>
           </div>
         </div>
-        <div className="flex flex-col justify-center items-center space-y-4 md:space-y-6 max-w-xl w-full px-2 md:px-0 md:col-start-1">
+        <div className="flex flex-col justify-center items-center space-y-4 md:space-y-6 md:max-w-xl w-full px-2 md:px-0 md:col-start-1">
           <div className="w-full space-y-3 md:space-y-4 lg:space-y-6 text-center md:text-left">
             <h1 className="text-[22px] font-bold leading-[1.3] tracking-[-0.02em] sm:text-3xl md:text-4xl lg:text-5xl text-gray-900 px-3 md:px-0">
               <span className="block mb-1">

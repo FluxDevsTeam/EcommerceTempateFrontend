@@ -41,13 +41,13 @@ const TopSelling: React.FC<LatestItemsProps> = ({
   const isTabletAndAbove = useMediaQuery({ query: '(min-width: 768px)' });
 
   return (
-    <div className="px-3 py-8 md:py-12 space-y-5">
+    <div className="py-8 md:py-12 space-y-5">
       <p className="text-xl md:text-3xl font-medium leading-tight text-center mb-6 sm:mt-8 md:mb-10">
         TOP SELLING ITEMS
       </p>
 
       {/* <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-8"> */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 md:gap-10">
         {product.map((item) => {
           const wishlistInfo = getWishlistInfo(item.id);
           return (

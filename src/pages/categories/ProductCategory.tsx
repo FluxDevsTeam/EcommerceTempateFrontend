@@ -179,7 +179,7 @@ const ProductCategory = () => {
       </div>
 
       {/* Products */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-8">
+      <div className="px-5 md:px-16 lg:px-24">
         {sortedProducts.map(product => {
           const wishlistInfo = getWishlistInfo(product.id);
           return (

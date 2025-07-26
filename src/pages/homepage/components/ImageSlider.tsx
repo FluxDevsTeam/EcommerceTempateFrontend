@@ -87,7 +87,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
   };
 
   return (
-    <div className="carousel-wrapper mx-auto my-6 md:px-4 max-w-[1920px]">
+    <div className="carousel-wrapper mx-auto my-6 md:px-4">
       <Slider ref={sliderRef} {...settings}>
         {allImages.map((image) => (
           <div key={image.id} className="slide-item relative md:px-2">

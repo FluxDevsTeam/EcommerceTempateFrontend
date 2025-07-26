@@ -11,7 +11,7 @@ interface WishProps {
 const Wish: React.FC<WishProps> = ({ color = "red", liked, onToggle }) => {
   return (
     <div
-      className="absolute top-[-130px] right-2 text-[20px] xxs:top-[-130px] xxs:right-2 xxs:text-[22px] xs:top-[-140px] xs:right-3 xs:text-[24px] sm:top-[-160px] sm:text-[26px] md:top-[-125px] md:right-2 md:text-[28px] lg:top-[-160px] lg:right-2 lg:text-[28px] xl:top-[-210px] xl:right-3 xl:text-[32px] cursor-pointer"
+      className="absolute top-3 right-3 text-[30px] cursor-pointer z-10 hover:scale-110 transition-transform"
       onClick={onToggle}
       aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'}
     >
@@ -25,7 +25,6 @@ const Wish: React.FC<WishProps> = ({ color = "red", liked, onToggle }) => {
 };
 
 export default Wish;
-
 
 const mobileSuggestedWish: React.FC<WishProps> = ({ color = "red", liked, onToggle }) => {
   return (
