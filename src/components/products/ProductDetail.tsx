@@ -431,8 +431,17 @@ const ProductDetail = () => {
                 modalConfig.type === "success"
                   ? "border-customBlue"
                   : "border-red-500"
-              }`}
+              } relative`}
             >
+              <button
+                onClick={handleCloseModal}
+                className="absolute top-2 right-2 text-gray-600 hover:text-gray-800 focus:outline-none"
+                aria-label="Close modal"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
               <h2
                 className={`text-2xl font-bold mb-4 ${
                   modalConfig.type === "success"
