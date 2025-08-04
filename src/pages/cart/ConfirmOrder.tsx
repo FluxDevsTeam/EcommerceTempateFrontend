@@ -824,17 +824,17 @@ const ConfirmOrder = () => {
                 <img
                   src={`https://th.bing.com/th/id/OIP.vcIxy5gIS3D_hTxtBHDSLgHaCf?w=349&h=117&c=7&r=0&o=5&pid=1.7`}
                   alt="Visa"
-                  className="h-4 md:h-6 w-fit"
+                  className="h-6 w-fit"
                 />
                 <img
                   src={`https://th.bing.com/th/id/OIP.E1H7K1pGXLYUVUvedgFMHwHaBy?w=349&h=84&c=7&r=0&o=5&pid=1.7`}
                   alt="PayPal"
-                  className="h-[16.5px] md:h-6 w-fit"
+                  className="h-6 w-fit"
                 />
                 <img
                   src={`https://th.bing.com/th/id/OIP.JwOmOEpCOes2zw-Evu14XQHaEK?w=321&h=180&c=7&r=0&o=5&pid=1.7`}
                   alt="Mastercard"
-                  className="h-5 md:h-7 w-fit"
+                  className="h-7 w-fit"
                 />
               </div>
             </div>
