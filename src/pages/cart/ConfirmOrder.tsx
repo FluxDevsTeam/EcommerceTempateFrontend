@@ -39,6 +39,7 @@ const ConfirmOrder = () => {
   const [phoneCopied, setPhoneCopied] = useState(false);
 
   const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
+  const [isFormModified, setIsFormModified] = useState(false); // New state to track form changes
 
   // Handle tooltip collapse on click outside or scroll
   useEffect(() => {
@@ -70,6 +71,8 @@ const ConfirmOrder = () => {
       ...prevState,
       [name]: value,
     }));
+    setIsFormModified(true);
+    setIsOrderConfirmed(false);
   };
 
   // ORDER SUMMARY Fetch Function
@@ -205,6 +208,7 @@ const ConfirmOrder = () => {
         delivery_address: cartDetails.delivery_address || "",
         phone_number: cartDetails.phone_number || "",
       }));
+      setIsFormModified(false);
     }
   }, [cartDetails]);
 
@@ -271,6 +275,7 @@ const ConfirmOrder = () => {
       
 
       setIsOrderConfirmed(true);
+      setIsFormModified(false);
 
       await fetchOrderSummary();
 
@@ -590,7 +595,11 @@ const ConfirmOrder = () => {
                   type="checkbox"
                   id="includeDeliveryFee"
                   checked={includeDeliveryFee}
-                  onChange={(e) => setIncludeDeliveryFee(e.target.checked)}
+                  onChange={(e) => {
+                    setIncludeDeliveryFee(e.target.checked);
+                    setIsFormModified(true); // Mark form as modified
+                    setIsOrderConfirmed(false); // Reset order confirmation
+                  }}
                   className="mr-2 cursor-pointer"
                   disabled={isSubmitting}
                 />
@@ -753,17 +762,19 @@ const ConfirmOrder = () => {
                     className={`paymentBtn w-full bg-customBlue text-white py-3 px-6 rounded-full mt-4 flex items-center justify-center gap-2 ${
                       isSubmitting ||
                       isLoadingSummary ||
-                      isOrderConfirmed === false
+                      !isOrderConfirmed ||
+                      isFormModified
                         ? "opacity-50 cursor-not-allowed"
                         : "hover:bg-gray-800"
                     }`}
                     disabled={
                       isSubmitting ||
                       isLoadingSummary ||
-                      isOrderConfirmed === false
+                      !isOrderConfirmed ||
+                      isFormModified
                     }
                   >
-                    {isOrderConfirmed
+                    {isOrderConfirmed && !isFormModified
                       ? "Proceed to payment"
                       : "Confirm details to proceed"}
                     <FiArrowRight />
