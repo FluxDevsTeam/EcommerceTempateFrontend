@@ -857,9 +857,18 @@ const ConfirmOrder = () => {
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div
-            className="bg-green-100 border border-blue-400 text-customBlue px-8 py-6 rounded-lg shadow-xl max-w-md w-full text-center"
+            className="bg-green-100 border border-blue-400 text-customBlue px-8 py-6 rounded-lg shadow-xl max-w-md w-full text-center relative"
             role="alert"
           >
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="absolute top-2 right-2 text-customBlue hover:text-blue-700 focus:outline-none"
+              aria-label="Close success modal"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
             <strong className="font-bold text-xl block mb-2">Success!</strong>
             <span className="block sm:inline text-lg">
               Details confirmed. You can now proceed to payment.
