@@ -1,24 +1,26 @@
 // src/components/AdminRouteGuard.tsx
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const AdminRouteGuard = ({ children }: { children: React.ReactNode }) => {
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const verifyAuth = async () => {
       const token = localStorage.getItem('accessToken');
       
       if (!token) {
-        navigate('/login');
+        navigate('/login', { state: { from: location }, replace: true });
         return;
       }
 
       try {
         await axios.get(
-          'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/dashboard/',
+          'https://api.kidsdesigncompany.com/api/v1/admin/dashboard/',
           {
             headers: {
               'Authorization': `JWT ${token}`,
@@ -28,13 +30,19 @@ const AdminRouteGuard = ({ children }: { children: React.ReactNode }) => {
         );
         setIsAuthorized(true);
       } catch (err: any) {
+        if (!err.response && !err.status && err.message === 'Network Error') {
+          // Show network error message and don't remove token or redirect
+          toast.error('Unable to verify admin access. Please check your internet connection.');
+          return;
+        }
+        
         localStorage.removeItem('accessToken');
-        navigate('/login');
+        navigate('/login', { state: { from: location }, replace: true });
       }
     };
 
     verifyAuth();
-  }, [navigate]);
+  }, [navigate, location]);
 
   if (isAuthorized === null) {
     return (

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 const PersonalInfo = () => {
-  const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
+  const baseURL = `https://api.kidsdesigncompany.com`;
 
   const [personalInfo, setPersonalInfo] = useState({
     new_first_name: "",
@@ -52,7 +52,7 @@ const PersonalInfo = () => {
         });
   
         const logData = await response.json();
-        console.log(logData);
+        
   
         setUserProfileDeets(logData);
       } catch (error) {}
@@ -61,6 +61,16 @@ const PersonalInfo = () => {
     useEffect(() => {
       getUserProfileDeets();
     }, []);
+
+    useEffect(() => {
+      if (userProfileDeets) {
+        setPersonalInfo({
+          new_first_name: userProfileDeets.first_name || "",
+          new_last_name: userProfileDeets.last_name || "",
+          new_phone_number: userProfileDeets.phone_number || "",
+        });
+      }
+    }, [userProfileDeets]);
 
   const personalInfoPost = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -103,7 +113,7 @@ const PersonalInfo = () => {
       setInfoSubmitResponseStatus(response.status);
 
       const logData = await response.json();
-      console.log(logData);
+      
 
       const message = logData?.data || logData?.message || logData?.detail || (response.ok ? "Request submitted. Please verify with your password." : "Request failed.");
       setInfoSubmitMsg(message);
@@ -160,7 +170,7 @@ const PersonalInfo = () => {
       );
 
       const logData = await response.json();
-      console.log(logData);
+      
 
       const message = logData?.data || logData?.message || logData?.detail || (response.ok ? "Profile updated successfully!" : "Verification failed.");
       setPasswordSubmitMsg(message);
@@ -270,11 +280,11 @@ const PersonalInfo = () => {
           </div>
 
           <button
-            disabled={isRequestingChange || !personalInfo.new_first_name || !personalInfo.new_last_name || !personalInfo.new_phone_number}
+            disabled={isRequestingChange || !personalInfo.new_first_name || !personalInfo.new_last_name || !personalInfo.new_phone_number || (personalInfo.new_first_name === userProfileDeets?.first_name && personalInfo.new_last_name === userProfileDeets?.last_name && personalInfo.new_phone_number === userProfileDeets?.phone_number)}
             type="submit"
             className={`
               px-6 py-3 rounded-lg text-white font-medium transition-all
-              ${isRequestingChange || !personalInfo.new_first_name || !personalInfo.new_last_name || !personalInfo.new_phone_number
+              ${isRequestingChange || !personalInfo.new_first_name || !personalInfo.new_last_name || !personalInfo.new_phone_number || (personalInfo.new_first_name === userProfileDeets?.first_name && personalInfo.new_last_name === userProfileDeets?.last_name && personalInfo.new_phone_number === userProfileDeets?.phone_number)
                 ? "bg-gray-300 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-blue-100"
               }
@@ -336,7 +346,7 @@ const PersonalInfo = () => {
               onClick={() => {
                 setIsInfoSubmitMsgOpen(false);
               }}
-              className="w-full px-4 py-2 bg-black text-white rounded-md hover:bg-gray-700 transition-colors"
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               Close
             </button>

@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 
-const API_URL = 'https://ecommercetemplate.pythonanywhere.com';
+const API_URL = 'https://api.kidsdesigncompany.com';
 
 // Type definitions for API responses
 interface AuthResponse {
@@ -44,6 +44,21 @@ interface Login {
   email: string;
   password: string;
 }
+
+// Add these helper functions at the top of the file
+const isNetworkError = (error: any): boolean => {
+  return !error.response && !error.status && error.message === 'Network Error';
+};
+
+const handleServiceError = (error: any): never => {
+  if (isNetworkError(error)) {
+    throw new Error('Unable to connect to the server. Please check your internet connection.');
+  }
+  
+  // Handle other types of errors
+  const message = error.response?.data?.message || error.message;
+  throw new Error(message || 'An unexpected error occurred');
+};
 
 // Create typed axios instance
 const api: AxiosInstance = axios.create({
@@ -101,7 +116,7 @@ api.interceptors.request.use(
       config.headers.Authorization = `JWT ${token}`;
       
       // For debugging
-      console.log("Adding auth header:", `JWT ${token}`);
+      
     }
     return config;
   },
@@ -111,49 +126,43 @@ api.interceptors.request.use(
 const authService = {
   // Signup
   signup: async (userData: UserSignup): Promise<any> => {
-    console.log("Signup payload:", JSON.stringify(userData, null, 2));
+    
     try {
       const response = await api.post('/auth/signup/', userData);
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      console.error("Signup error details:", axiosError.response?.data);
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
   // Resend OTP for signup
   resendSignupOTP: async (email: string): Promise<any> => {
     try {
-      console.log(`API call - Resend OTP for: ${email}`);
+      
       const response = await api.post('/auth/signup/resend-otp/', { email });
-      console.log('Resend OTP response:', response.data);
+      
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      console.error("Resend OTP error:", axiosError.response?.data);
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
   // Verify OTP for signup
   verifySignupOTP: async (email: string, otp: string): Promise<any> => {
     try {
-      console.log(`API call - Verify OTP for: ${email} with code: ${otp}`);
+      
       const response = await api.post('/auth/signup/verify-otp/', { email, otp });
-      console.log('Verify OTP response:', response.data);
+      
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      console.error("Verify OTP error:", axiosError.response?.data);
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
   // Login
   login: async (credentials: Login): Promise<AuthResponse> => {
     try {
-      console.log(`API call - Login with email: ${credentials.email}`);
+      
       const response = await api.post<AuthResponse>('/auth/login/', credentials);
       
       // Store tokens in localStorage
@@ -179,14 +188,12 @@ const authService = {
           user: userResponse
         };
       } catch (profileError) {
-        console.error("Failed to fetch user profile:", profileError);
+        
       }
       
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      console.error("Login error:", axiosError.response?.data);
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -202,10 +209,8 @@ const authService = {
       }
       
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      console.error("Token refresh error:", axiosError.response?.data);
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -217,7 +222,7 @@ const authService = {
         await api.post('/auth/logout/', { refresh_token: refreshToken });
       }
     } catch (error) {
-      console.error('Logout error:', error);
+      
     } finally {
       // Always clear local storage, even if API call fails
       localStorage.removeItem('accessToken');
@@ -229,7 +234,7 @@ const authService = {
   // Forgot password request
   requestForgotPassword: async (email: string): Promise<any> => {
     try {
-      const frontendUrl = 'https://ecommercetemplateweb.netlify.app/change-password';
+      const frontendUrl = 'https://kidsdesigncompany.com/change-password';
       
       // Pass the frontend URL to the backend so it knows where to send users
       const response = await api.post('/auth/forgot-password/request-forgot-password/', { 
@@ -238,10 +243,8 @@ const authService = {
       });
       
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      console.error("Forgot password request error:", axiosError.response?.data);
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -250,10 +253,8 @@ const authService = {
     try {
       const response = await api.post('/auth/forgot-password/resend-otp/', { email });
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      console.error("Resend forgot password OTP error:", axiosError.response?.data);
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -262,24 +263,20 @@ const authService = {
     try {
       const response = await api.post('/auth/forgot-password/verify-otp/', { email, otp });
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      console.error("Verify forgot password OTP error:", axiosError.response?.data);
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
   // Set new password after forgot password flow
   setNewPassword: async (data: { email: string; new_password: string; confirm_password: string }): Promise<any> => {
-    console.log("Sending request with payload:", data);
+    
     
     try {
       const response = await api.post('/auth/forgot-password/set-new-password/', data);
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      console.error("Set new password error:", axiosError.response?.data);
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -288,10 +285,8 @@ const authService = {
     try {
       const response = await api.post('/auth/password-change/request-password-change/', data);
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      console.error("Request password change error:", axiosError.response?.data);
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -300,10 +295,8 @@ const authService = {
     try {
       const response = await api.post('/auth/password-change/resend-otp/');
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      console.error("Resend password change OTP error:", axiosError.response?.data);
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -312,10 +305,8 @@ const authService = {
     try {
       const response = await api.post('/auth/password-change/verify-password-change/', { otp });
       return response.data;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      console.error("Verify password change error:", axiosError.response?.data);
-      throw error;
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
  
@@ -330,12 +321,8 @@ const authService = {
       localStorage.setItem('user', JSON.stringify(userData));
       
       return userData;
-    } catch (error) {
-      const axiosError = error as AxiosError;
-      console.error("Get profile error:", axiosError.response?.data);
-      
-      // If it's a 401 error, the interceptor should have already tried refreshing the token
-      throw new Error('Failed to fetch user profile');
+    } catch (error: any) {
+      throw handleServiceError(error);
     }
   },
   
@@ -347,7 +334,7 @@ const authService = {
       try {
         return JSON.parse(userJson);
       } catch (e) {
-        console.error("Error parsing user data:", e);
+        
         return null;
       }
     }

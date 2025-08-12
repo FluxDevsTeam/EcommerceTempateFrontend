@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  // FaSearch,
   FaPlus,
   FaThList,
   FaTh,
@@ -9,55 +8,56 @@ import {
 } from "react-icons/fa";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
-import PaginatedDropdown from '../components/PaginatedDropdown';
+import PaginatedDropdown from "./PaginatedDropdown";
+import type { Product } from "../utils/productUtils";
+import { fetchProducts } from "../utils/productUtils";
+import { formatCurrency, formatNumberWithCommas } from "../../../utils/formatting";
 
-// Define interfaces for the product data structure based on the API response
+// Define interfaces for auxiliary data structures
 interface Category {
   id: number;
   name: string;
 }
 
-interface SubCategory {
-  id: number;
-  category: Category;
-  name: string;
-}
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  total_quantity: number;
-  sub_category: SubCategory;
-  colour: string;
-  image1: string;
-  image2: string | null;
-  image3: string | null;
-  discounted_price: string | null;
-  price: string;
-  is_available: boolean;
-  latest_item: boolean;
-  latest_item_position: number | null;
-  dimensional_size: string | null;
-  weight: string | null;
-  top_selling_items: boolean;
-  top_selling_position: number | null;
-  date_created: string;
-  date_updated: string;
-  unlimited: false;
-}
-
-interface ApiResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Product[];
-}
-
-interface ProductTableProps {
+interface ProductTableProps{
   isVisible: boolean;
   onViewChange: (mode: "grid" | "list") => void;
   currentView: "grid" | "list";
+}
+
+// Helper functions that were previously imported
+function getStatusColor(product: Product) {
+  if (!product.is_available) {
+    return "text-gray-600 bg-gray-50"; // Unavailable items are gray
+  }
+  if (product.unlimited || product.total_quantity > 0) {
+    return "text-green-600 bg-green-50"; // Available items are green
+  }
+  return "text-orange-600 bg-orange-50"; // Out of stock items are orange
+}
+
+function getStatusText(product: Product) {
+  if (!product.is_available) {
+    return "Unavailable";
+  }
+  if (product.unlimited || product.total_quantity > 0) {
+    return "Available";
+  }
+  return "Out of Stock";
+}
+
+function formatDate(dateString: string) {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } catch (e) {
+    
+    return "Invalid Date";
+  }
 }
 
 const ProductListTableView: React.FC<ProductTableProps> = ({
@@ -67,7 +67,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
 }) => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage] = useState<number>(18); // Changed from 30 to 18
+  const [itemsPerPage] = useState<number>(20);
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
   const [openPopoverId, setOpenPopoverId] = useState<number | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -83,15 +83,12 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
   });
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("");
-  const [categories, setCategories] = useState<{ id: number; name: string }[]>(
-    []
-  );
+  const [categories, setCategories] = useState<Category[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [showPriceFilter, setShowPriceFilter] = useState(false);
-  const [dbPriceRange, setDbPriceRange] = useState<[number, number]>([0, 0]);
-  const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([
-    0, 0,
-  ]);
+  const [dbPriceRange, setDbPriceRange] = useState<[number, number]>([0, 1000]); // Initial broad range, will be updated
+const [isDbPriceRangeInitialized, setIsDbPriceRangeInitialized] = useState(false);
+  const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([0, 1000]);
   const [showEditCategoryModal, setShowEditCategoryModal] = useState(false);
   const [selectedCategoryForEdit, setSelectedCategoryForEdit] = useState<{
     id: number;
@@ -99,125 +96,150 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
   } | null>(null);
   const [editCategoryName, setEditCategoryName] = useState("");
   const [editingCategory, setEditingCategory] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
+  const baseURL = `https://api.kidsdesigncompany.com`;
 
-  // Fetch products from the API
   useEffect(() => {
-    const fetchProducts = async (page: number) => {
-      setLoading(true);
-      setError(null);
-      const accessToken = localStorage.getItem("accessToken");
-
-      if (!accessToken) {
-        setError("Authentication error: No access token found.");
-        setLoading(false);
-        return;
-      }
-
+    const loadProducts = async () => {
       try {
-        // Build base URL with filters
-        let baseQueryParams = "";
-        if (selectedCategory) {
-          baseQueryParams += `&sub_category=${selectedCategory}`;
-        }
-        if (sortBy) {
-          if (sortBy === "price_range") {
-            baseQueryParams += `&min_price=${priceRange[0]}&max_price=${priceRange[1]}`;
-          } else if (sortBy === "out_of_stock") {
-            // Don't add any params here - we'll filter after fetching
-          } else {
-            const [param, value] = sortBy.split("=");
-            baseQueryParams += `&${param}=${value}`;
-          }
-        }
+        setLoading(true);
+        const filters = {
+          sub_category: selectedCategory,
+          ...(sortBy === "price_range"
+            ? {
+                min_price: String(priceRange[0]),
+                max_price: String(priceRange[1]),
+              }
+            : sortBy !== "out_of_stock"
+            ? Object.fromEntries([sortBy.split("=")])
+            : {}),
+        };
 
-        // For price range calculation, use a separate endpoint or larger page size
-        const priceRangeResponse = await fetch(
-          `${baseURL}/api/v1/product/item/?page_size=1000${baseQueryParams}`,
-          {
-            headers: {
-              Authorization: `JWT ${accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
+        const data = await fetchProducts(
+          searchQuery,
+          currentPage,
+          itemsPerPage,
+          filters
         );
-
-        if (!priceRangeResponse.ok) throw new Error("Failed to fetch products");
-
-        const priceRangeData: ApiResponse = await priceRangeResponse.json();
-
-        // Calculate price range from all filtered products
-        const prices = priceRangeData.results.map((product) =>
-          Number(product.price)
-        );
-        const minPrice = Math.min(...prices);
-        const maxPrice = Math.max(...prices);
-
-        setDbPriceRange([minPrice, maxPrice]);
-        if (priceRange[0] === 0 && priceRange[1] === 0) {
-          setPriceRange([minPrice, maxPrice]);
-        }
-
-        // Always use fixed page size of 18 for paginated results
-        const paginatedResponse = await fetch(
-          `${baseURL}/api/v1/product/item/?page=${page}&page_size=18${baseQueryParams}`,
-          {
-            headers: {
-              Authorization: `JWT ${accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!paginatedResponse.ok) {
-          let errorBody;
-          try {
-            errorBody = await paginatedResponse.json();
-          } catch (e) {
-            errorBody = await paginatedResponse.text();
-          }
-          console.error(
-            `HTTP error fetching products! status: ${paginatedResponse.status}, body:`,
-            errorBody
-          );
-          setError(`Failed to load products: ${paginatedResponse.statusText}`);
-          throw new Error(`HTTP error! status: ${paginatedResponse.status}`);
-        }
-
-        const paginatedData: ApiResponse = await paginatedResponse.json();
-
-        // Filter for out of stock items if that option is selected
-        let filteredResults = paginatedData.results;
-        if (sortBy === "out_of_stock") {
-          filteredResults = paginatedData.results.filter(
-            (product) =>
-              !product.unlimited &&
-              (!product.total_quantity || product.total_quantity === 0) &&
-              product.is_available // Only include available items that have 0 quantity
-          );
-        }
-
-        setProducts(filteredResults || []);
-        setTotalProducts(filteredResults.length || 0);
-        setNextPageUrl(paginatedData.next);
-        setPrevPageUrl(paginatedData.previous);
+        setProducts(data.results);
+        setTotalProducts(data.count);
+        setNextPageUrl(data.next);
+        setPrevPageUrl(data.previous);
       } catch (err) {
-        console.error("Failed to fetch price range:", err);
         setError(
-          err instanceof Error
-            ? err.message
-            : "An unknown error occurred while fetching products."
+          err instanceof Error ? err.message : "Failed to fetch products"
         );
       } finally {
         setLoading(false);
       }
     };
 
-    if (isVisible) {
-      fetchProducts(currentPage);
+    if (isVisible && isDbPriceRangeInitialized) { // Only load products if dbPriceRange is initialized
+      if (searchQuery) setCurrentPage(1);
+      loadProducts();
     }
-  }, [isVisible, currentPage, selectedCategory, sortBy, priceRange, baseURL]); // Remove priceRange from dependencies
+  }, [
+    isVisible,
+    currentPage,
+    selectedCategory,
+    sortBy,
+    priceRange,
+    searchQuery,
+    isDbPriceRangeInitialized, // Add as dependency
+  ]);
+
+  // Effect to fetch initial min/max prices for the slider
+  useEffect(() => {
+    const fetchMinMaxPrices = async () => {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        setError("Authentication error: No access token for fetching price range.");
+        setIsDbPriceRangeInitialized(true); // Allow product loading even if price range fetch fails
+        return;
+      }
+      try {
+        // Fetch all products to determine min/max prices from their sizes
+        // This might need to handle pagination if the API returns paginated results for all items
+        // For simplicity, assuming a single call or a manageable number of pages
+        let allProducts: any[] = [];
+        let nextPage = `${baseURL}/api/v1/product/item/?page_size=100`; // Fetch 100 items per page
+
+        while (nextPage) {
+          const response = await fetch(nextPage, {
+            headers: {
+              Authorization: `JWT ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          });
+          if (!response.ok) {
+            throw new Error(`Failed to fetch products for price range: ${response.statusText}`);
+          }
+          const data = await response.json();
+          allProducts = allProducts.concat(data.results);
+          nextPage = data.next;
+        }
+
+        if (allProducts.length === 0) {
+          setDbPriceRange([0, 1000]); // Default if no products
+          setTempPriceRange([0, 1000]);
+          setIsDbPriceRangeInitialized(true);
+          return;
+        }
+
+        let minPrice = Infinity;
+        let maxPrice = -Infinity;
+
+        allProducts.forEach(product => {
+          if (product.sizes && product.sizes.length > 0) {
+            product.sizes.forEach((size: any) => {
+              const price = parseFloat(size.price);
+              if (!isNaN(price)) {
+                if (price < minPrice) minPrice = price;
+                if (price > maxPrice) maxPrice = price;
+              }
+            });
+          } else {
+            // Fallback to product-level price if sizes are not available or empty
+            const productPrice = parseFloat(product.price);
+            if (!isNaN(productPrice)) {
+              if (productPrice < minPrice) minPrice = productPrice;
+              if (productPrice > maxPrice) maxPrice = productPrice;
+            }
+          }
+        });
+        
+        if (minPrice === Infinity || maxPrice === -Infinity) { // If no valid prices found
+            minPrice = 0;
+            maxPrice = 1000;
+        }
+        if (minPrice === maxPrice) { // If all items have the same price, or only one item
+            maxPrice = minPrice + 100; // Add a small range for the slider
+        }
+
+
+        setDbPriceRange([minPrice, maxPrice]);
+        setTempPriceRange([minPrice, maxPrice]); // Initialize temp range with actual db range
+        setPriceRange([minPrice, maxPrice]); // Also initialize applied priceRange
+
+      } catch (err) {
+        
+        setError("Failed to load price range data. Using default.");
+        // Fallback to a default range if API call fails
+        setDbPriceRange([0, 1000]);
+        setTempPriceRange([0, 1000]);
+      } finally {
+        setIsDbPriceRangeInitialized(true);
+      }
+    };
+
+    if (isVisible) {
+        fetchMinMaxPrices();
+    }
+  }, [isVisible, baseURL]);
+
+
+  // Fetch categories from the API
 
   // Fetch categories from the API
   const fetchCategories = async () => {
@@ -252,15 +274,12 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
       const fetchPromises = [];
       for (let page = 1; page <= totalPages; page++) {
         fetchPromises.push(
-          fetch(
-            `${baseURL}/api/v1/product/sub-category/?page=${page}`,
-            {
-              headers: {
-                Authorization: `JWT ${accessToken}`,
-                "Content-Type": "application/json",
-              },
-            }
-          ).then((response) => response.json())
+          fetch(`${baseURL}/api/v1/product/sub-category/?page=${page}`, {
+            headers: {
+              Authorization: `JWT ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }).then((response) => response.json())
         );
       }
 
@@ -274,7 +293,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
 
       setCategories(allCategories);
     } catch (err) {
-      console.error("Failed to fetch categories:", err);
+      
       setError(
         err instanceof Error ? err.message : "Failed to fetch categories"
       );
@@ -296,47 +315,18 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
   }, [dbPriceRange]);
 
   // Filter products based on selected status
-  const filteredProducts = products.filter((product) => {
-    if (selectedStatus === "All") return true;
-    return getStatusText(product) === selectedStatus;
-  });
-
-  // Updated getStatusColor function
-  const getStatusColor = (product: Product) => {
-    if (!product.is_available) {
-      return "text-gray-600 bg-gray-50"; // Unavailable items are gray
-    }
-    if (product.unlimited || product.total_quantity > 0) {
-      return "text-green-600 bg-green-50"; // Available items are green
-    }
-    return "text-orange-600 bg-orange-50"; // Out of stock items are orange
+  const filterProducts = (products: Product[]) => {
+    return products.filter((product) => {
+      const matchesSearch = product.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesStatus =
+        selectedStatus === "All" || getStatusText(product) === selectedStatus;
+      return matchesSearch && matchesStatus;
+    });
   };
 
-  // New getStatusText function
-  const getStatusText = (product: Product) => {
-    if (!product.is_available) {
-      return "Unavailable";
-    }
-    if (product.unlimited || product.total_quantity > 0) {
-      return "Available";
-    }
-    return "Out of Stock";
-  };
-
-  // Format date string
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
-    } catch (e) {
-      console.error("Error formatting date:", e);
-      return "Invalid Date";
-    }
-  };
+  const filteredProducts = filterProducts(products);
 
   if (!isVisible) return null;
 
@@ -350,6 +340,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
         setOpenPopoverId(null);
       }
     };
+    
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
@@ -404,7 +395,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
         productName: "",
       });
     } catch (error) {
-      console.error("Error deleting product:", error);
+      
       setError(
         error instanceof Error ? error.message : "Failed to delete product"
       );
@@ -439,7 +430,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
       setShowEditCategoryModal(false);
       setSelectedCategoryForEdit(null);
     } catch (error) {
-      console.error("Error editing category:", error);
+      
       setError("Failed to edit category");
     } finally {
       setEditingCategory(false);
@@ -449,53 +440,80 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
   return (
     <div className="w-full">
       <div className="bg-white p-3 rounded-lg shadow-sm mb-4">
-        <div className="flex flex-row justify-between items-center mb-6">
-          <h2
-            style={{ fontSize: "clamp(14px, 3vw, 22px)" }}
-            className="font-semibold text-gray-800"
-          >
-            My Products List
-          </h2>
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-3 sm:space-y-0">
+  <h2
+    style={{ fontSize: "clamp(12px, 3vw, 18px)" }}
+    className="font-semibold text-gray-800 text-center sm:text-left"
+  >
+    My Products List
+  </h2>
 
-          <div className="flex gap-2">
-            <button
-              className="flex items-center justify-center space-x-2 bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit"
-              onClick={() => navigate("/admin/admin-categories")}
-            >
-              <span className="text-sm whitespace-nowrap">Category</span>
-            </button>
-            <button 
-              className="flex items-center justify-center space-x-2 bg-gray-700 text-white px-2 py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit"
-              onClick={() => navigate("/admin/add-new-product")}
-            >
-              <FaPlus style={{ fontSize: "clamp(1px, 3vw, 15px)" }} />
-              <span
-                style={{ fontSize: "clamp(9px, 3vw, 14px)" }}
-                className="hidden md:inline-block"
-              >
-                Add New Product
-              </span>
-              <span
-                style={{ fontSize: "clamp(9px, 3vw, 14px)" }}
-                className="inline-block md:hidden"
-              >
-                Add Product
-              </span>
-            </button>
-          </div>
-        </div>
+  <div className="flex flex-wrap justify-center sm:justify-end gap-1 sm:gap-2">
+    <button
+      className="flex items-center justify-center space-x-1 sm:space-x-2 bg-gray-700 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit text-xs sm:text-sm"
+      onClick={() => navigate("/admin/admin-categories")}
+    >
+      <span className="whitespace-nowrap">Category</span>
+    </button>
+    <button
+      className="flex items-center justify-center space-x-1 sm:space-x-2 bg-gray-700 text-white px-2 sm:px-2 py-1.5 sm:py-2 rounded-lg hover:bg-blue-600 transition-colors w-fit text-xs sm:text-sm"
+      onClick={() => navigate("/admin/add-new-product")}
+    >
+      <FaPlus style={{ fontSize: "clamp(8px, 2vw, 12px)" }} />
+      <span
+        style={{ fontSize: "clamp(8px, 2vw, 12px)" }}
+        className="hidden sm:inline-block"
+      >
+        Add New Product
+      </span>
+      <span
+        style={{ fontSize: "clamp(8px, 2vw, 12px)" }}
+        className="inline-block sm:hidden"
+      >
+        Add Product
+      </span>
+    </button>
+    <button
+      onClick={() => navigate("/admin/products/Prioritize")}
+      className="px-2 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs sm:text-sm whitespace-nowrap"
+    >
+      Product Prioritization
+    </button>
+  </div>
+</div>
 
         {/* Top Controls */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0">
-          {/* Category Dropdown */}
-          <div className="relative w-full sm:max-w-xs mr-0 sm:mr-4">
-            <PaginatedDropdown
-              options={categories}
-              value={selectedCategory}
-              onChange={(value) => setSelectedCategory(String(value))}
-              placeholder="All Categories"
-              className="w-full"
-            />
+          <div className="flex flex-col sm:flex-row w-full gap-4">
+            {/* Category Dropdown */}
+            <div className="relative w-full sm:max-w-xs">
+              <PaginatedDropdown
+                options={categories}
+                value={selectedCategory}
+                onChange={(value) => setSelectedCategory(String(value))}
+                placeholder="All Sub-Categories"
+                className="w-full"
+              />
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative w-full sm:max-w-xs">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products..."
+                className="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  ×
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Right Controls */}
@@ -541,62 +559,53 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                 <div className="absolute z-50 mt-2 p-6 bg-white border rounded-lg shadow-lg w-80">
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-4">
-                      Price Range: ₦{tempPriceRange[0].toLocaleString()} - ₦
-                      {tempPriceRange[1].toLocaleString()}
+                      Price Range: {formatCurrency(tempPriceRange[0])} - {formatCurrency(tempPriceRange[1])}
                     </label>
                     <div className="relative h-8">
-                      {/* Base track */}
-                      <div className="absolute w-full top-3 h-2 bg-gray-200 rounded-full"></div>
-
-                      {/* Active track */}
+                    {/* Custom Two-Handle Slider */}
+                    <div className="relative w-full h-full flex items-center">
+                      {/* Track */}
+                      <div className="absolute w-full h-2 bg-gray-200 rounded-full top-1/2 -translate-y-1/2"></div>
+                      {/* Highlighted Range */}
                       <div
-                        className="absolute top-3 h-2 bg-blue-500 rounded-full"
+                        className="absolute h-2 bg-blue-500 rounded-full top-1/2 -translate-y-1/2"
                         style={{
-                          left: `${
-                            ((tempPriceRange[0] - dbPriceRange[0]) /
-                              (dbPriceRange[1] - dbPriceRange[0])) *
-                            100
-                          }%`,
-                          width: `${
-                            ((tempPriceRange[1] - tempPriceRange[0]) /
-                              (dbPriceRange[1] - dbPriceRange[0])) *
-                            100
-                          }%`,
+                          left: `${dbPriceRange[1] === dbPriceRange[0] ? 0 : ((tempPriceRange[0] - dbPriceRange[0]) / (dbPriceRange[1] - dbPriceRange[0])) * 100}%`,
+                          width: `${dbPriceRange[1] === dbPriceRange[0] ? 100 : ((tempPriceRange[1] - tempPriceRange[0]) / (dbPriceRange[1] - dbPriceRange[0])) * 100}%`,
                         }}
                       ></div>
-
-                      {/* Range inputs */}
-                      <div className="relative">
-                        <input
-                          type="range"
-                          min={dbPriceRange[0]}
-                          max={dbPriceRange[1]}
-                          value={tempPriceRange[0]}
-                          onChange={(e) => {
-                            const value = Math.min(
-                              Number(e.target.value),
-                              tempPriceRange[1] - 1
-                            );
-                            setTempPriceRange([value, tempPriceRange[1]]);
-                          }}
-                          className="absolute w-full h-8 appearance-none bg-transparent [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-30 hover:[&::-webkit-slider-thumb]:border-blue-600"
-                        />
-                        <input
-                          type="range"
-                          min={dbPriceRange[0]}
-                          max={dbPriceRange[1]}
-                          value={tempPriceRange[1]}
-                          onChange={(e) => {
-                            const value = Math.max(
-                              Number(e.target.value),
-                              tempPriceRange[0] + 1
-                            );
-                            setTempPriceRange([tempPriceRange[0], value]);
-                          }}
-                          className="absolute w-full h-8 appearance-none bg-transparent [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-30 hover:[&::-webkit-slider-thumb]:border-blue-600"
-                        />
-                      </div>
+                      {/* Min Handle */}
+                      <input
+                        type="range"
+                        min={dbPriceRange[0]}
+                        max={dbPriceRange[1]}
+                        value={tempPriceRange[0]}
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+                          // Ensure min handle doesn't cross max handle, allowing a minimum gap (e.g., 1 unit)
+                          const newMin = Math.min(value, tempPriceRange[1] - (dbPriceRange[1] > dbPriceRange[0] ? 1 : 0));
+                          setTempPriceRange([newMin, tempPriceRange[1]]);
+                        }}
+                        className="absolute w-full h-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-10 hover:[&::-webkit-slider-thumb]:border-blue-600"
+                        style={{ zIndex: tempPriceRange[0] > (dbPriceRange[1] - dbPriceRange[0]) / 2 ? 5 : 4 }} // Higher z-index if closer to end
+                      />
+                      {/* Max Handle */}
+                      <input
+                        type="range"
+                        min={dbPriceRange[0]}
+                        max={dbPriceRange[1]}
+                        value={tempPriceRange[1]}
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+                          // Ensure max handle doesn't cross min handle, allowing a minimum gap (e.g., 1 unit)
+                          const newMax = Math.max(value, tempPriceRange[0] + (dbPriceRange[1] > dbPriceRange[0] ? 1 : 0));
+                          setTempPriceRange([tempPriceRange[0], newMax]);
+                        }}
+                        className="absolute w-full h-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-10 hover:[&::-webkit-slider-thumb]:border-blue-600"
+                        style={{ zIndex: tempPriceRange[1] < (dbPriceRange[1] - dbPriceRange[0]) / 2 ? 5 : 4 }} // Higher z-index if closer to start
+                      />
                     </div>
+                  </div>
                     {/* Number inputs */}
                     <div className="flex justify-between mt-8">
                       <div className="relative w-32">
@@ -704,6 +713,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                   <th className="px-4 py-3 min-w-[120px] whitespace-nowrap">
                     Price
                   </th>
+                  <th className="px-4 py-3">Production Days</th>
                   <th className="px-4 py-3">
                     <select
                       value={selectedStatus}
@@ -721,9 +731,15 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
               </thead>
               <tbody>
                 {filteredProducts.map((product, index) => (
-                  <tr key={product.id} className="border-b hover:bg-gray-50">
+                  <tr
+                    key={product.id}
+                    className="border-b hover:bg-gray-50 cursor-pointer"
+                    onClick={() =>
+                      navigate(`/admin/admin-products-details/${product.id}`)
+                    }
+                  >
                     <td className="px-4 py-3">
-                      {(currentPage - 1) * itemsPerPage + index + 1}
+                      {formatNumberWithCommas((currentPage - 1) * itemsPerPage + index + 1)}
                     </td>
                     {/* <td className="px-4 py-3">{product.id}</td> */}
                     <td className="px-4 py-3">
@@ -739,11 +755,14 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                       {product.unlimited ? (
                         <span className="text-blue-600">Unlimited</span>
                       ) : (
-                        <span>{product.total_quantity || "0"}</span>
+                        <span>{formatNumberWithCommas(product.total_quantity || 0)}</span>
                       )}
                     </td>
                     <td className="px-4 py-3 min-w-[120px] whitespace-nowrap">
-                      ₦ {product.price}
+                      {formatCurrency(product.price)}
+                    </td>
+                    <td className="px-4 py-3 min-w-[120px] whitespace-nowrap">
+                      {formatNumberWithCommas(product.production_days || 0)} days
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -808,9 +827,9 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
         {/* Update Pagination Section */}
         <div className="flex flex-col sm:flex-row justify-between items-center mt-4 space-y-4 sm:space-y-0">
           <div className="text-sm text-gray-600 text-center sm:text-left w-full sm:w-auto">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-            {Math.min(currentPage * itemsPerPage, totalProducts)} of{" "}
-            {totalProducts} entries
+            Showing {formatNumberWithCommas((currentPage - 1) * itemsPerPage + 1)} to{" "}
+            {formatNumberWithCommas(Math.min(currentPage * itemsPerPage, totalProducts))} of{" "}
+            {formatNumberWithCommas(totalProducts)} entries
           </div>
           <div className="flex items-center gap-2 justify-center sm:justify-start">
             <button
@@ -856,7 +875,7 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                           : "border hover:bg-gray-50"
                       }`}
                     >
-                      {page}
+                      {formatNumberWithCommas(page)}
                     </button>
                   </React.Fragment>
                 ))}
@@ -902,14 +921,68 @@ const ProductListTableView: React.FC<ProductTableProps> = ({
                     })
                   }
                   className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                  disabled={loading}
                 >
-                  Cancel
+                  {loading ? (
+                    <span>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-700"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Cancelling...
+                    </span>
+                  ) : (
+                    "Cancel"
+                  )}
                 </button>
                 <button
                   onClick={confirmDelete}
                   className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
+                  disabled={loading}
                 >
-                  Delete
+                  {loading ? (
+                    <span>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Deleting...
+                    </span>
+                  ) : (
+                    "Delete"
+                  )}
                 </button>
               </div>
             </div>

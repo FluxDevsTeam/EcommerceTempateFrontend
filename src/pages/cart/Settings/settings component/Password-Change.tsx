@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import OtpInput from "react-otp-input";
 
 const PasswordChange = () => {
-  const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
+  const baseURL = `https://api.kidsdesigncompany.com`;
 
   const [passwordChangeFormData, setPasswordChangeFormData] = useState({
     old_password: "",
@@ -82,7 +82,7 @@ const PasswordChange = () => {
       setPasswordPostResponseStatus(response.status);
 
       const logData = await response.json();
-      console.log(logData);
+      
 
       const otpForm = document?.querySelector(".passwordChangeOtpForm");
 
@@ -138,7 +138,7 @@ const PasswordChange = () => {
       );
 
       const logData = await response.json();
-      console.log(logData);
+      
 
       const otpForm = document?.querySelector(".passwordChangeOtpForm");
 
@@ -170,11 +170,11 @@ const PasswordChange = () => {
 
   const resendOTP = async () => {
     if (resendDisabled) {
-      console.log("Resend is currently disabled.");
+      
       return;
     }
 
-    console.log("resend otp btn clicked");
+    
     const accessToken = localStorage.getItem("accessToken");
 
     if (!accessToken) {
@@ -197,7 +197,7 @@ const PasswordChange = () => {
       );
 
       const logData = await response.json();
-      console.log(logData);
+      
 
       setOTPResendMsg(logData.data || logData.message || "Processing...");
       setIsOTPResendMsgModalOpen(true);
@@ -379,7 +379,7 @@ const PasswordChange = () => {
               onClick={() => {
                 setIsPasswordPostMsgModalOpen(false);
               }}
-              className="w-full px-4 py-2 bg-black text-white rounded-md hover:bg-gray-700 transition-colors"
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               Close
             </button>

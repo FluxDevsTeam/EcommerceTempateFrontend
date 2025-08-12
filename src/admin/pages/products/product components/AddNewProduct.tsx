@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Modal from "../../../../components/ui/Modal";
 import { IoChevronBack, IoSearch, IoClose } from "react-icons/io5";
-import PaginatedDropdown from '../components/PaginatedDropdown';
+import PaginatedDropdown from "./PaginatedDropdown";
 
 interface SubCategory {
   id: number;
@@ -11,6 +11,12 @@ interface SubCategory {
     id: number;
     name: string;
   };
+}
+
+interface WeightSizePair {
+  label: string;
+  weight: string;
+  size: string;
 }
 
 const AddNewProduct: React.FC = () => {
@@ -31,15 +37,13 @@ const AddNewProduct: React.FC = () => {
   const [selectedPreviewImage, setSelectedPreviewImage] = useState(0);
   const [newProductId, setNewProductId] = useState<number | null>(null);
 
-  // Form data state
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     sub_category: null as number | null,
     colour: "",
-    is_available: true, // Changed from false to true
-    dimensional_size: null as string | null,
-    weight: null as string | null,
+    is_available: true,
+    weightSizePair: "" as string,
     latest_item: false,
     latest_item_position: null as number | null,
     top_selling_items: false,
@@ -53,30 +57,25 @@ const AddNewProduct: React.FC = () => {
 
   const [categories, setCategories] = useState<SubCategory[]>([]);
 
-  // Define size and weight options
-  const sizeOptions = [
-    "Very Small",
-    "Small",
-    "Medium",
-    "Large",
-    "Very Large",
-    "XXL",
-  ];
-  const weightOptions = [
-    "Very Light",
-    "Light",
-    "Medium",
-    "Heavy",
-    "Very Heavy",
-    "XX Heavy",
+  const weightSizePairs: WeightSizePair[] = [
+    { label: "Very Light - Very Small (3000 - 7500)", weight: "Very Light", size: "Very Small"},
+    { label: "Very Light - Small (4000 - 8500)", weight: "Very Light", size: "Small" },
+    { label: "Light - Small (5000 - 9500)", weight: "Light", size: "Small" },
+    { label: "Light - Medium (14000 - 27000)", weight: "Light", size: "Medium" },
+    { label: "Medium - Medium (23000 - 41000)", weight: "Medium", size: "Medium" },
+    { label: "Medium - Large (32200 - 51000)", weight: "Medium", size: "Large" },
+    { label: "Heavy - Large (37000 - 55000)", weight: "Heavy", size: "Large" },
+    { label: "Heavy - Very Large (42000 - 74000)", weight: "Heavy", size: "Very Large" },
+    { label: "Very Heavy - Very Large (50000 - 92000)", weight: "Very Heavy", size: "Very Large"},
+    { label: "Very Heavy - XXL (55000 - 106000)", weight: "Very Heavy", size: "XXL" },
+    { label: "XXHeavy - XXL (69000 - 138000)", weight: "XXHeavy", size: "XXL" },
   ];
 
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredCategories, setFilteredCategories] = useState<SubCategory[]>(
-    []
-  );
+  const [filteredCategories, setFilteredCategories] = useState<SubCategory[]>([]);
 
+  // Filter categories based on search query
   useEffect(() => {
     const filtered = categories.filter((category) =>
       category.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -84,6 +83,7 @@ const AddNewProduct: React.FC = () => {
     setFilteredCategories(filtered);
   }, [searchQuery, categories]);
 
+  // Fetch categories (unchanged)
   useEffect(() => {
     const fetchCategories = async () => {
       setLoading(true);
@@ -101,9 +101,8 @@ const AddNewProduct: React.FC = () => {
       }
 
       try {
-        // First fetch to get total count
         const initialResponse = await fetch(
-          "https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/",
+          "https://api.kidsdesigncompany.com/api/v1/product/sub-category/?page_size=100",
           {
             headers: {
               Authorization: `JWT ${accessToken}`,
@@ -118,15 +117,14 @@ const AddNewProduct: React.FC = () => {
 
         const initialData = await initialResponse.json();
         const totalItems = initialData.count;
-        const itemsPerPage = 10;
+        const itemsPerPage = 100;
         const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-        // Fetch all pages
         const fetchPromises = [];
         for (let page = 1; page <= totalPages; page++) {
           fetchPromises.push(
             fetch(
-              `https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/?page=${page}`,
+              `https://api.kidsdesigncompany.com/api/v1/product/sub-category/?page=${page}&page_size=${itemsPerPage}`,
               {
                 headers: {
                   Authorization: `JWT ${accessToken}`,
@@ -137,17 +135,18 @@ const AddNewProduct: React.FC = () => {
           );
         }
 
-        // Wait for all requests to complete
         const responses = await Promise.all(fetchPromises);
-
-        // Combine all results
-        const allCategories = responses.reduce((acc, response) => {
-          return [...acc, ...response.results];
-        }, []);
+        const allCategories = responses
+          .reduce((acc, response) => {
+            return [...acc, ...response.results];
+          }, [])
+          .sort((a: SubCategory, b: SubCategory) =>
+            a.name.localeCompare(b.name)
+          );
 
         setCategories(allCategories);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        
         setModalConfig({
           isOpen: true,
           title: "Error",
@@ -172,7 +171,6 @@ const AddNewProduct: React.FC = () => {
   const handleCloseModal = () => {
     setModalConfig({ ...modalConfig, isOpen: false });
     if (modalConfig.type === "success" && newProductId) {
-      // Use timeout to ensure modal is closed before navigation
       setTimeout(() => {
         navigate(`/admin/admin-products-details/${newProductId}`);
       }, 100);
@@ -204,18 +202,16 @@ const AddNewProduct: React.FC = () => {
         [imageField]: file,
       }));
 
-      // Create preview URL
       const newImagePreviewUrls = [...imagePreviewUrls];
       newImagePreviewUrls[imageIndex] = URL.createObjectURL(file);
       setImagePreviewUrls(newImagePreviewUrls);
     }
   };
 
-  // Update handleSaveChanges to use click event
   const handleSaveChanges = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setLoading(true);
-    setViewProductPreviewModal(false); // Close preview modal if open
+    setViewProductPreviewModal(false);
     const accessToken = localStorage.getItem("accessToken");
 
     if (!accessToken) {
@@ -230,14 +226,27 @@ const AddNewProduct: React.FC = () => {
     }
 
     const formDataToSend = new FormData();
+    const selectedPair = weightSizePairs.find(
+      (pair) => pair.label === formData.weightSizePair
+    );
+
     Object.keys(formData).forEach((key) => {
-      if (
+      if (key === "weightSizePair") {
+        // Skip weightSizePair, add weight and dimensional_size instead
+        if (selectedPair) {
+          formDataToSend.append("weight", selectedPair.weight);
+          formDataToSend.append("dimensional_size", selectedPair.size);
+        }
+      } else if (
         formData[key as keyof typeof formData] !== null &&
         key !== "image1" &&
         key !== "image2" &&
         key !== "image3"
       ) {
-        formDataToSend.append(key, String(formData[key as keyof typeof formData]));
+        formDataToSend.append(
+          key,
+          String(formData[key as keyof typeof formData])
+        );
       }
     });
 
@@ -247,7 +256,7 @@ const AddNewProduct: React.FC = () => {
 
     try {
       const response = await fetch(
-        "https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/",
+        "https://api.kidsdesigncompany.com/api/v1/product/item/",
         {
           method: "POST",
           headers: {
@@ -259,24 +268,24 @@ const AddNewProduct: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Server error response:", errorData);
+        
         throw new Error(
           errorData.message || `Failed to add product: ${response.statusText}`
         );
       }
 
       const data = await response.json();
-      console.log("Product added successfully:", data);
       
+
       setNewProductId(data.id);
       setModalConfig({
         isOpen: true,
         title: "Success",
-        message: "Product added successfully! Click OK to view the product.",
+        message: "Product added successfully!",
         type: "success",
       });
     } catch (error) {
-      console.error("Error adding product:", error);
+      
       setModalConfig({
         isOpen: true,
         title: "Error",
@@ -291,20 +300,30 @@ const AddNewProduct: React.FC = () => {
     }
   };
 
-  // Add this new function to check form validity
   const isFormValid = () => {
     return (
       formData.name.trim() !== "" &&
       formData.description.trim() !== "" &&
       formData.sub_category !== null &&
-      formData.image1 !== null // Require main image
+      formData.weightSizePair !== "" &&
+      formData.image1 !== null
     );
+  };
+
+  // Helper to get weight and size for preview
+  const getWeightSizeForPreview = () => {
+    const selectedPair = weightSizePairs.find(
+      (pair) => pair.label === formData.weightSizePair
+    );
+    return {
+      weight: selectedPair ? selectedPair.weight : "Not specified",
+      size: selectedPair ? selectedPair.size : "Not specified",
+    };
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header Section */}
         <div className="mb-8">
           <div className="grid md:flex md:items-center md:justify-between">
             <div>
@@ -318,10 +337,8 @@ const AddNewProduct: React.FC = () => {
           </div>
         </div>
 
-        {/* Main Form */}
         <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
           <div className="bg-white shadow rounded-lg overflow-hidden">
-            {/* Basic Information Section */}
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Basic Information
@@ -345,11 +362,11 @@ const AddNewProduct: React.FC = () => {
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Category
+                      Sub-Category
                     </label>
                     <button
                       type="button"
-                      onClick={() => navigate('/admin/admin-categories')}
+                      onClick={() => navigate("/admin/admin-categories")}
                       className="text-sm text-blue-600 hover:text-blue-700"
                     >
                       Manage Categories
@@ -357,9 +374,11 @@ const AddNewProduct: React.FC = () => {
                   </div>
                   <PaginatedDropdown
                     options={categories}
-                    value={formData.sub_category || ''}
-                    onChange={(value) => setFormData(prev => ({ ...prev, sub_category: value }))}
-                    placeholder="Select Category"
+                    value={formData.sub_category || ""}
+                    onChange={(value) =>
+                      setFormData((prev) => ({ ...prev, sub_category: value }))
+                    }
+                    placeholder="Select Sub-Category"
                     required
                   />
                 </div>
@@ -381,7 +400,6 @@ const AddNewProduct: React.FC = () => {
               </div>
             </div>
 
-            {/* Specifications Section */}
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Specifications
@@ -389,7 +407,7 @@ const AddNewProduct: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Color
+                    Color (optional)
                   </label>
                   <input
                     type="text"
@@ -403,18 +421,19 @@ const AddNewProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Transport Size
+                    Weight & Size (Lagos - Kano)
                   </label>
                   <select
-                    name="dimensional_size"
-                    value={formData.dimensional_size || ""}
+                    name="weightSizePair"
+                    value={formData.weightSizePair}
                     onChange={handleChange}
+                    required
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                   >
-                    <option value="">Select Size</option>
-                    {sizeOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
+                    <option value="">Select Weight & Size</option>
+                    {weightSizePairs.map((pair) => (
+                      <option key={pair.label} value={pair.label}>
+                        {pair.label}
                       </option>
                     ))}
                   </select>
@@ -422,39 +441,16 @@ const AddNewProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Transport Weight
-                  </label>
-                  <select
-                    name="weight"
-                    value={formData.weight || ""}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                  >
-                    <option value="">Select Weight</option>
-                    {weightOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Production Days
+                    Production Days (optional)
                   </label>
                   <input
                     type="number"
                     name="production_days"
-                    value={formData.production_days || ""}
+                    value={formData.production_days === null || formData.production_days === undefined ? "" : formData.production_days}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        production_days: e.target.value
-                          ? Number(e.target.value)
-                          : null,
+                        production_days: e.target.value === "" ? 0 : Number(e.target.value),
                       }))
                     }
                     min="0"
@@ -465,7 +461,6 @@ const AddNewProduct: React.FC = () => {
               </div>
             </div>
 
-            {/* Product Options Section */}
             <div className="p-6 border-b border-gray-200 bg-gray-50">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Product Options
@@ -605,7 +600,6 @@ const AddNewProduct: React.FC = () => {
               </div>
             </div>
 
-            {/* Images Section */}
             <div className="p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Product Images
@@ -666,12 +660,11 @@ const AddNewProduct: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Additional Images */}
                 {[2, 3].map((num) => (
                   <div key={num} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Additional Image {num - 1}
+                        Additional Image {num - 1} (optional)
                       </label>
                       <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors duration-200">
                         <div className="space-y-1 text-center">
@@ -737,7 +730,6 @@ const AddNewProduct: React.FC = () => {
             </div>
           </div>
 
-          {/* Form Actions */}
           <div className="flex justify-end space-x-4">
             <button
               type="button"
@@ -751,7 +743,11 @@ const AddNewProduct: React.FC = () => {
               onClick={() => setViewProductPreviewModal(true)}
               disabled={!isFormValid()}
               className={`px-6 py-3 border border-transparent text-base font-medium rounded-md text-white
-                ${isFormValid() ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}
+                ${
+                  isFormValid()
+                    ? "bg-blue-600 hover:bg-blue-700"
+                    : "bg-gray-400 cursor-not-allowed"
+                }
                 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
             >
               Preview Product
@@ -761,7 +757,11 @@ const AddNewProduct: React.FC = () => {
               onClick={handleSaveChanges}
               disabled={loading || !isFormValid()}
               className={`px-6 py-3 border border-transparent text-base font-medium rounded-md text-white
-                ${loading || !isFormValid() ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
+                ${
+                  loading || !isFormValid()
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }
                 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
             >
               {loading ? (
@@ -796,11 +796,9 @@ const AddNewProduct: React.FC = () => {
         </form>
       </div>
 
-      {/* Preview Modal */}
       {viewProductPreviewModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-white w-full max-w-[1000px] rounded-2xl max-h-[90vh] overflow-y-auto">
-            {/* Mobile Header */}
             <div className="flex items-center p-4 md:hidden border-b">
               <button
                 onClick={() => setViewProductPreviewModal(false)}
@@ -813,7 +811,6 @@ const AddNewProduct: React.FC = () => {
               </h1>
             </div>
 
-            {/* Desktop Header */}
             <div className="hidden md:flex justify-between items-center p-6 border-b">
               <h1 className="text-2xl font-bold text-gray-800">
                 Product Preview
@@ -828,9 +825,7 @@ const AddNewProduct: React.FC = () => {
 
             <div className="p-6">
               <div className="md:flex md:space-x-8">
-                {/* Image Section */}
                 <div className="md:w-1/2 space-y-4">
-                  {/* Main Image Display */}
                   <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
                     {imagePreviewUrls[selectedPreviewImage] ? (
                       <img
@@ -858,7 +853,6 @@ const AddNewProduct: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Thumbnail Images */}
                   <div className="grid grid-cols-3 gap-4">
                     {imagePreviewUrls.map((url, index) => (
                       <button
@@ -886,7 +880,6 @@ const AddNewProduct: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Product Details */}
                 <div className="md:w-1/2 mt-6 md:mt-0">
                   <div className="space-y-6">
                     <div>
@@ -897,7 +890,6 @@ const AddNewProduct: React.FC = () => {
                         <span className="text-2xl font-bold text-gray-900">
                           ₦{formData.price || "0.00"}
                         </span>
-                        
                       </div>
                     </div>
 
@@ -938,7 +930,7 @@ const AddNewProduct: React.FC = () => {
                           Size
                         </h3>
                         <p className="text-gray-600">
-                          {formData.dimensional_size || "Not specified"}
+                          {getWeightSizeForPreview().size}
                         </p>
                       </div>
 
@@ -947,7 +939,7 @@ const AddNewProduct: React.FC = () => {
                           Weight
                         </h3>
                         <p className="text-gray-600">
-                          {formData.weight || "Not specified"}
+                          {getWeightSizeForPreview().weight}
                         </p>
                       </div>
                     </div>
@@ -968,15 +960,13 @@ const AddNewProduct: React.FC = () => {
 
                       {formData.latest_item && (
                         <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg">
-                          Latest Item (Position: {formData.latest_item_position}
-                          )
+                          Latest Item (Position: {formData.latest_item_position})
                         </div>
                       )}
 
                       {formData.top_selling_items && (
                         <div className="bg-orange-50 text-orange-700 px-4 py-2 rounded-lg">
-                          Top Selling Item (Position:{" "}
-                          {formData.top_selling_position})
+                          Top Selling Item (Position: {formData.top_selling_position})
                         </div>
                       )}
                     </div>
@@ -984,7 +974,6 @@ const AddNewProduct: React.FC = () => {
                 </div>
               </div>
 
-              {/* Add new buttons section at the bottom of the modal */}
               <div className="mt-8 flex justify-end gap-4 border-t pt-4">
                 <button
                   type="button"
@@ -999,7 +988,6 @@ const AddNewProduct: React.FC = () => {
         </div>
       )}
 
-      {/* Success/Error Modal */}
       <Modal
         isOpen={modalConfig.isOpen}
         onClose={handleCloseModal}

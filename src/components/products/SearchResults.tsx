@@ -7,7 +7,7 @@ import { WishData } from '@/card/wishListApi';
 import { WishItem } from '@/card/types';
 
 // Full search API endpoint
-const SEARCH_API_URL = "https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/search/";
+const SEARCH_API_URL = "https://api.kidsdesigncompany.com/api/v1/product/item/search/";
 
 export interface Category {
   id: number;
@@ -62,6 +62,7 @@ const fetchSearchResults = async (
   }
   
   url.searchParams.set('page', page.toString());
+  url.searchParams.set('page_size', '16'); // Explicitly set page_size to 16
   
   if (ordering) {
     url.searchParams.set('ordering', ordering);
@@ -69,7 +70,12 @@ const fetchSearchResults = async (
   
   const response = await fetch(url.toString());
   if (!response.ok) throw new Error("Failed to fetch products");
-  return response.json();
+  const data = await response.json();
+  // Validate pagination data
+  if (typeof data.count !== 'number' || !Array.isArray(data.results)) {
+    throw new Error('Invalid pagination data');
+  }
+  return data;
 };
 
 const SearchResults = () => {
@@ -97,15 +103,6 @@ const SearchResults = () => {
         setError(null);
         
         const data = await fetchSearchResults(query, currentPage, ordering);
-        
-        if (!data.results) {
-          throw new Error('No products data received from the API');
-        }
-        
-        if (!Array.isArray(data.results)) {
-          throw new Error(`Invalid products data format: ${typeof data.results}`);
-        }
-        
         setProductsData(data);
         
       } catch (err) {
@@ -138,7 +135,7 @@ const SearchResults = () => {
     const fetchWishlist = async () => {
       try {
         const wishlistRes = await WishData();
-        setWishlistItems(wishlistRes);
+        setWishlistItems(wishlistRes.results);
       } catch (err) {
         console.error('Error loading wishlist:', err);
       } finally {
@@ -171,14 +168,14 @@ const SearchResults = () => {
     setSearchParams(prev => {
       const newParams = new URLSearchParams(prev);
       newParams.set('ordering', newOrdering);
-      newParams.delete('page'); // Reset to page 1 when changing ordering
+      newParams.delete('page');
       return newParams;
     });
   };
 
   if (error) {
     return (
-      <div className="container mx-auto px-6 py-8 md:py-12">
+      <div className="container mx-auto px-6 py-8 md:py-0">
         <div className="bg-red-50 border-l-4 border-red-400 p-4">
           <div className="flex">
             <div className="flex-shrink-0">
@@ -205,14 +202,14 @@ const SearchResults = () => {
   }
   
   const hasResults = productsData.results.length > 0;
-  const itemsPerPage = 10;
+  const itemsPerPage = 16; // Match specified pagination size
   const totalPages = productsData.count ? Math.ceil(productsData.count / itemsPerPage) : 1;
 
   return (
-    <div className="container mx-auto px-6 md:px-14 py-8 md:py-12">
+    <div className="container mx-auto px-4 md:px-14 py-8 md:py-12">
       {hasResults && (
         <div className="mb-6">
-          <h1 className="text-3xl font-medium flex justify-center items-center pt-2">
+          <h1 className="text-xl md:text-3xl font-medium flex justify-center items-center pt-2">
             Search Results for "{query}"
           </h1>
           <p className="text-gray-600 mt-2 text-center">
@@ -231,7 +228,7 @@ const SearchResults = () => {
       {/* Products Grid */}
       {hasResults && (
         <div className="mb-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-8 sm:mb-16">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 md:gap-10">
             {productsData.results.map((item) => {
               const wishlistInfo = getWishlistInfo(item.id);
               return (
@@ -245,7 +242,7 @@ const SearchResults = () => {
             })}
           </div>
           
-          {/* Pagination Controls */}
+          {/* Pagination controls */}
           <div className="mt-6">
             <PaginationComponent
               currentPage={currentPage}

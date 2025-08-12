@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
-import SuggestedProductDetails from "./SuggestedProductDetail";
+import { useParams, useNavigate } from "react-router-dom";
+import Suggested from "./Suggested";
 import DescriptionList from "./DescriptionList";
-import { addToLocalCart, isItemInLocalCart } from "../../utils/cartStorage";
+import { addToLocalCart, isItemInLocalCart, isItemInUserCart } from "../../utils/cartStorage";
+import { useMediaQuery } from 'react-responsive';
+import { formatNumberWithCommas } from "../../admin/utils/formatting";
 
 // Define TypeScript interfaces for the API responses
 interface Category {
@@ -36,13 +38,14 @@ interface Product {
   image1: string;
   image2: string;
   image3: string;
-  discounted_price?: string;
-  price: string;
+  discounted_price?: number;
+  price: number;
   undiscounted_price?: number;
   is_available: boolean;
   dimensional_size: string;
   weight: string;
-  unlimited: boolean; // Added the unlimited field
+  unlimited: boolean;
+  production_days: number;
   sizes: Size[];
 }
 
@@ -50,11 +53,11 @@ interface ProductDetailParams {
   id: string;
 }
 
-const baseURL = "https://ecommercetemplate.pythonanywhere.com";
+const baseURL = "https://api.kidsdesigncompany.com";
 
 const fetchProduct = async (id: number): Promise<Product> => {
   const response = await fetch(
-    `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${id}/`
+    `https://api.kidsdesigncompany.com/api/v1/product/item/${id}/`
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");
@@ -62,10 +65,10 @@ const fetchProduct = async (id: number): Promise<Product> => {
   return response.json();
 };
 
-
-const SuggestedItemsDetails = () => {
+const SuggestedItemsDetails: React.FC = () => {
   const { id } = useParams<keyof ProductDetailParams>() as ProductDetailParams;
   const productId = parseInt(id);
+  const navigate = useNavigate();
   const [mainImage, setMainImage] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
@@ -76,8 +79,10 @@ const SuggestedItemsDetails = () => {
     type: "success" as "success" | "error",
   });
 
-    const [isAddingToCart, setIsAddingToCart] = useState(false);
-  
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [itemsInCart, setItemsInCart] = useState<{[key: string]: boolean}>({});
+  const is390pxAndAbove = useMediaQuery({ query: "(min-width: 390px)" });
 
   // Fetch product data
   const {
@@ -87,7 +92,7 @@ const SuggestedItemsDetails = () => {
   } = useQuery<Product, Error>({
     queryKey: ["product", productId],
     queryFn: () => fetchProduct(productId),
-    enabled: !!productId && !isNaN(productId)
+    enabled: !!productId && !isNaN(productId),
   });
 
   // Initialize main image and selected size when product data is loaded
@@ -96,21 +101,42 @@ const SuggestedItemsDetails = () => {
       const images = [product.image1, product.image2, product.image3].filter(
         Boolean
       );
-      if (images.length > 0 && !mainImage) {
-        setMainImage(images[0]);
-      }
-      // Set the first available size as default if none selected
-      if (product.sizes && product.sizes.length > 0 && !selectedSize) {
-        setSelectedSize(product.sizes[0].size);
+      // Reset mainImage when product changes
+      setMainImage(images.length > 0 ? images[0] : "");
+
+      // Set the first in-stock size as default if none selected
+      if (product.sizes && product.sizes.length > 0) {
+        const inStockSize = product.sizes.find(size => product.unlimited || size.quantity > 0);
+        if (inStockSize) {
+          setSelectedSize(inStockSize.size);
+        } else {
+          setSelectedSize(product.sizes[0].size);
+        }
       }
     }
-  }, [product, mainImage, selectedSize]);
+  }, [product, productId]); // Add productId to dependency array
 
-const handleSuggestedItemClick = (image: string) => {
-    setMainImage(image); 
+  // Check if items are in cart when component mounts or when product/selectedSize changes
+  useEffect(() => {
+    const checkCartItems = async () => {
+      if (product && selectedSize) {
+        const selectedSizeData = product.sizes.find(size => size.size === selectedSize);
+        if (selectedSizeData) {
+          const key = `${product.id}-${selectedSizeData.id}`;
+          const isInCart = await isItemInUserCart(product.id, selectedSizeData.id);
+          setItemsInCart(prev => ({ ...prev, [key]: isInCart }));
+        }
+      }
+    };
+    
+    checkCartItems();
+  }, [product, selectedSize]);
+
+  const handleSuggestedItemClick = (image: string) => {
+    setMainImage(image);
   };
 
-    const createNewCart = async (accessToken: string) => {
+  const createNewCart = async (accessToken: string) => {
     const response = await fetch(`${baseURL}/api/v1/cart/`, {
       method: "POST",
       headers: {
@@ -127,18 +153,31 @@ const handleSuggestedItemClick = (image: string) => {
         phone_number: "",
       }),
     });
-  
+
     if (!response.ok) throw new Error("Failed to create cart");
     const data = await response.json();
     return data.id;
   };
 
+  // Add useEffect for auto-closing modal
+  useEffect(() => {
+    if (modalConfig.isOpen) {
+      const timer = setTimeout(() => {
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [modalConfig.isOpen]);
+
   if (!id || isNaN(productId)) {
-    return <div className="text-center py-8">Invalid or missing product ID</div>;
+    return (
+      <div className="text-center py-8">Invalid or missing product ID</div>
+    );
   }
 
   if (isLoading)
-    return <div className="text-center py-8">Loading product...</div>;
+    return <div className="text-center py-8 mt-[10%]">Loading product...</div>;
   if (error)
     return (
       <div className="text-center py-8 text-red-500">
@@ -153,15 +192,21 @@ const handleSuggestedItemClick = (image: string) => {
     Boolean
   );
 
-  const discountedPrice = parseFloat(product.price);
-  const undiscountedPrice = product.undiscounted_price || parseFloat(product.price);
-  const discountPercentage = undiscountedPrice > 0 
-    ? Math.round(((undiscountedPrice - discountedPrice) / undiscountedPrice) * 100) 
-    : 0;
-
   // Get available quantity for selected size
-  const selectedSizeData = product.sizes.find(size => size.size === selectedSize);
+  const selectedSizeData = product.sizes.find(
+    (size) => size.size === selectedSize
+  );
   const availableQuantity = selectedSizeData?.quantity || 0;
+
+  // Calculate discount percentage using selected size
+  const discountedPrice = selectedSizeData ? Number(selectedSizeData.price) : product.price;
+  const undiscountedPrice = selectedSizeData && selectedSizeData.undiscounted_price ? Number(selectedSizeData.undiscounted_price) : (product.undiscounted_price || product.price);
+  const discountPercentage =
+    undiscountedPrice > 0 && undiscountedPrice > discountedPrice
+      ? Math.round(
+          ((undiscountedPrice - discountedPrice) / undiscountedPrice) * 100
+        )
+      : 0;
 
   // Handle quantity changes
   const handleQuantityIncrease = () => {
@@ -187,62 +232,65 @@ const handleSuggestedItemClick = (image: string) => {
       return;
     }
 
-    setIsAddingToCart(true);
-
-
+    // Ensure product is available before proceeding
     if (!product) {
       setModalConfig({
         isOpen: true,
         title: "Error",
-        message: "Product data not available",
+        message: "Product data not available. Cannot process cart action.",
         type: "error",
       });
-      setIsAddingToCart(false);
       return;
     }
 
-    const selectedSizeData = product.sizes.find(
+    const currentSelectedSizeData = product.sizes.find(
       (size) => size.size === selectedSize
     );
 
-    if (!selectedSizeData) {
+    if (!currentSelectedSizeData) {
       setModalConfig({
         isOpen: true,
-        title: "Error",
-        message: "Selected size not found",
+        title: "Error", 
+        message: "Selected size details not available. Please select a valid size.",
         type: "error",
       });
-      setIsAddingToCart(false);
       return;
     }
+
+    // If item is ALREADY in cart and button is clicked, navigate to cart.
+    if (isSizeInCart(product.id, currentSelectedSizeData.id)) {
+      navigate("/cart");
+      return; // Exit early, do not set isAddingToCart or proceed further
+    }
+
+    // If item is NOT already in cart, then proceed with adding.
+    setIsAddingToCart(true);
 
     const accessToken = localStorage.getItem("accessToken");
 
     if (!accessToken) {
-      // Check if item already exists in local cart
-      if (isItemInLocalCart(product.id, selectedSizeData.id)) {
-        setModalConfig({
-          isOpen: true,
-          title: "Notice",
-          message: "This item is already in your cart",
-          type: "error",
-        });
-        setIsAddingToCart(false);
-        return;
-      }
-
-      // Store in local storage for guest users
+      // Guest user: Add to local cart
+      // The check for item already in local cart (isItemInLocalCart) is covered by isSizeInCart -> navigate above.
       addToLocalCart({
         productId: product.id,
-        sizeId: selectedSizeData.id,
+        sizeId: currentSelectedSizeData.id,
         productName: product.name,
         productImage: product.image1,
-        productPrice: product.price,
-        discountedPrice: product.discounted_price,
-        sizeName: selectedSizeData.size,
+        productPrice: parseFloat(currentSelectedSizeData.price) || product.price, // Use size-specific price, ensure parsing
+        discountedPrice: product.discounted_price, // Product-level general discount
+        sizeName: currentSelectedSizeData.size,
         quantity: quantity,
-        maxQuantity: selectedSizeData.quantity,
+        maxQuantity: currentSelectedSizeData.quantity,
+        // Ensure sizeUndiscountedPrice is passed
+        sizeUndiscountedPrice: currentSelectedSizeData.undiscounted_price 
+                               ? parseFloat(currentSelectedSizeData.undiscounted_price) 
+                               : (product.undiscounted_price || parseFloat(currentSelectedSizeData.price) || product.price),
+        subCategoryId: product.sub_category?.id,
+        subCategoryName: product.sub_category?.name,
       });
+
+      const key = `${product.id}-${currentSelectedSizeData.id}`;
+      setItemsInCart(prev => ({ ...prev, [key]: true }));
 
       setModalConfig({
         isOpen: true,
@@ -254,8 +302,8 @@ const handleSuggestedItemClick = (image: string) => {
       return;
     }
 
+    // Authenticated user: Add to server cart
     try {
-      // First try to get cart
       const cartResponse = await fetch(`${baseURL}/api/v1/cart/`, {
         method: "GET",
         headers: {
@@ -265,22 +313,20 @@ const handleSuggestedItemClick = (image: string) => {
       });
 
       let cartUuid;
-      
       if (cartResponse.ok) {
         const cartData = await cartResponse.json();
         cartUuid = cartData.results[0]?.id;
       }
 
-      // If no cart exists, create one
       if (!cartUuid) {
         try {
           cartUuid = await createNewCart(accessToken);
         } catch (error) {
-          console.error("Error creating cart:", error);
+          
           setModalConfig({
             isOpen: true,
             title: "Error",
-            message: "Failed to create cart",
+            message: "Failed to create cart. Please try again.",
             type: "error",
           });
           setIsAddingToCart(false);
@@ -288,7 +334,6 @@ const handleSuggestedItemClick = (image: string) => {
         }
       }
 
-      // Add item to cart
       const response = await fetch(
         `${baseURL}/api/v1/cart/${cartUuid}/items/`,
         {
@@ -299,7 +344,7 @@ const handleSuggestedItemClick = (image: string) => {
           },
           body: JSON.stringify({
             product: product.id,
-            size: selectedSizeData.id,
+            size: currentSelectedSizeData.id,
             quantity: quantity,
           }),
         }
@@ -307,16 +352,19 @@ const handleSuggestedItemClick = (image: string) => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Error adding to cart:", errorData);
+        
         setModalConfig({
           isOpen: true,
-          title: "",
-          message: errorData.error,
+          title: "Notice", // Or "Error" as appropriate
+          message: errorData.error || "Failed to add item to cart. Please try again.",
           type: "error",
         });
-        setIsAddingToCart(false);
-        throw new Error("Failed to add to cart");
+        // setIsAddingToCart(false); // Already in finally block
+        throw new Error(errorData.error || "Failed to add to cart");
       }
+
+      const key = `${product.id}-${currentSelectedSizeData.id}`;
+      setItemsInCart(prev => ({ ...prev, [key]: true }));
 
       setModalConfig({
         isOpen: true,
@@ -325,241 +373,302 @@ const handleSuggestedItemClick = (image: string) => {
         type: "success",
       });
     } catch (error) {
-      console.error("Error adding to cart:", error);
-    }  finally {
+      
+      // Avoid setting modal if it's already set by a specific error message from the try block
+      if (!modalConfig.isOpen || modalConfig.message !== (error as Error).message) {
+        setModalConfig({
+            isOpen: true,
+            title: "Error",
+            message: (error instanceof Error && error.message.includes("Failed to add")) ? error.message : "An unexpected error occurred. Please try again.",
+            type: "error",
+        });
+      }
+    } finally {
       setIsAddingToCart(false);
     }
   };
 
-  // Add modal close handler
   const handleCloseModal = () => {
     setModalConfig({ ...modalConfig, isOpen: false });
   };
-  // Determine if the item is in stock
   const isInStock = product.unlimited || availableQuantity > 0;
+
+  // Function to check if size is in cart
+  const isSizeInCart = (productId: number, sizeId: number): boolean => {
+    const key = `${productId}-${sizeId}`;
+    const accessToken = localStorage.getItem("accessToken");
+    
+    // For guest users, check local storage directly
+    if (!accessToken) {
+      return isItemInLocalCart(productId, sizeId);
+    }
+    
+    // For authenticated users, use the cached result from state
+    return itemsInCart[key] || false;
+  };
 
   return (
     <div>
-    <div className="w-full min-h-screen md:mt-8 px-6 md:px-12 py-4 lg:px-20">
-      {/* Success/Error Modal */}
-      {modalConfig.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div
-            className={`bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 border-t-4 ${
-              modalConfig.type === "success"
-                ? "border-green-500"
-                : "border-red-500"
-            }`}
-          >
-            <h2
-              className={`text-2xl font-bold mb-4 ${
+      <div className="w-full min-h-screen md:mt-6 px-9 md:px-8 py-0 lg:px-12">
+        {/* Success/Error Modal */}
+        {modalConfig.isOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div
+              className={`bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 border-t-4 ${
                 modalConfig.type === "success"
-                  ? "text-green-600"
-                  : "text-red-600"
-              }`}
+                  ? "border-customBlue"
+                  : "border-red-500"
+              } relative`}
             >
-              {modalConfig.title}
-            </h2>
-            <p className="mb-6">{modalConfig.message}</p>
-            <button
-              onClick={handleCloseModal}
-              className={`w-full py-2 px-4 text-white rounded ${
-                modalConfig.type === "success"
-                  ? "bg-green-600 hover:bg-green-700"
-                  : "bg-red-500 hover:bg-red-600"
-              }`}
-            >
-              {modalConfig.type === "success" ? "Continue" : "Close"}
-            </button>
+              <button
+                onClick={handleCloseModal}
+                className="absolute top-2 right-2 text-gray-600 hover:text-gray-800 focus:outline-none"
+                aria-label="Close modal"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <h2
+                className={`text-2xl font-bold mb-4 ${
+                  modalConfig.type === "success"
+                    ? "text-customBlue"
+                    : "text-red-600"
+                }`}
+              >
+                {modalConfig.title}
+              </h2>
+              <p className="mb-6">{modalConfig.message}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Product Main Section */}
+        <div className="flex flex-col md:flex-col lg:flex-row lg-pt-0 justify-center items-start lg:gap-12 gap-6">
+          {/* Images Section Container */}
+          <div className="w-full flex flex-col md:flex-row lg:flex-row lg:w-auto md:gap-8 lg:gap-3 gap-4">
+            {/* Thumbnail Images */}
+            <div className="flex mx-auto md:flex-col lg:flex-col gap-5 order-1 lg:my-2 lg:mr-2">
+              {images.map((img, index) => (
+                <div
+                  key={index}
+                  className={`bg-gray-100 p-1.5 rounded-md cursor-pointer hover:opacity-90 ${
+                    mainImage === img ? "ring-2 ring-blue-500" : ""
+                  }`}
+                  onClick={() => setMainImage(img)}
+                >
+                  <img
+                    src={img}
+                    alt={`Thumbnail ${index + 1}`}
+                    className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain rounded-lg"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "https://via.placeholder.com/100";
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Main Product Image */}
+            <div className="rounded-lg md:mt-0 mt-14 max-w-md mx-auto md:order-2 md:flex-1 lg:flex-none">
+              {mainImage && (
+                <img
+                  src={mainImage}
+                  alt="Main Product"
+                  className={`w-[325px] h-[325px] rounded-lg hover:scale-105 transition-transform duration-300 mx-auto lg:w-[350px] lg:h-[350px] xl:h-[430px] xl:w-[430px]`}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "https://via.placeholder.com/500";
+                  }}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Product Info Section */}
+          <div className="flex-1 w-full lg:w-auto max-w-lg order-2 lg:order-3 lg:ml-6 md:mt-8 lg:mt-0">
+            <div className="space-y-2 sm:space-y-4">
+              <h1 className="text-xl sm:text-2xl md:text-3xl uppercase font-medium leading-tight">
+                {product.name}
+              </h1>
+
+              <span className="inline-block bg-blue-200 text-blue-800 text-xs md:text-sm rounded-xl p-1.5">
+                {product.unlimited
+                  ? "Unlimited stock"
+                  : `${availableQuantity} left in stock`}
+              </span>
+
+              <div className="flex flex-col md:flex-row md:items-center gap-2">
+                <span className="text-lg md:text-2xl font-normal">
+                  ₦ {selectedSizeData ? formatNumberWithCommas(selectedSizeData.price) : formatNumberWithCommas(product.price)}
+                </span>
+                <div className="flex space-x-1.5 items-center">
+                  {selectedSizeData && selectedSizeData.undiscounted_price && Number(selectedSizeData.undiscounted_price) > Number(selectedSizeData.price) && (
+                    <span className="text-gray-500 line-through text-xl md:text-2xl">
+                      ₦ {formatNumberWithCommas(selectedSizeData.undiscounted_price)}
+                    </span>
+                  )}
+                  {discountPercentage > 0 && (
+                    <span className="bg-red-200 text-[#FF3333] p-1.5 rounded-full text-xs">
+                      {discountPercentage}% off
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <p className="text-gray-700 text-sm leading-relaxed line-clamp-2">
+                {product.description}
+              </p>
+              {product.production_days > 0 && (
+                <p className="text-gray-700 text-medium font-semibold leading-relaxed">
+                  Production Days : {product.production_days}
+                </p>
+              )}
+
+              {/* Color Section */}
+              <div className="space-y-1">
+                <p className="text-gray-600 text-sm sm:text-base">Color</p>
+                <p className="text-gray-900 font-bold capitalize">
+                  {product.colour}
+                </p>
+              </div>
+
+              {/* Size Selector */}
+              <div className="space-y-2">
+                <p className="text-gray-600 text-sm sm:text-base">Size</p>
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
+                  {isLoading ? (
+                    <div className="col-span-4 sm:col-span-5 text-center py-1.5">
+                      Loading sizes...
+                    </div>
+                  ) : product.sizes && product.sizes.length > 0 ? (
+                    product.sizes.map((item) => (
+                      <button
+                        type="button"
+                        key={item.id}
+                        onClick={() => {
+                          setSelectedSize(item.size);
+                          setQuantity(1); // Reset quantity when size changes
+                        }}
+                        disabled={!product.unlimited && item.quantity <= 0 && !isSizeInCart(product.id, item.id)}
+                        className={`p-2 text-xs sm:text-sm border rounded-xl transition-colors ${
+                          item.size === selectedSize
+                            ? "bg-blue-200 text-blue-800 border-blue-300" // Selected state
+                            : isSizeInCart(product.id, item.id)
+                            ? "bg-green-100 text-green-800 border-green-300 cursor-pointer" // In cart: light green background
+                            : !product.unlimited && item.quantity <= 0
+                            ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                            : "bg-white text-blue-600 border-blue-300 hover:bg-gray-100 cursor-pointer"
+                        }`}
+                        title={
+                          isSizeInCart(product.id, item.id)
+                            ? "Item in Cart"
+                            : !product.unlimited && item.quantity <= 0
+                            ? "Out of stock"
+                            : ""
+                        }
+                      >
+                        {item.size.toUpperCase()}
+                        {isSizeInCart(product.id, item.id) ? (
+                          <span className="block text-xs text-green-600">
+                            (In Cart)
+                          </span>
+                        ) : !product.unlimited && item.quantity <= 0 ? (
+                          <span className="block text-xs text-red-500">
+                            (Sold out)
+                          </span>
+                        ) : null}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="col-span-4 sm:col-span-5 text-center py-1.5 text-red-500">
+                      No sizes available
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Quantity Selector */}
+              <div className="flex items-center gap-3">
+                <button
+                  className="p-1.5 sm:p-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleQuantityDecrease}
+                  disabled={quantity <= 1}
+                >
+                  -
+                </button>
+                <span className="text-base">{quantity}</span>
+                <button
+                  className="p-1.5 sm:p-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleQuantityIncrease}
+                  disabled={!product.unlimited && quantity >= availableQuantity}
+                >
+                  +
+                </button>
+              <button
+                onClick={handleAddToCart}
+                className={`w-full py-2.5 text-white rounded-xl transition-colors cursor-pointer ${ 
+                  (!isInStock || isAddingToCart) && !(selectedSizeData && isSizeInCart(product.id, selectedSizeData.id)) // Condition to be gray
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-customBlue hover:brightness-90" // Blue otherwise (including when item is in cart)
+                }`}
+                type="button"
+                disabled={(!isInStock || isAddingToCart) && !(selectedSizeData && isSizeInCart(product.id, selectedSizeData.id))} // Disable only if out of stock or adding, but not if already in cart
+              >
+                {isAddingToCart
+                  ? "Adding..."
+                  : !isInStock
+                  ? "Out of Stock"
+                  : selectedSizeData && isSizeInCart(product.id, selectedSizeData.id)
+                  ? "Item in Cart" // Text when item is in cart
+                  : "Add to Cart"}
+              </button>
+              </div>
+
+              {/* Add to Cart */}
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Product Main Section */}
-      <div className="flex flex-col lg:flex-row justify-center items-start gap-8">
-        {/* Thumbnail Images (Left Column) */}
-        <div className="flex mx-auto md:flex-col gap-5 order-1">
-          {images.map((img, index) => (
-            <div
-              key={index}
-              className={`bg-gray-200 p-2 rounded-lg cursor-pointer hover:opacity-90 ${
-                mainImage === img ? "ring-2 ring-blue-500" : ""
+        {/* Description Section */}
+        <div className="mt-8 flex flex-col md:flex-row space-y-4">
+          <div className="md:w-[60%] w-full gap-4 space-y-2.5">
+            <h2 className="text-lg sm:text-xl font-medium">Description</h2>
+            <p
+              className={`product-description text-gray-700 text-sm ${
+                !isDescriptionExpanded ? "line-clamp-6" : ""
               }`}
-              onClick={() => setMainImage(img)}
             >
-              <img
-                src={img}
-                alt={`Thumbnail ${index + 1}`}
-                className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = "https://via.placeholder.com/100";
-                }}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Main Product Image (Middle Column) */}
-        <div className="rounded-lg max-w-md lg:order-2">
-          {mainImage && (
-            <img
-              src={mainImage}
-              alt="Main Product"
-              className="w-[500px] h-[500px] aspect-square object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = "https://via.placeholder.com/500";
-              }}
-            />
-          )}
-        </div>
-
-        {/* Product Info (Right Column) */}
-        <div className="flex-1 max-w-lg order-2 lg:order-3">
-          <div className="space-y-2 sm:space-y-6">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl uppercase font-medium leading-tight">
-              {product.name}
-            </h1>
-
-            <span className="inline-block bg-blue-100 text-sm md:text-base rounded-2xl p-2">
-
-              {product.unlimited ? 'Unlimited stock' : `${availableQuantity} left in stock`}
-            </span>
-
-            <div className="flex flex-col md:flex-row md:items-center gap-3">
-
-              <span className="text-xl md:text-3xl font-normal"> ₦ {product.price}</span>
-              <div className="flex space-x-2">  
-                {product.undiscounted_price && (
-                  <span className="text-gray-500 line-through text-3xl"> 
-                    ₦ {product.undiscounted_price}
-                  </span>
-                )}
-                {discountPercentage > 0 && (
-                  <span className="bg-red-200 text-[#FF3333] p-3 rounded-full text-sm">
-                    {discountPercentage}% off
-                  </span>
-                )}
-              </div>
-            </div>
-            
-            <p className="text-gray-700 text-base leading-relaxed line-clamp-2">
               {product.description}
             </p>
-
-            <div className="space-y-1">
-              <p className="text-gray-600 text-sm sm:text-base">Color</p>
-              <p className="text-gray-900 font-bold capitalize">
-                {product.colour}
-              </p>
-            </div>
-
-            {/* Size Selector */}
-            <div className="space-y-2">
-              <p className="text-gray-600 text-sm sm:text-base">Size</p>
-              <div className="grid grid-cols-4 gap-2">
-
-                {isLoading ? (
-                  <div className="col-span-4 text-center py-2">Loading sizes...</div>
-                ) : product.sizes && product.sizes.length > 0 ? (
-                  product.sizes.map((item) => (
-                    <button
-                      type="button"
-                      key={item.id}
-                      onClick={() => {
-                        setSelectedSize(item.size);
-                        setQuantity(1); // Reset quantity when size changes
-                      }}
-                      disabled={!product.unlimited && item.quantity <= 0}
-                      className={`p-3 text-sm sm:text-base border rounded-2xl transition-colors ${
-                        item.size === selectedSize
-
-                          ? 'bg-black text-white border-black'
-                          : !product.unlimited && item.quantity <= 0
-                            ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                            : 'bg-gray-200 hover:bg-gray-300 border-gray-300 cursor-pointer'
-                      }`}
-                      title={!product.unlimited && item.quantity <= 0 ? 'Out of stock' : ''}
-                    >
-                      {item.size.toUpperCase()}
-                      {!product.unlimited && item.quantity <= 0 && (
-                        <span className="block text-xs text-red-500">(Sold out)</span>
-                      )}
-                    </button>
-                  ))
-                ) : (
-                  <div className="col-span-4 text-center py-2 text-red-500">
-                    No sizes available
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Quantity Selector */}
-            <div className="flex items-center gap-4">
-              <button
-                className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={handleQuantityDecrease}
-                disabled={quantity <= 1}
+            {product.description.length > 300 && (
+              <span
+                className={`text-blue-800 text-xs cursor-pointer`}
+                onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
               >
-                -
-              </button>
-              <span className="text-lg">{quantity}</span>
-              <button
-                className="p-2 sm:p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={handleQuantityIncrease}
-                disabled={!product.unlimited && quantity >= availableQuantity}
-              >
-                +
-              </button>
-            </div>
-
-            {/* Add to Cart */}
-            <button
-              onClick={handleAddToCart}
-              className="w-full py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              type="button"
-              disabled={!isInStock || isAddingToCart}
-            >
-              {isAddingToCart
-                  ? "Adding..."
-                  : isInStock
-                  ? "Add to Cart"
-                  : "Out of Stock"}
-            </button>
+                {isDescriptionExpanded ? "view less" : "view full description"}
+              </span>
+            )}
+          </div>
+          <div className="md:w-[30%] mx-auto w-full flex justify-center items-center">
+            <DescriptionList
+              details={{
+                Category: product.sub_category?.category?.name || "N/A",
+                Subcategory: product.sub_category?.name || "N/A",
+                Color: product.colour || "N/A",
+              }}
+            />
           </div>
         </div>
       </div>
 
-      {/* Description Section */}
-      <div className="mt-12 flex flex-col  md:flex-row  space-y-6">
-        <div className='md:w-[60%] w-full gap-5 space-y-3'>
-        <h2 className="text-xl sm:text-2xl font-medium">Description</h2>
-        <p className="text-gray-700 text-sm sm:text-base">
-          {product.description}
-        </p>
-
-        </div>
-        <div className='md:w-[30%] mx-auto w-full flex justify-center items-center'>
-        <DescriptionList 
-          details={{
-            "Category": product.sub_category.category.name,
-            "Subcategory": product.sub_category.name,
-            "Weight": product.weight,
-            "Color": product.colour
-          }}
+      <div className="px-0 md:px-8">
+        <Suggested
+          subcategory_id={product.sub_category?.id}
+          excludeProductIds={[product.id]}
         />
-        </div>
-        {/* Conditional rendering for Suggested or SuggestedProductDetails */}
-      
       </div>
-    </div>  
-    <div className="px-0 md:px-12 ">
-    <SuggestedProductDetails 
-    onSuggestedItemClick={handleSuggestedItemClick}
-    />
-    </div>
     </div>
   );
 };

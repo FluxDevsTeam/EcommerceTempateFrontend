@@ -8,30 +8,7 @@ export interface Category {
     name: string;
     category: Category;
   }
-  
-  export interface ProductItem {
-    id: number;
-    name: string;
-    description: string;
-    total_quantity: number;
-    sub_category: SubCategory;
-    colour: string;
-    image1: string;
-    image2: string | null;
-    image3: string | null;
-    undiscounted_price: string;
-    price: string;
-    is_available: boolean;
-    latest_item: boolean;
-    latest_item_position: number;
-    dimensional_size: string;
-    weight: string;
-    top_selling_items: boolean;
-    top_selling_position: number;
-    date_created: string;
-    date_updated: string;
-  }
-  
+ 
   export interface ProductItemsResponse {
     count: number;
     next: string | null;
@@ -39,8 +16,41 @@ export interface Category {
     results: ProductItem[];
   }
   
-  export interface ProductAPIResponse {
-    latest_items: ProductItemsResponse;
-    top_selling_items: ProductItemsResponse;
-  }
+
   
+  export interface ProductAPIResponse {
+  latest_items: {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: ProductItem[];
+  };
+  top_selling_items: {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: ProductItem[];
+  };
+}
+
+export interface ProductItem {
+  id: number;
+  name: string;
+  slug: string;
+  desc: string;
+  price: string;
+  image: string;
+  category: string;
+  created: string;
+  updated: string;
+  in_stock: boolean;
+  is_active: boolean;
+  // Add any other properties that might be in your ProductItem
+}
+
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}

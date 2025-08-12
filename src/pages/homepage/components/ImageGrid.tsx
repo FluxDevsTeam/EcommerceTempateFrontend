@@ -1,6 +1,7 @@
 import { ProductItem } from "../types/data-types";
-import { Link } from "react-router-dom";
 import Card from "@/card/Card";
+import { useEffect } from "react";
+import { useMediaQuery } from 'react-responsive';
 
 interface LatestItemsProps {
   product: ProductItem[];
@@ -8,21 +9,49 @@ interface LatestItemsProps {
     isInitiallyLiked: boolean;
     wishItemId?: number;
   };
+  hasMoreItems: boolean;
+  isLoadingMore: boolean;
+  onLoadMore: () => void;
 }
 
-const ImageGrid: React.FC<LatestItemsProps> = ({ product, getWishlistInfo }) => {
+const ImageGrid: React.FC<LatestItemsProps> = ({ 
+  product, 
+  getWishlistInfo, 
+  hasMoreItems,
+  isLoadingMore,
+  onLoadMore
+}) => {
+  // Auto-load more items when scrolling to bottom
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     if (
+  //       window.innerHeight + document.documentElement.scrollTop + 100 >= 
+  //       document.documentElement.offsetHeight && 
+  //       hasMoreItems && 
+  //       !isLoadingMore
+  //     ) {
+  //       onLoadMore();
+  //     }
+  //   };
+  //
+  //   window.addEventListener('scroll', handleScroll);
+  //   return () => window.removeEventListener('scroll', handleScroll);
+  // }, [hasMoreItems, isLoadingMore, onLoadMore]);
+
+  const isTabletAndAbove = useMediaQuery({ query: '(min-width: 768px)' });
+
   return (
-    <div className="px-3 py-8 md:py-12 space-y-5">
-      <p className="text-3xl md:text-5xl font-medium leading-tight text-center mb-6 sm:mb-8 md:mb-10">
-        Latest Items
+    <div className="py-6 md:py-12 space-y-5">
+      <p className="text-xl pt-2 pb-0 md:text-3xl font-medium leading-tight text-center mb-6 sm:mb-0 md:mb-10">
+        LATEST ITEMS
       </p>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 md:space-x-8 space-x-0 mb-8 sm:mb-16">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 md:gap-10">
         {product.map((item) => {
           const wishlistInfo = getWishlistInfo(item.id);
           return (
             <Card
-              key={item.id}
+              key={`${item.id}-${wishlistInfo.wishItemId || 'no-wish'}`}
               product={item}
               isInitiallyLiked={wishlistInfo.isInitiallyLiked}
               wishItemId={wishlistInfo.wishItemId}
@@ -31,12 +60,25 @@ const ImageGrid: React.FC<LatestItemsProps> = ({ product, getWishlistInfo }) => 
         })}
       </div>
 
-      <div className="flex justify-center items-center mt-6 sm:mt-8">
-        <Link to='/categories'>
-          <button className="text-lg font-semibold hover:text-primary cursor-pointer transition-colors duration-200 border-b-2 border-transparent hover:border-primary">
-            View All
+      <div className="flex justify-center items-center" style={{marginTop: isTabletAndAbove ? '46px' : "0px"}}>
+        {hasMoreItems ? (
+          <button 
+            onClick={onLoadMore}
+            disabled={isLoadingMore}
+            className="text-lg font-semibold hover:text-primary cursor-pointer transition-colors duration-200 border-b-2 border-transparent hover:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoadingMore ? (
+              <span className="flex items-center">
+                <span className="animate-spin w-4 border-b-2 border-primary rounded-full mr-2"></span>
+                Loading...
+              </span>
+            ) : (
+              <span>Load More...</span>
+            )}
           </button>
-        </Link>
+        ) : (
+          <p className="text-gray-500"></p>
+        )}
       </div>
     </div>
   );

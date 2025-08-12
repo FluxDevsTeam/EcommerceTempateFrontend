@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { WishData } from '@/card/wishListApi';
 import { WishItem } from '@/card/types';
 
+// Interfaces (unchanged)
 export interface Category {
   id: number;
   name: string;
@@ -47,18 +48,21 @@ interface ApiResponse {
   results: Product[];
 }
 
-
-
 interface NewProductsListProps {
   sortOption: string;
 }
 
 const fetchProducts = async (page = 1): Promise<ApiResponse> => {
-  const response = await fetch(`https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?page=${page}`);
+  const response = await fetch(`https://api.kidsdesigncompany.com/api/v1/product/item/?is_available=true&page_size=16&page=${page}`);
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }
-  return response.json();
+  const data = await response.json();
+  // Validate pagination data
+  if (typeof data.count !== 'number' || !Array.isArray(data.results)) {
+    throw new Error('Invalid pagination data');
+  }
+  return data;
 };
 
 const NewProductsList = ({ sortOption }: NewProductsListProps) => {
@@ -78,9 +82,9 @@ const NewProductsList = ({ sortOption }: NewProductsListProps) => {
     const fetchWishlist = async () => {
       try {
         const wishlistRes = await WishData();
-        setWishlistItems(wishlistRes);
+        setWishlistItems(wishlistRes.results);
       } catch (err) {
-        console.error('Error loading wishlist:', err);
+        
       } finally {
         setWishlistLoading(false);
       }
@@ -127,7 +131,7 @@ const NewProductsList = ({ sortOption }: NewProductsListProps) => {
   });
 
   // Calculate total pages
-  const itemsPerPage = 10; // Adjust this based on your API's default page size
+  const itemsPerPage = 16; // Match API page_size
   const totalPages = data?.count ? Math.ceil(data.count / itemsPerPage) : 1;
 
   // Determine if there are next and previous pages
@@ -136,7 +140,7 @@ const NewProductsList = ({ sortOption }: NewProductsListProps) => {
 
   return (
     <div>
-      <div className=" grid grid-cols-2 md:grid-cols-4 md:space-x-8 space-x-0 gap-4 md:gap-8 mb-8 sm:mb-16">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 md:gap-10">
         {sortedProducts.map((item) => {
           const wishlistInfo = getWishlistInfo(item.id);
           return (
@@ -151,15 +155,17 @@ const NewProductsList = ({ sortOption }: NewProductsListProps) => {
       </div>
 
       {/* Pagination controls */}
-      <div className="mt-6">
-        <PaginationComponent
-          currentPage={currentPage}
-          totalPages={totalPages}
-          hasNextPage={hasNextPage}
-          hasPreviousPage={hasPreviousPage}
-          handlePageChange={handlePageChange}
-        />
-      </div>
+      {sortedProducts.length > 0 && (
+        <div className="mt-6">
+          <PaginationComponent
+            currentPage={currentPage}
+            totalPages={totalPages}
+            hasNextPage={hasNextPage}
+            hasPreviousPage={hasPreviousPage}
+            handlePageChange={handlePageChange}
+          />
+        </div>
+      )}
     </div>
   );
 };

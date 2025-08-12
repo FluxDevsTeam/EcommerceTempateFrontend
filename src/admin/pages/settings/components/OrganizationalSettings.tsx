@@ -12,14 +12,15 @@ interface OrganizationSettings {
   twitter: string | null;
   linkedin: string | null;
   tiktok: string | null;
+  instagram: string | null;
 }
 
 const allNigerianStates = [
-  "Lagos", "Ogun", "Oyo", "Osun", "Ondo", "Ekiti", "Edo", "Delta", "Kwara", 
-  "Kogi", "Niger", "Abuja", "Kaduna", "Kano", "Borno", "Yobe", "Sokoto", 
-  "Zamfara", "Taraba", "Gombe", "Bauchi", "Adamawa", "Katsina", "Jigawa", 
-  "Nasarawa", "Benue", "Kebbi", "Bayelsa", "Rivers", "Akwa Ibom", 
-  "Cross River", "Enugu", "Anambra", "Abia", "Imo", "Ebonyi", "FCT - Abuja"
+  "Lagos", "FCT - Abuja", "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", 
+  "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu",
+  "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", 
+  "Kwara", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", 
+  "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
 ];
 
 const OrganizationalSettings = () => {
@@ -34,12 +35,13 @@ const OrganizationalSettings = () => {
     twitter: '',
     linkedin: '',
     tiktok: '',
+    instagram: '',
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
+  const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const [selectedStates, setSelectedStates] = useState<string[]>([]);
-  const [showModal, setShowModal] = useState(false);
   const [initialData, setInitialData] = useState<OrganizationSettings | null>(null);
   const [initialSelectedStates, setInitialSelectedStates] = useState<string[]>([]);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -54,7 +56,7 @@ const OrganizationalSettings = () => {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
       const response = await axios.get<OrganizationSettings>(
-        'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/organisation-settings/',
+        'https://api.kidsdesigncompany.com/api/v1/admin/organisation-settings/',
         {
           headers: {
             'Authorization': `JWT ${token}`,
@@ -66,7 +68,6 @@ const OrganizationalSettings = () => {
       if (response.data) {
         setFormData(response.data);
         setInitialData(response.data);
-        console.log(response.data)
         
         let states: string[] = [];
         if (Array.isArray(response.data.available_states)) {
@@ -86,7 +87,7 @@ const OrganizationalSettings = () => {
       setError(null);
     } catch (err) {
       setError('Failed to load organization settings');
-      console.error('Error fetching organization settings:', err);
+      
     } finally {
       setLoading(false);
     }
@@ -124,43 +125,6 @@ const OrganizationalSettings = () => {
     }
   };
 
-  const uploadLogo = async () => {
-    if (!logoFile) return;
-
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      const formData = new FormData();
-      formData.append('brand_logo', logoFile);
-
-      const response = await axios.patch(
-        'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/organisation-settings/',
-        formData,
-        {
-          headers: {
-            'Authorization': `JWT ${token}`,
-            'Content-Type': 'multipart/form-data',
-          }
-        }
-      );
-
-      setFormData(prev => ({
-        ...prev,
-        brand_logo: response.data.brand_logo
-      }));
-      
-      setSuccessMessage('Logo uploaded successfully');
-      setTimeout(() => {
-        setSuccessMessage(null);
-      }, 3000);
-    } catch (err) {
-      setError('Failed to upload logo');
-      console.error('Error uploading logo:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const mapFieldNameToApi = (fieldName: string): string => {
     const mapping: {[key: string]: string} = {
       'warehouseStates': 'warehouse_state',
@@ -172,7 +136,8 @@ const OrganizationalSettings = () => {
       'facebook': 'facebook',
       'twitter': 'twitter',
       'linkedin': 'linkedin',
-      'tiktok': 'tiktok'
+      'tiktok': 'tiktok',
+      'instagram': 'instagram'
     };
     return mapping[fieldName] || fieldName;
   };
@@ -180,7 +145,7 @@ const OrganizationalSettings = () => {
   const getUiFormData = () => {
     return {
       warehouseStates: formData.warehouse_state || '',
-      availableStates: Array.isArray(formData.available_states) 
+      availableStates: Array.isArray(formData.available_states)
         ? formData.available_states.join(', ')
         : typeof formData.available_states === 'object'
           ? JSON.stringify(formData.available_states)
@@ -193,104 +158,109 @@ const OrganizationalSettings = () => {
       twitter: formData.twitter || '',
       linkedin: formData.linkedin || '',
       tiktok: formData.tiktok || '',
+      instagram: formData.instagram || '',
     };
   };
 
   const handleSaveConfirm = () => {
-    setShowModal(false);
+    setShowConfirmModal(false);
     handleSave();
   };
 
- const handleSave = async () => {
-  try {
-    setLoading(true);
-    const token = localStorage.getItem('accessToken');
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('accessToken');
 
-    const patchData = {
-      warehouse_state: formData.warehouse_state,
-      available_states: selectedStates,
-      phone_number: formData.phone_number,
-      customer_support_email: formData.customer_support_email,
-      admin_email: formData.admin_email,
-      facebook: formData.facebook,
-      twitter: formData.twitter,
-      linkedin: formData.linkedin,
-      tiktok: formData.tiktok
-    };
-
-    console.log("Data being sent in PATCH request:", JSON.stringify(patchData, null, 2));
-
-    const response = await axios.patch<OrganizationSettings>(
-      'https://ecommercetemplate.pythonanywhere.com/api/v1/admin/organisation-settings/',
-      patchData,
-      {
-        headers: {
-          'Authorization': `JWT ${token}`,
-          'Content-Type': 'application/json',
-        }
+      const formDataToSend = new FormData();
+      formDataToSend.append('warehouse_state', formData.warehouse_state);
+      formDataToSend.append('available_states', JSON.stringify(selectedStates.sort((a, b) => allNigerianStates.indexOf(a) - allNigerianStates.indexOf(b))));
+      formDataToSend.append('phone_number', formData.phone_number);
+      formDataToSend.append('customer_support_email', formData.customer_support_email);
+      formDataToSend.append('admin_email', formData.admin_email);
+      formDataToSend.append('facebook', formData.facebook || '');
+      formDataToSend.append('twitter', formData.twitter || '');
+      formDataToSend.append('linkedin', formData.linkedin || '');
+      formDataToSend.append('tiktok', formData.tiktok || '');
+      formDataToSend.append('instagram', formData.instagram || '');
+      if (logoFile) {
+        formDataToSend.append('brand_logo', logoFile);
       }
-    );
 
-    setSuccessMessage('Organization settings updated successfully');
-    setError(null);
-    setInitialData(formData);
-    setInitialSelectedStates(selectedStates);
+      const response = await axios.patch<OrganizationSettings>(
+        'https://api.kidsdesigncompany.com/api/v1/admin/organisation-settings/',
+        formDataToSend,
+        {
+          headers: {
+            'Authorization': `JWT ${token}`,
+            'Content-Type': 'multipart/form-data',
+          }
+        }
+      );
 
-    setTimeout(() => {
-      setSuccessMessage(null);
-    }, 3000);
-  } catch (err) {
-    let errorMessage = 'Failed to update organization settings';
+      setFormData(response.data);
+      setInitialData(response.data);
+      setInitialSelectedStates(selectedStates.sort((a, b) => allNigerianStates.indexOf(a) - allNigerianStates.indexOf(b)));
+      setLogoFile(null);
+      setLogoPreview(response.data.brand_logo || logoPreview);
+      
+      setShowSuccessModal(true);
+      setError(null);
+      
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 3000);
+    } catch (err) {
+      let errorMessage = 'Failed to update organization settings';
 
-    if (axios.isAxiosError(err)) {
-      if (err.response) {
-        const data = err.response.data;
-        console.error('Server responded with error:', data);
+      if (axios.isAxiosError(err)) {
+        if (err.response) {
+          const data = err.response.data;
+          
 
-        if (typeof data === 'string') {
-          errorMessage = data;
-        } else if (typeof data === 'object' && data !== null) {
-          const messages: string[] = [];
+          if (typeof data === 'string') {
+            errorMessage = data;
+          } else if (typeof data === 'object' && data !== null) {
+            const messages: string[] = [];
 
-          for (const key in data) {
-            const value = data[key];
-            if (Array.isArray(value)) {
-              messages.push(`${key}: ${value.join(', ')}`);
-            } else if (typeof value === 'string') {
-              messages.push(`${key}: ${value}`);
-            } else {
-              messages.push(`${key}: ${JSON.stringify(value)}`);
+            for (const key in data) {
+              const value = data[key];
+              if (Array.isArray(value)) {
+                messages.push(`${key}: ${value.join(', ')}`);
+              } else if (typeof value === 'string') {
+                messages.push(`${key}: ${value}`);
+              } else {
+                messages.push(`${key}: ${JSON.stringify(value)}`);
+              }
             }
+
+            errorMessage = messages.join(' | ');
+          } else {
+            errorMessage = JSON.stringify(data);
           }
 
-          errorMessage = messages.join(' | ');
+        } else if (err.request) {
+          
+          errorMessage = 'No response received from server';
         } else {
-          errorMessage = JSON.stringify(data);
+          
+          errorMessage = `Request error: ${err.message}`;
         }
-
-      } else if (err.request) {
-        console.error('No response received:', err.request);
-        errorMessage = 'No response received from server';
       } else {
-        console.error('Request setup error:', err.message);
-        errorMessage = `Request error: ${err.message}`;
+        
+        errorMessage = `Unexpected error: ${err instanceof Error ? err.message : String(err)}`;
       }
-    } else {
-      console.error('Unexpected error:', err);
-      errorMessage = `Unexpected error: ${err instanceof Error ? err.message : String(err)}`;
+
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
-
-    setError(errorMessage);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   const hasChanges = () => {
     if (!initialData) return false;
-    
-    const formChanged = 
+
+    const formChanged =
       formData.warehouse_state !== initialData.warehouse_state ||
       formData.phone_number !== initialData.phone_number ||
       formData.customer_support_email !== initialData.customer_support_email ||
@@ -299,6 +269,7 @@ const OrganizationalSettings = () => {
       formData.twitter !== initialData.twitter ||
       formData.linkedin !== initialData.linkedin ||
       formData.tiktok !== initialData.tiktok ||
+      formData.instagram !== initialData.instagram ||
       logoFile !== null;
 
     const statesChanged = 
@@ -331,12 +302,6 @@ const OrganizationalSettings = () => {
         </div>
       )}
 
-      {successMessage && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          {successMessage}
-        </div>
-      )}
-
       <div className="mb-8 bg-gray-100 p-4 rounded-lg shadow border border-gray-200">
         <h3 className="font-medium text-lg mb-3">Current Settings</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -365,11 +330,20 @@ const OrganizationalSettings = () => {
             </p>
           </div>
           <div>
-         
+            <p className="text-sm text-gray-500">Logo</p>
+            {initialData?.brand_logo ? (
+              <img 
+                src={initialData.brand_logo} 
+                alt="Brand Logo" 
+                className="w-16 h-16 object-cover rounded-md"
+              />
+            ) : (
+              <p className="font-medium">Not set</p>
+            )}
           </div>
         </div>
         
-        {(initialData?.facebook || initialData?.twitter || initialData?.linkedin || initialData?.tiktok) && (
+        {(initialData?.facebook || initialData?.twitter || initialData?.linkedin || initialData?.tiktok || initialData?.instagram) && (
           <div className="mt-4 p-3 bg-gray-100 rounded-md border border-gray-200">
             <h4 className="font-medium mb-2">Social Media Links</h4>
             <div className="grid grid-cols-1 gap-2">
@@ -395,6 +369,12 @@ const OrganizationalSettings = () => {
                 <div>
                   <span className="font-medium">TikTok: </span>
                   <span className="text-sm break-all">{initialData.tiktok}</span>
+                </div>
+              )}
+              {initialData?.instagram && (
+                <div>
+                  <span className="font-medium">Instagram: </span>
+                  <span className="text-sm break-all">{initialData.instagram}</span>
                 </div>
               )}
             </div>
@@ -425,7 +405,7 @@ const OrganizationalSettings = () => {
           
           <div>
             <label className="block text-sm font-medium mb-2">Available States</label>
-            <div className="border border-gray-300 rounded-md p-4 h-64 overflow-y-auto">
+            <div className="border border-gray-300 rounded-md p-4 h-36 overflow-y-auto">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                 {allNigerianStates.map(state => (
                   <div key={state} className="flex items-center">
@@ -471,15 +451,6 @@ const OrganizationalSettings = () => {
                     file:bg-gray-50 file:text-gray-700
                     hover:file:bg-gray-100"
                 />
-                {logoFile && (
-                  <button
-                    onClick={uploadLogo}
-                    disabled={loading}
-                    className="mt-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:bg-blue-300"
-                  >
-                    {loading ? 'Uploading...' : 'Upload Logo'}
-                  </button>
-                )}
               </div>
             </div>
           </div>
@@ -602,18 +573,38 @@ const OrganizationalSettings = () => {
           </div>
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <label className="block text-sm font-medium mb-2">Instagram <span className="text-red-500">*</span><span className="text-xs text-gray-500 ml-1">(Enter full URL with https://)</span></label>
+            <div className="flex">
+              <input
+                type="url"
+                name="instagram"
+                value={formData.instagram || ''}
+                onChange={handleChange}
+                placeholder="https://instagram.com/yourprofile"
+                className="flex-1 p-3 border border-gray-300 rounded-md"
+                maxLength={100}
+              />
+            </div>
+            {formData.instagram && !formData.instagram.startsWith('http') && (
+              <p className="text-xs text-red-500 mt-1">URL must start with http:// or https://</p>
+            )}
+          </div>
+        </div>
+
         <div className="mb-6">
           <div className="flex justify-end space-x-4 mb-8">
             <button 
-              className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleCancel}
               disabled={loading || !hasChanges()}
             >
               Cancel
             </button>
             <button 
-              className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
-              onClick={() => setShowModal(true)}
+              className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:cursor-not-allowed"
+              onClick={() => setShowConfirmModal(true)}
               disabled={loading || !hasChanges()}
             >
               {loading ? 'Saving...' : 'Save Changes'}
@@ -621,7 +612,8 @@ const OrganizationalSettings = () => {
           </div>
         </div>
 
-        {showModal && (
+        {/* Confirmation Modal */}
+        {showConfirmModal && (
           <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
               <h3 className="text-lg font-medium mb-4">Confirm Changes</h3>
@@ -631,7 +623,7 @@ const OrganizationalSettings = () => {
               <div className="flex justify-end space-x-4">
                 <button
                   className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => setShowConfirmModal(false)}
                 >
                   Cancel
                 </button>
@@ -640,6 +632,26 @@ const OrganizationalSettings = () => {
                   onClick={handleSaveConfirm}
                 >
                   Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Success Modal */}
+        {showSuccessModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+              <h3 className="text-lg font-medium mb-4 text-green-700">Success</h3>
+              <p className="mb-6">
+                Organization settings updated successfully!
+              </p>
+              <div className="flex justify-end">
+                <button
+                  className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+                  onClick={() => setShowSuccessModal(false)}
+                >
+                  OK
                 </button>
               </div>
             </div>

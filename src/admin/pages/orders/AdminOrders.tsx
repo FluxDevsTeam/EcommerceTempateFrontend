@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiMenu, FiGrid } from "react-icons/fi";
+import { FiMenu, FiGrid, FiShoppingBag } from "react-icons/fi";
 import AdminHeaders from './AdminHeaders';
 import AdminAggregates from './AdminAggregates';
 import Dropdown from "./Dropdown";
@@ -7,10 +7,18 @@ import { fetchData } from './api';
 import { Order } from "./types";
 import formatEstimatedDelivery from "./Date";
 import Pagination from './Pagination';
-import SearchInput from './SearchForm';
 import SelectedOrderPopup from './SelectedOrder';
 import { PatchOrderStatus } from './api';
+import { formatCurrency } from "../../utils/formatting";
 
+const ITEMS_PER_PAGE = 20;
+
+const truncateString = (str: string, maxLength: number): string => {
+  if (str.length <= maxLength) {
+    return str;
+  }
+  return str.slice(0, maxLength) + "...";
+};
 
 const AdminOrders = () => {
   const [layout, setLayout] = useState("menu");
@@ -21,48 +29,59 @@ const AdminOrders = () => {
   const [nextUrl, setNextUrl] = useState<string | null>(null);
   const [prevUrl, setPrevUrl] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("All Categories");
-  const [isOpen, setIsOpen] = useState(false);;
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-const statusColors: { [key: string]: { dot: string; bg: string } } = {
-  PAID: { dot: "#4CAF50", bg: "#4CAF5026" },
-  SHIPPED: { dot: "#2196F3", bg: "#2196F326" },
-  DELIVERED: { dot: "#9C27B0", bg: "#9C27B026" },
-  CANCELLED: { dot: "#F44336", bg: "#F4433626" },
-};
+  interface StatusColor {
+    text: string;
+    bg: string;
+    dot: string;
+  }
 
-
+  const statusColors: { [key: string]: StatusColor } = {
+    PAID: { dot: "bg-green-500", text: "text-green-700", bg: "bg-green-100" },
+    SHIPPED: { dot: "bg-blue-500", text: "text-blue-700", bg: "bg-blue-100" },
+    DELIVERED: { dot: "bg-purple-500", text: "text-purple-700", bg: "bg-purple-100" },
+    CANCELLED: { dot: "bg-red-500", text: "text-red-700", bg: "bg-red-100" },
+    DEFAULT: { dot: "bg-gray-500", text: "text-gray-700", bg: "bg-gray-100" },
+  };
 
   const filteredOrders = statusFilter === "All Categories"
   ? orders
   : orders.filter((order) => order.status === statusFilter);
 
-  const handleSearchItemSelect = (): void => {
-    setIsOpen(false);
-  };
+  const getPageUrl = (page: number) => `https://api.kidsdesigncompany.com/api/v1/admin/order/?page=${page}&page_size=${ITEMS_PER_PAGE}`;
 
-  const getPageUrl = (page: number) => `https://ecommercetemplate.pythonanywhere.com/api/v1/admin/order/?page=${page}`;
-
-const loadOrders = async (url?: string) => {
+const loadOrders = async (url?: string, status = statusFilter) => {
   try {
-    const data = await fetchData(url);
-    const urlParams = new URLSearchParams(url?.split('?')[1]);
-    const page = parseInt(urlParams.get("page") || "1", 10);
+      const fetchUrl = url || getPageUrl(currentPage || 1);
+      const data = await fetchData(fetchUrl);
+      
+      let pageFromResponse = currentPage;
+      if (data.current_page_number) {
+        pageFromResponse = data.current_page_number;
+      } else {
+        const urlParams = new URLSearchParams(fetchUrl.split('?')[1]);
+        pageFromResponse = parseInt(urlParams.get("page") || "1", 10);
+      }
 
-    // 👇 Update the URL in the browser
     const newUrl = new URL(window.location.href);
-    newUrl.searchParams.set("page", page.toString());
+      newUrl.searchParams.set("page", pageFromResponse.toString());
     window.history.pushState({}, "", newUrl.toString());
 
-    setOrders(data.results);
+    const normalizedResults = data.results.map((order: Order) => ({
+      ...order,
+      status: order.status.toUpperCase(),
+    }));
+
+    setOrders(normalizedResults);
     setNextUrl(data.next);
     setPrevUrl(data.previous);
-    setCurrentPage(page);
-    setTotalPages(Math.ceil(data.count / 10));
+      setCurrentPage(pageFromResponse);
+      setTotalPages(Math.ceil(data.count / ITEMS_PER_PAGE));
   } catch (err) {
-    console.error(err);
+      
   }
 };
-
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -70,122 +89,137 @@ const loadOrders = async (url?: string) => {
     loadOrders(getPageUrl(page));
   }, []);
 
-
-  useEffect(() => {
-    const getOrders = async () => {
-      try {
-        const data = await fetchData();
-        const normalizedResults = data.results.map((order: Order) => ({
-          ...order,
-          status: order.status.toUpperCase()
-        }));
-        setOrders(normalizedResults);
-      } catch (error) {
-        console.error("Error loading orders:", error);
-      }
-    };
-  
-    getOrders();
-  }, []);
-
   return (
-    <div className="leading-[150%] relative">
+    <div className="leading-normal relative p-4 sm:p-6 bg-gray-50 min-h-screen">
       <AdminHeaders />
       <AdminAggregates />
-      <div className="flex gap-1.5 sm:gap-5 items-center mt-10 w-full">
-      <div className='basis-auto w-[160px] sm:basis-[35%] sm:w-auto sm:mr-auto'>
-          <SearchInput onItemSelect={handleSearchItemSelect} />
-        </div>
-        <div>
+
+      {/* Controls Bar */}
+      <div className="mt-8 mb-6 bg-white p-4 rounded-lg shadow flex flex-col sm:flex-row items-center justify-start sm:justify-end gap-4">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="w-full sm:w-auto">
           <Dropdown
-            label="Sort by"
+              label="Filter by Status"
             options={["All Categories", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"]}
             onSelect={(value) => setStatusFilter(value)}
           />
         </div>
-        <div
-          className={`p-2 rounded-lg cursor-pointer ${layout === "menu" ? "bg-black" : "border border-[#CACACA]"}`}
+          <div className="flex rounded-md border border-gray-300">
+            <button
+              title="List View"
+              className={`p-2 transition-colors duration-150 ${layout === "menu" ? "bg-blue-500 text-white" : "bg-white text-gray-600 hover:bg-gray-100"}`}
           onClick={() => setLayout("menu")}
         >
-          <FiMenu className={`${layout === "menu" ? "text-white" : "text-black"} sm:w-[24px] w-[12px] sm:h-[24px] h-[12px]`} />
-        </div>
-
-        <div
-          className={`p-2 rounded-lg cursor-pointer ${layout === "grid" ? "bg-black" : "border border-[#CACACA]"}`}
+              <FiMenu size={18} />
+            </button>
+            <button
+              title="Grid View"
+              className={`p-2 border-l border-gray-300 transition-colors duration-150 ${layout === "grid" ? "bg-blue-500 text-white" : "bg-white text-gray-600 hover:bg-gray-100"}`}
           onClick={() => setLayout("grid")}
         >
-          <FiGrid className={`${layout === "grid" ? "text-white" : "text-black"} sm:w-[24px] w-[16px] sm:h-[24px] h-[16px]`} />
+              <FiGrid size={18} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Menu View */}
+      {/* Menu View (Table) */}
       {layout === "menu" && (
-        <div className="mt-10 border border-[#E6EDFF] rounded-2xl sm:py-4 py-2 sm:px-6 px-2">
-          <ul className="text-[12px] font-semibold flex sm:py-5 py-2 border-b border-[#E6EDFF]">
-            <li className="sm:w-[10%] w-[15%]">ID</li>
-            <li className="sm:w-[10%] w-[30%]">Date</li>
-            <li className="sm:w-[20%] w-[40%]">Product Name</li>
-            <li className="w-[20%] hidden sm:block">Address</li>
-            <li className="sm:w-[10%] w-[15%]">Price</li>
-            <li className="w-[20%] hidden sm:block">Est. Delivery</li>
-            <li className="w-[10%] hidden sm:block">Status</li>
-          </ul>
-          <ul>
-          {filteredOrders.map((order) => {
-            const statusData = statusColors[order.status] || { dot: "#000", bg: "#fff" }; // Fallback value
-
+        <div className="bg-white shadow-md rounded-lg overflow-x-auto">
+          <table className="w-full min-w-full text-xs table-fixed">
+            <thead className="bg-gray-100 border-b border-gray-200">
+              <tr>
+                <th className="px-1.5 py-1 sm:px-3 sm:py-2.5 text-left font-medium text-gray-500 uppercase tracking-wider w-[30%] sm:w-[12%]">Date</th>
+                <th className="px-1.5 py-1 sm:px-3 sm:py-2.5 text-left font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell sm:w-[22%]">Product(s)</th>
+                <th className="px-1.5 py-1 sm:px-3 sm:py-2.5 text-left font-medium text-gray-500 uppercase tracking-wider w-[15%] hidden md:table-cell">State</th>
+                <th className="px-1.5 py-1 sm:px-3 sm:py-2.5 text-left font-medium text-gray-500 uppercase tracking-wider w-[40%] sm:w-[20%]">Total Price</th>
+                <th className="px-1.5 py-1 sm:px-3 sm:py-2.5 text-left font-medium text-gray-500 uppercase tracking-wider w-[21%] hidden lg:table-cell">Est. Delivery</th>
+                <th className="px-1.5 py-1 sm:px-3 sm:py-2.5 text-center font-medium text-gray-500 uppercase tracking-wider w-[30%] sm:w-[10%]">Status</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredOrders.length > 0 ? filteredOrders.map((order) => {
+                const statusStyle = statusColors[order.status] || statusColors.DEFAULT;
+                const productNames = order.order_items.map(item => item.name).join(', ');
             return (
-              <li key={order.id} className="text-[10px] sm:text-[12px] font-medium flex py-5 border-b border-[#E6EDFF] cursor-pointer" onClick={() => setSelectedOrder(order)}>
-                <p className="sm:w-[10%] w-[15%]">{order.id.slice(1, 6)}</p>
-                <p className="sm:w-[10%] w-[30%]">{new Date(order.order_date).toLocaleDateString()}</p>
-                <p className="sm:w-[20%] w-[40%] line-clamp-1 overflow-hidden text-ellipsis">{order.order_items.map(item => item.name).join(', ')}</p>
-                <p className="w-[20%] hidden sm:block">{order.delivery_address}</p>
-                <p className="sm:w-[10%] w-[15%]">
-                  ₦{order.order_items.reduce((acc, item) => acc + item.quantity * parseFloat(item.price), 0) + parseFloat(order.delivery_fee)}
-                </p>
-                <p className="w-[20%] text-[12px] hidden sm:block">{formatEstimatedDelivery(order.estimated_delivery)}</p>
-                <p className={`items-center gap-3 w-[120px] px-4 py-1 hidden sm:flex rounded-lg`} style={{ backgroundColor: statusData.bg }}>
-                  <span className={`w-2 h-2 rounded-full`} style={{ backgroundColor: statusData.dot }}></span>
-                  <span className="">{order.status}</span>
-                </p>
-              </li>
-            );
-          })}
-          </ul>
+                  <tr key={order.id} className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer group" onClick={() => setSelectedOrder(order)}>
+                    <td className="px-1.5 py-1 sm:px-3 sm:py-2.5 whitespace-nowrap text-gray-600">{new Date(order.order_date).toLocaleDateString()}</td>
+                    <td className="px-1.5 py-1 sm:px-3 sm:py-2.5 text-gray-700 truncate hidden sm:table-cell" title={productNames}>{truncateString(productNames, 20)}</td>
+                    <td className="px-1.5 py-1 sm:px-3 sm:py-2.5 text-gray-600 hidden md:table-cell truncate" title={String(order.state ?? '')}>{order.state ?? ''}</td>
+                    <td className="px-1.5 py-1 sm:px-3 sm:py-2.5 whitespace-nowrap font-medium text-gray-700">
+                      {formatCurrency(order.order_items.reduce((acc, item) => acc + item.quantity * parseFloat(item.price), 0) + parseFloat(order.delivery_fee))}
+                    </td>
+                    <td className="px-1.5 py-1 sm:px-3 sm:py-2.5 whitespace-nowrap text-gray-600 hidden lg:table-cell">{formatEstimatedDelivery(order.estimated_delivery)}</td>
+                    <td className="px-1.5 py-1 sm:px-3 sm:py-2.5 whitespace-nowrap text-center">
+                      <span className={`px-2.5 py-1 inline-flex text-[11px] leading-tight font-semibold rounded-full ${statusStyle.bg} ${statusStyle.text}`}>
+                        <span className={`w-1.5 h-1.5 mr-1.5 rounded-full ${statusStyle.dot} inline-block self-center`}></span>
+                        {order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              }) : (
+                <tr>
+                  <td colSpan={6} className="text-center py-10 text-gray-500">
+                    No orders found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       )}
 
+      {/* Grid View */}
       {layout === 'grid' && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-8 sm:mb-16 mt-10">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5 mt-6">
           {filteredOrders.map((order) => {
-            const firstItem = order.order_items[0]; // get first item in order
-            const imageSrc = firstItem?.product?.image1
-            const statusData = statusColors[order.status] || { dot: "#000", bg: "#fff" }; // Fallback value
+            const firstItem = order.order_items[0];
+            const imageSrc = firstItem?.product?.image1;
+            const statusStyle = statusColors[order.status] || statusColors.DEFAULT;
 
             return (
-              <div key={order.id} className="mb-10" onClick={() => setSelectedOrder(order)}>
-                <div className="relative w-fit mb-4">
-                  <p className={`absolute top-2 right-2 flex items-center px-3 rounded-md gap-2`} style={{ backgroundColor: statusData.bg }}>
-                    <span className={`w-2 h-2 rounded-full`} style={{ backgroundColor: statusData.dot }}></span>
-                    <span className="text-[12px]">{order.status}</span>
-                  </p>
-                  <img src={imageSrc} alt={firstItem?.name || 'Product'} className="rounded-3xl w-full" />
+              <div key={order.id} 
+                   className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer overflow-hidden flex flex-col"
+                   onClick={() => setSelectedOrder(order)}>
+                <div className="relative h-40 w-full overflow-hidden">
+                  {imageSrc ? (
+                    <img src={imageSrc} alt={firstItem?.name || 'Product'} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                      <FiShoppingBag className="text-gray-400 w-12 h-12" />
+                    </div>
+                  )}
+                  <span className={`absolute top-2 right-2 px-2 py-0.5 inline-flex text-[10px] leading-tight font-semibold rounded-full ${statusStyle.bg} ${statusStyle.text}`}>
+                     <span className={`w-1.5 h-1.5 mr-1.5 rounded-full ${statusStyle.dot} inline-block self-center`}></span>
+                    {order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}
+                  </span>
                 </div>
-                <p className="text-base sm:text-[20px] mb-2">
+                <div className="p-4 flex-grow flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-700 mb-0.5 truncate" title={order.order_items.map(item => item.name).join(", ")}>
                   {order.order_items.map(item => item.name).join(", ")}
-                </p>
-                <div className="flex justify-between items-center">
-                  <span className="text-[20px] sm:text-[20px]">
-                    ₦{order.order_items.reduce((acc, item) => acc + item.quantity * parseFloat(item.price), 0) + parseFloat(order.delivery_fee)}
+                    </h3>
+                    <p className="text-xs text-gray-500 mb-0.5">State: {order.state ?? 'N/A'}</p>
+                    <p className="text-xs text-gray-500 mb-1.5">ID: #{order.id.slice(0,8)}</p>
+                  </div>
+                  <div className="flex justify-between items-center mt-auto">
+                    <span className="text-md font-bold text-gray-800">
+                      {formatCurrency(order.order_items.reduce((acc, item) => acc + item.quantity * parseFloat(item.price), 0) + parseFloat(order.delivery_fee))}
                   </span>
-                  <span className="text-[16px] text-[#00000066] line-through">
-                    ₦{parseFloat(order.delivery_fee)}
+                    {parseFloat(order.delivery_fee) > 0 && (
+                       <span className="text-[10px] text-gray-400">
+                         (+ {formatCurrency(parseFloat(order.delivery_fee))} del.)
                   </span>
-                  <span className="bg-[#72D3E940] text-[10px] sm:text-[14px] rounded-3xl py-0.5 px-6">Total</span>
+                    )}
+                  </div>
                 </div>
               </div>
             );
           })}
+           {filteredOrders.length === 0 && (
+             <p className="col-span-full text-center py-10 text-gray-500">No orders found.</p>
+           )}
         </div>
       )}
 
@@ -194,36 +228,36 @@ const loadOrders = async (url?: string) => {
         totalPages={totalPages}
         nextPageUrl={nextUrl}
         prevPageUrl={prevUrl}
-        onPageChange={loadOrders}
+        onPageChange={(url) => loadOrders(url, statusFilter)}
         getPageUrl={getPageUrl}
       />
-
 
       {selectedOrder && (
         <SelectedOrderPopup
           selectedOrder={selectedOrder}
           onClose={() => setSelectedOrder(null)}
+          isUpdatingStatus={isUpdatingStatus}
           onStatusChange={async (newStatus) => {
           if (selectedOrder) {
+              setIsUpdatingStatus(true);
             const upperStatus = newStatus.toUpperCase();
             try {
               await PatchOrderStatus(selectedOrder.id, upperStatus);
-
               const updatedOrders = orders.map(order =>
                 order.id === selectedOrder.id ? { ...order, status: upperStatus } : order
               );
               setOrders(updatedOrders);
               setSelectedOrder({ ...selectedOrder, status: upperStatus });
               } catch (error) {
-                console.error("Failed to update order status in backend:", error);
-                alert("Failed to change status")
+                
+                alert("Failed to change status. Please try again.")
+              } finally {
+                setIsUpdatingStatus(false);
               }
             }
           }}
         />
       )}
-
-
     </div>
   );
 };

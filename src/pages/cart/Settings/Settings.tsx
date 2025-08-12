@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import PersonalInfo from "./settings component/Personal-Info";
 import ChangeEmail from "./settings component/Change-Email";
 import PasswordChange from "./settings component/Password-Change";
-import { FiUser, FiMail, FiLock } from "react-icons/fi";
+import DeleteAccount from "./settings component/Delete-Account";
+import { FiUser, FiMail, FiLock, FiTrash2 } from "react-icons/fi";
 
 const GeneralSettings = () => {
   const [activeTab, setActiveTab] = useState("personal");
@@ -12,6 +13,7 @@ const GeneralSettings = () => {
     { id: "personal", label: "Personal Info", icon: <FiUser /> },
     { id: "email", label: "Email", icon: <FiMail /> },
     { id: "password", label: "Password", icon: <FiLock /> },
+    { id: "delete", label: "Delete Account", icon: <FiTrash2 /> },
   ];
 
   return (
@@ -19,16 +21,9 @@ const GeneralSettings = () => {
       <div className="max-w-4xl mx-auto px-4">
         {/* Header and Breadcrumbs */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-semi-bold capitalize mb-2">
             Account Settings
           </h1>
-          <div className="flex items-center text-sm text-gray-500">
-            <Link to="/" className="hover:text-black transition-colors">
-              Home
-            </Link>
-            <span className="mx-2">›</span>
-            <span>Settings</span>
-          </div>
         </div>
 
         {/* Tabs Navigation */}
@@ -57,6 +52,7 @@ const GeneralSettings = () => {
             {activeTab === "personal" && <PersonalInfo />}
             {activeTab === "email" && <ChangeEmail />}
             {activeTab === "password" && <PasswordChange />}
+            {activeTab === "delete" && <DeleteAccount />}
           </div>
         </div>
       </div>

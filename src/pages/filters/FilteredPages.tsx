@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Card from "@/card/Card";
 import PaginationComponent from '@/components/Pagination';
 import SortDropdown from './FilterDropDown';
-import { WishData } from '@/card/wishListApi';
-import { WishItem } from '@/card/types';
+import { WishData } from '../../pages/orders/api';
+import type { WishItem } from '../../pages/orders/types';
 
+// Interfaces (unchanged)
 export interface Category {
   id: number;
   name: string;
@@ -48,12 +49,6 @@ interface ApiResponse<T> {
   results: T[];
 }
 
-interface FilterState {
-  selectedSubCategories: number[];
-  priceRange: [number, number];
-  selectedSizes: string[];
-}
-
 const ProductsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -62,45 +57,47 @@ const ProductsPage: React.FC = () => {
     count: 0,
     next: null,
     previous: null,
-    results: []
+    results: [],
   });
-  const [displayProducts, setDisplayProducts] = useState<Product[]>([]);
+
   const [wishlistItems, setWishlistItems] = useState<WishItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [wishlistLoading, setWishlistLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
+  const [wishlistLoading, setWishlistLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<'latest' | 'highest' | 'lowest'>('latest');
 
-  // Get current page from URL or default to 1
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
-  // URL filter parsing
-  const getFiltersFromURL = (): FilterState => {
-    const subcategories = searchParams.get('subcategories');
-    const minPrice = searchParams.get('minPrice');
-    const maxPrice = searchParams.get('maxPrice');
-    const sizes = searchParams.get('sizes');
+  const currentFilters = useMemo(() => {
+    const subcategories = searchParams.get('subcategories')?.split(',').map(Number) || [];
+    const minPrice = parseInt(searchParams.get('minPrice') || '0', 10);
+    const maxPrice = parseInt(searchParams.get('maxPrice') || '1000000', 10);
 
     return {
-      selectedSubCategories: subcategories ? subcategories.split(',').map(Number) : [],
-      priceRange: [
-        minPrice ? parseInt(minPrice) : 0,
-        maxPrice ? parseInt(maxPrice) : 300000,
-      ],
-      selectedSizes: sizes ? sizes.split(',') : [],
+      selectedSubCategories: subcategories,
+      priceRange: [minPrice, maxPrice] as [number, number],
     };
-  };
+  }, [searchParams]);
 
-  const currentFilters = getFiltersFromURL();
+  const displayProducts = useMemo(() => {
+    const products = [...productsData.results];
+    switch (sortOption) {
+      case 'highest':
+        return products.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+      case 'lowest':
+        return products.sort((a, b) => parseFloat(a.price) - parseFloat(a.price));
+      default:
+        return products.sort((a, b) => b.id - a.id); // latest
+    }
+  }, [productsData.results, sortOption]);
 
-  // Fetch wishlist data
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
         const wishlistRes = await WishData();
-        setWishlistItems(wishlistRes);
+        setWishlistItems(wishlistRes.results);
       } catch (err) {
-        console.error('Error loading wishlist:', err);
+        
       } finally {
         setWishlistLoading(false);
       }
@@ -109,95 +106,72 @@ const ProductsPage: React.FC = () => {
     fetchWishlist();
   }, []);
 
-  // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
         const apiParams = new URLSearchParams();
-
-        if (currentFilters.selectedSubCategories.length > 0) {
-          currentFilters.selectedSubCategories.forEach((subCatId) => {
-            apiParams.append('sub_category', subCatId.toString());
-          });
-        }
-
+        currentFilters.selectedSubCategories.forEach(subCatId => {
+          apiParams.append('sub_category', subCatId.toString());
+        });
         apiParams.append('min_price', currentFilters.priceRange[0].toString());
         apiParams.append('max_price', currentFilters.priceRange[1].toString());
         apiParams.append('page', currentPage.toString());
-       
+
         const response = await fetch(
-          `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/?${apiParams.toString()}`
+          `https://api.kidsdesigncompany.com/api/v1/product/item/?is_available=true&page_size=16&${apiParams}`
         );
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch products');
-        }
-
+        if (!response.ok) throw new Error('Failed to fetch products');
         const data: ApiResponse<Product> = await response.json();
+        // Validate pagination data
+        if (typeof data.count !== 'number' || !Array.isArray(data.results)) {
+          throw new Error('Invalid pagination data');
+        }
         setProductsData(data);
-        setLoading(false);
       } catch (err) {
-        console.error('Error fetching products:', err);
         setError('Failed to load products');
+      } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
-  }, [currentPage, searchParams]);
+  }, [currentPage, currentFilters]);
 
-  // Sort products when sortOption or products change
-  useEffect(() => {
-    if (productsData.results.length > 0) {
-      const sortedProducts = [...productsData.results];
+  const getWishlistInfo = useCallback(
+    (productId: number) => {
+      const matchedWish = wishlistItems.find(item => item.product.id === productId);
+      return {
+        isInitiallyLiked: !!matchedWish,
+        wishItemId: matchedWish?.id,
+      };
+    },
+    [wishlistItems]
+  );
 
-      if (sortOption === 'latest') {
-        sortedProducts.sort((a, b) => b.id - a.id);
-      } else if (sortOption === 'highest') {
-        sortedProducts.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
-      } else if (sortOption === 'lowest') {
-        sortedProducts.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-      }
-
-      setDisplayProducts(sortedProducts);
-    } else {
-      setDisplayProducts([]);
-    }
-  }, [sortOption, productsData.results]);
-
-  // Helper function to check if a product is in wishlist
-  const getWishlistInfo = (productId: number) => {
-    const matchedWish = wishlistItems.find(item => item.product.id === productId);
-    return {
-      isInitiallyLiked: !!matchedWish,
-      wishItemId: matchedWish?.id
-    };
-  };
-
-  const handlePageChange = (newPage: number) => {
+  const handlePageChange = useCallback((newPage: number) => {
     setSearchParams(prev => {
-      const newParams = new URLSearchParams(prev);
-      newParams.set('page', newPage.toString());
-      return newParams;
+      const params = new URLSearchParams(prev);
+      params.set('page', newPage.toString());
+      return params;
     });
-  };
+  }, [setSearchParams]);
 
-  // Calculate total pages
-  const itemsPerPage = 10;
-  const totalPages = productsData.count ? Math.ceil(productsData.count / itemsPerPage) : 1;
+  const itemsPerPage = 16; // Match API page_size
+  const totalPages = useMemo(() => {
+    return productsData.count ? Math.ceil(productsData.count / itemsPerPage) : 1;
+  }, [productsData.count]);
 
   return (
-    <div className="container mx-auto px-6 md:px-14 py-8 md:py-12 ">
+    <div className="container mx-auto px-6 md:px-14 py-8 md:py-0">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 pt-2">
-        <h1 className="text-3xl md:text-4xl font-medium">Filtered Products</h1>
-
+        <h1 className="text-3xl md:text-4xl font-semibold capitalize">Filtered Products</h1>
         <div className="flex items-center gap-4 pt-3 md:pt-0">
           <p className="text-gray-600">{productsData.count} products found</p>
           <SortDropdown
             onSortChange={(sortValue) => {
               setSortOption(sortValue);
-              // Reset to first page when sort changes
               setSearchParams(prev => {
                 const newParams = new URLSearchParams(prev);
                 newParams.set('page', '1');
@@ -208,26 +182,21 @@ const ProductsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Active filters */}
+      {/* Active filters display */}
       <div className="flex flex-wrap gap-2 mb-6">
         {currentFilters.selectedSubCategories.length > 0 && (
           <div className="bg-gray-100 px-3 py-1 rounded-full text-sm">
             {currentFilters.selectedSubCategories.length} subcategories
           </div>
         )}
-        {(currentFilters.priceRange[0] > 0 || currentFilters.priceRange[1] < 300000) && (
+        {(currentFilters.priceRange[0] > 0 || currentFilters.priceRange[1] < 10000000) && (
           <div className="bg-gray-100 px-3 py-1 rounded-full text-sm">
-            ₦ {currentFilters.priceRange[0]} -  ₦{currentFilters.priceRange[1]}
-          </div>
-        )}
-        {currentFilters.selectedSizes.length > 0 && (
-          <div className="bg-gray-100 px-3 py-1 rounded-full text-sm">
-            {currentFilters.selectedSizes.length} sizes
+            ₦ {currentFilters.priceRange[0]} - ₦ {currentFilters.priceRange[1]}
           </div>
         )}
       </div>
 
-      {/* Loading / Error / Empty states */}
+      {/* Loading / error / no results */}
       {loading || wishlistLoading ? (
         <div className="flex justify-center items-center py-16">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
@@ -239,21 +208,21 @@ const ProductsPage: React.FC = () => {
           <p className="text-xl text-gray-600">No products found matching your filters.</p>
           <Button
             onClick={() => navigate('/products')}
-            className="mt-4 bg-black text-white px-6 py-2 rounded-full"
+            className="mt-4 bg-customBlue text-white px-6 py-2 rounded-full"
           >
             View All Products
           </Button>
         </div>
       ) : (
         <>
-          {/* Products grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:space-x-8 space-x-0 mb-8 sm:mb-16">
-            {displayProducts.map((item) => {
-              const wishlistInfo = getWishlistInfo(item.id);
+          {/* Product grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 sm:mb-16">
+            {displayProducts.map(product => {
+              const wishlistInfo = getWishlistInfo(product.id);
               return (
-                <Card 
-                  key={item.id} 
-                  product={item}
+                <Card
+                  key={product.id}
+                  product={product}
                   isInitiallyLiked={wishlistInfo.isInitiallyLiked}
                   wishItemId={wishlistInfo.wishItemId}
                 />

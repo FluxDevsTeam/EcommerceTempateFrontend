@@ -1,51 +1,156 @@
-import React, { useState } from 'react';
-import Wish from './Wish';
-import { addWishItem, deleteWishItem } from './api';
-import { CardProps, WishItem } from './types';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import Wish from './Wish';
+import { addWishItem, deleteWishItem, getWishlistFromLocalStorage, WishData, addToWishlistLocalStorage, removeFromWishlistLocalStorage } from '../pages/orders/api';
+import { CardProps, WishItem } from './types';
+import { useAuth } from '../pages/auth/AuthContext';
+import { useMediaQuery } from 'react-responsive';
 
 const Card: React.FC<CardProps> = ({
   product,
   isInitiallyLiked,
   wishItemId: initialWishItemId,
-  removeOnUnlike = false, // Optional control for wishlist pages
+  removeOnUnlike = false,
+  onItemClick,
   isSuggested = false,
 }) => {
+  const { isAuthenticated } = useAuth();
   const [liked, setLiked] = useState(isInitiallyLiked);
   const [wishItemId, setWishItemId] = useState<number | null>(initialWishItemId ?? null);
   const [visible, setVisible] = useState(true);
-const navigate = useNavigate();
-const handleToggle = async () => {
-  try {
-    const storedWishList = JSON.parse(localStorage.getItem('wishlist') || '[]');
+  const navigate = useNavigate();
 
-    if (liked && wishItemId) {
-      setLiked(false);
-      localStorage.setItem(
-        'wishlist',
-        JSON.stringify(storedWishList.filter((id: number) => id !== product.id))
-      );
+  // Check local wishlist for non-authenticated users
+  useEffect(() => {
+    if (!isAuthenticated && !isInitiallyLiked) {
+      const localWishlist = getWishlistFromLocalStorage();
+      const isInLocalWishlist = localWishlist.some((item) => item.product.id === product.id);
+      if (isInLocalWishlist) {
+        setLiked(true);
+        const localItem = localWishlist.find((item) => item.product.id === product.id);
+        if (localItem) setWishItemId(localItem.id);
+      }
+    }
+  }, [isAuthenticated, product.id, isInitiallyLiked]);
 
-      await deleteWishItem(wishItemId);
+  // Queue for API calls
+  const apiCallQueue: (() => Promise<void>)[] = [];
+  let isProcessingQueue = false;
+
+  const processQueue = async () => {
+    if (isProcessingQueue) return;
+    isProcessingQueue = true;
+    while (apiCallQueue.length > 0) {
+      const nextCall = apiCallQueue.shift();
+      if (nextCall) {
+        try {
+          await nextCall();
+        } catch (error) {
+          console.error('processQueue: Error processing queue item:', error);
+        }
+      }
+    }
+    isProcessingQueue = false;
+  };
+
+  const handleToggle = async () => {
+    const wasLiked = liked;
+    const previousWishItemId = wishItemId;
+
+    // Optimistically update UI
+    setLiked(!wasLiked);
+    if (wasLiked) {
       setWishItemId(null);
-
       if (removeOnUnlike) setVisible(false);
     } else {
-      setLiked(true);
-      localStorage.setItem('wishlist', JSON.stringify([...storedWishList, product.id]));
-
-      const newItem: WishItem = await addWishItem(product.id);
-      setWishItemId(newItem.id);
+      setWishItemId(Date.now()); // Temporary ID for non-authenticated add
     }
-  } catch (error) {
-    console.error('Error toggling wishlist:', error);
-  }
-};
+
+    // Define the API operation
+    const executeOperation = async () => {
+      try {
+        if (!isAuthenticated) {
+          if (wasLiked) {
+            removeFromWishlistLocalStorage(product.id);
+          } else {
+            addToWishlistLocalStorage(product);
+          }
+          window.dispatchEvent(new CustomEvent('wishlistUpdated', { 
+            detail: { 
+              productId: product.id,
+              fromSuggested: isSuggested 
+            } 
+          }));
+        } else {
+          if (wasLiked) {
+            let actualWishItemId = previousWishItemId;
+            if (!actualWishItemId) {
+              try {
+                const wishData = await WishData();
+                const wishItem = wishData.results.find((item: WishItem) => item.product.id === product.id);
+                actualWishItemId = wishItem ? wishItem.id : undefined;
+                console.log('handleToggle: Fetched server wishItemId:', { actualWishItemId });
+              } catch (error) {
+                const localWishlist = getWishlistFromLocalStorage();
+                const localItem = localWishlist.find(item => item.product.id === product.id);
+                actualWishItemId = localItem?.id;
+                console.warn('handleToggle: Failed to fetch server wishlist, using local:', { actualWishItemId });
+              }
+            }
+
+            if (actualWishItemId) {
+              await deleteWishItem(actualWishItemId, product.id);
+              console.log('handleToggle: Deleted wishlist item:', { actualWishItemId });
+              window.dispatchEvent(new CustomEvent('wishlistUpdated', { 
+                detail: { 
+                  productId: product.id,
+                  action: 'remove',
+                  fromSuggested: isSuggested
+                }
+              }));
+            } else {
+              removeFromWishlistLocalStorage(product.id);
+              console.log('handleToggle: Removed from local wishlist (fallback)');
+            }
+          } else {
+            const newItem = await addWishItem(product);
+            setWishItemId(newItem.id);
+            console.log('handleToggle: Added wishlist item:', { newWishItemId: newItem.id });
+          }
+        }
+      } catch (error) {
+        console.error('handleToggle: Error:', error);
+        setLiked(wasLiked);
+        setWishItemId(previousWishItemId);
+        if (removeOnUnlike && !wasLiked) setVisible(true);
+        throw error; // Propagate error to queue
+      }
+    };
+
+    // Enqueue operation for unlike, execute immediately for like
+    if (wasLiked) {
+      apiCallQueue.push(executeOperation);
+      processQueue();
+    } else {
+      try {
+        await executeOperation();
+      } catch (error) {
+        // Error handling already done in executeOperation
+      }
+    }
+  };
+
+  // Format price with thousand separators
+  const formatPrice = (value: number) => {
+    return value.toLocaleString('en-US');
+  };
 
   if (!visible) return null;
 
   const handleProductClick = () => {
+    if (onItemClick) {
+      onItemClick(product.image1);
+    }
     if (isSuggested) {
       navigate(`/suggested/${product.id}`);
     } else {
@@ -53,47 +158,55 @@ const handleToggle = async () => {
     }
   };
 
-
   return (
-    <div className="mb-10 cursor-pointer "    
-   >
-      <div className="relative w-fit mb-4">
+    <div className="mb-2 pb-2 md:pb-6 cursor-pointer w-full aspect-square mx-auto">
+      <div className="relative mb-2 overflow-hidden rounded-lg">
         <img
           src={product.image1}
           alt={product.name}
-          className="rounded-2xl w-auto h-[200px] lg:h-[250px] "
+          className="relative w-full aspect-square object-cover"
           onClick={handleProductClick}
         />
-        <Wish
-          color="red"
-          liked={liked}
-          onToggle={handleToggle}
-        />
+        <Wish color="red" liked={liked} onToggle={handleToggle} />
       </div>
-      <p className="text-[15px] font-medium sm:text-[20px] capitalize mb-2 line-clamp-1">
+      <p
+        className="font-medium capitalize line-clamp-1 px-1"
+        style={{ fontSize: "clamp(14px, 2vw, 20.5px)" }}
+      >
         {product.name}
       </p>
-      <div className="flex items-center gap-2 sm:gap-4">
+      <div className="px-1">
         {typeof product.price === "number" && product.price > 0 && (
-          <span className="text-[14px] sm:text-[20px]">
-            ₦{product.price}
+          <span
+            style={{ fontSize: "clamp(14px, 2vw, 16.5px)" }}
+          >
+            ₦{formatPrice(product.price)}
           </span>
         )}
-        {typeof product.undiscounted_price === "number" && product.undiscounted_price > 0 && (
-          <span className="text-[10px] sm:text-[20px] text-[#00000066] line-through">
-            ₦{product.undiscounted_price}
-          </span>
-        )}
-
-        {product.undiscounted_price > 0 && product.undiscounted_price > product.price && (
-          <span className="text-red-600 bg-red-100 font-semibold text-xs sm:text-sm flex items-center justify-center rounded-full px-2 py-1">
-            -
-            {Math.round(
-              (product.undiscounted_price - product.price) / product.undiscounted_price * 100
-            )}
-            %
-          </span>
-        )}
+        <br />
+        {typeof product.undiscounted_price === "number" &&
+          product.undiscounted_price > product.price && (
+            <>
+              <span
+                className="text-[#00000066] line-through"
+                style={{ fontSize: "clamp(14px, 2vw, 16.5px)" }}
+              >
+                ₦{formatPrice(product.undiscounted_price)}
+              </span>
+              <span
+                className="text-red-600 bg-red-100 font-semibold w-fit rounded-full px-2 ml-2"
+                style={{ fontSize: "clamp(14px, 2vw, 16.5px)" }}
+              >
+                -
+                {Math.round(
+                  ((product.undiscounted_price - product.price) /
+                    product.undiscounted_price) *
+                    100
+                )}
+                %
+              </span>
+            </>
+          )}
       </div>
     </div>
   );

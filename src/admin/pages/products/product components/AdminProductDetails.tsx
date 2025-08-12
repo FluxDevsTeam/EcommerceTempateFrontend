@@ -8,6 +8,7 @@ import { FaThList, FaEdit, FaTh, FaPlus, FaTrash } from "react-icons/fa";
 import Modal from "../../../../components/ui/Modal";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { formatCurrency } from "@/admin/utils/formatting";
 
 interface Size {
   id: number;
@@ -93,6 +94,7 @@ const AdminProductDetails: React.FC = () => {
     undiscounted_price: null,
     price: null,
   });
+  const [submitSizeAdd, setSubmitSizeAdd] = useState(false);
 
   const fetchProductDetails = async () => {
     const accessToken = localStorage.getItem("accessToken");
@@ -104,7 +106,7 @@ const AdminProductDetails: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${id}/`,
+        `https://api.kidsdesigncompany.com/api/v1/product/item/${id}/`,
         {
           headers: {
             Authorization: `JWT ${accessToken}`,
@@ -117,8 +119,6 @@ const AdminProductDetails: React.FC = () => {
         throw new Error("Failed to fetch product details");
       }
       const data = await response.json();
-
-      console.log(data.unlimited);
 
       setProduct(data);
     } catch (err) {
@@ -151,7 +151,7 @@ const AdminProductDetails: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${editSizeFormData.product}/size/${editSizeFormData.id}/`,
+        `https://api.kidsdesigncompany.com/api/v1/product/item/${editSizeFormData.product}/size/${editSizeFormData.id}/`,
         {
           method: "PATCH",
           headers: {
@@ -163,11 +163,8 @@ const AdminProductDetails: React.FC = () => {
       );
 
       const data = await response.json();
-      // console.log(data);
 
       if (response.ok) {
-        // console.log(data);
-
         setModalConfig({
           isOpen: true,
           title: "Success",
@@ -175,8 +172,6 @@ const AdminProductDetails: React.FC = () => {
           type: "success",
         });
       } else {
-        console.log(data);
-
         setModalConfig({
           isOpen: true,
           title: "Error",
@@ -208,7 +203,7 @@ const AdminProductDetails: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${product.id}/size/${deleteModalConfig.sizeId}/`,
+        `https://api.kidsdesigncompany.com/api/v1/product/item/${product.id}/size/${deleteModalConfig.sizeId}/`,
         {
           method: "DELETE",
           headers: {
@@ -263,7 +258,7 @@ const AdminProductDetails: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${product.id}/size/`,
+        `https://api.kidsdesigncompany.com/api/v1/product/item/${product.id}/size/`,
         {
           method: "POST",
           headers: {
@@ -280,6 +275,8 @@ const AdminProductDetails: React.FC = () => {
           errorData.message || `Failed to add size: ${response.statusText}`
         );
       }
+
+      setSubmitSizeAdd(true);
 
       setModalConfig({
         isOpen: true,
@@ -306,6 +303,8 @@ const AdminProductDetails: React.FC = () => {
         message: error instanceof Error ? error.message : "Failed to add size",
         type: "error",
       });
+    } finally {
+      setSubmitSizeAdd(false);
     }
   };
 
@@ -404,11 +403,11 @@ const AdminProductDetails: React.FC = () => {
                 </h2>
                 <div className="mt-2 flex items-baseline gap-2">
                   <span className="text-3xl font-bold text-gray-900">
-                    ₦ {product.price}
+                    {formatCurrency(product.price)}
                   </span>
                   {product.undiscounted_price > product.price && (
                     <span className="text-lg text-gray-500 line-through">
-                      ₦{product.undiscounted_price}
+                      {formatCurrency(product.undiscounted_price)}
                     </span>
                   )}
                 </div>
@@ -452,10 +451,14 @@ const AdminProductDetails: React.FC = () => {
                   )}
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Category</span>
+                  <span className="text-gray-600">Sub-Category</span>
                   <span className="font-medium">
-                    {product.sub_category.name}
+                    {product.sub_category ? product.sub_category.name : "N/A"}
                   </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Production Days</span>
+                  <span className="font-medium">{product.production_days}</span>
                 </div>
               </div>
             </div>
@@ -515,11 +518,10 @@ const AdminProductDetails: React.FC = () => {
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-600">Price</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">₦ {size.price}</span>
-                        {Number(size.undiscounted_price) >
-                          Number(size.price) && (
+                        <span className="font-medium">{formatCurrency(size.price)}</span>
+                        {Number(size.undiscounted_price) > Number(size.price) && (
                           <span className="text-gray-400 line-through">
-                            ₦ {size.undiscounted_price}
+                            {formatCurrency(size.undiscounted_price)}
                           </span>
                         )}
                       </div>
@@ -651,14 +653,70 @@ const AdminProductDetails: React.FC = () => {
                   type="button"
                   onClick={() => setShowAddSizeModal(false)}
                   className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                  disabled={submitSizeAdd}
                 >
-                  Cancel
+                  {submitSizeAdd ? (
+                    <span>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-700"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Cancelling...
+                    </span>
+                  ) : (
+                    "Cancel"
+                  )}
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                  className={`${
+                    submitSizeAdd ? "opacity-50 cursor-not-allowed" : ""
+                  } px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700`}
+                  disabled={submitSizeAdd}
                 >
-                  Add Size
+                  {submitSizeAdd ? (
+                    <span>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Adding...
+                    </span>
+                  ) : (
+                    "Add size"
+                  )}
                 </button>
               </div>
             </form>
@@ -761,8 +819,35 @@ const AdminProductDetails: React.FC = () => {
                   type="button"
                   onClick={() => setShowEditSizeModal(false)}
                   className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                  disabled={loading}
                 >
-                  Cancel
+                  {loading ? (
+                    <span>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-700"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Cancelling...
+                    </span>
+                  ) : (
+                    "Cancel"
+                  )}
                 </button>
                 <button
                   type="submit"
@@ -797,14 +882,68 @@ const AdminProductDetails: React.FC = () => {
                   })
                 }
                 className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                disabled={loading}
               >
-                Cancel
+                {loading ? (
+                  <span>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-700"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Cancelling...
+                  </span>
+                ) : (
+                  "Cancel"
+                )}
               </button>
               <button
                 onClick={confirmDeleteSize}
                 className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700"
+                disabled={loading}
               >
-                Delete
+                {loading ? (
+                  <span>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Deleting...
+                  </span>
+                ) : (
+                  "Delete"
+                )}
               </button>
             </div>
           </div>

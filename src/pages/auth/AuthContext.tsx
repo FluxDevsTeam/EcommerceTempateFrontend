@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import authService from './authservice';
 import { migrateLocalCartToUserCart } from '../../utils/cartStorage';
+import { addWishItem, clearWishlistLocalStorage, getWishlistFromLocalStorage, WishData } from '../../pages/orders/api';
+import type { WishItem } from '../../pages/orders/types';
 
 interface User {
   id: string;
@@ -59,9 +61,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Function to refresh user data from localStorage or API
   const refreshUserData = async (): Promise<void> => {
     try {
+      // If we already have current user data, don't refresh
+      if (currentUser?.first_name) {
+        return;
+      }
+
       // First check if we have the user in localStorage
       const storedUser = authService.getCurrentUser();
-      if (storedUser) {
+      if (storedUser?.first_name) {
         setCurrentUser(storedUser);
         return;
       }
@@ -70,7 +77,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const accessToken = localStorage.getItem('accessToken');
       if (accessToken) {
         const userProfile = await authService.getUserProfile();
-        setCurrentUser(userProfile);
+        if (userProfile) {
+          setCurrentUser(userProfile);
+        }
       } else {
         setCurrentUser(null);
       }
@@ -83,46 +92,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log("Checking authentication status...");
         const accessToken = localStorage.getItem('accessToken');
         const refreshToken = localStorage.getItem('refreshToken');
         
-        if (accessToken && refreshToken) {
-          // First try to get user from localStorage for faster UI response
-          const storedUser = authService.getCurrentUser();
-          if (storedUser) {
-            console.log("Loaded user from localStorage:", storedUser);
-            setCurrentUser(storedUser);
-          }
-          
-          // Then try to fetch fresh data from the API
-          try {
-            const userProfile = await authService.getUserProfile();
-            console.log("Successfully fetched user profile:", userProfile);
-            setCurrentUser(userProfile);
-          } catch (profileError) {
-            console.error("Failed to fetch profile, using stored data or logging out:", profileError);
-            if (!storedUser) {
-              // Only log out if we don't have locally stored user data
-              await authService.logout();
-              setCurrentUser(null);
-            }
-          }
-        } else {
-          // No tokens found
-          console.log("No authentication tokens found");
+        if (!accessToken || !refreshToken) {
           setCurrentUser(null);
+          return;
         }
+
+        await refreshUserData();
       } catch (err) {
-        console.error("Authentication check failed", err);
-        setError("Failed to check authentication status");
+        console.error("Auth check failed:", err);
+        setCurrentUser(null);
       } finally {
         setLoading(false);
       }
     };
-  
+
     checkAuth();
-  }, []);
+  }, []); // Run only once on mount
 
   const signup = async (userData: SignupData): Promise<any> => {
     setLoading(true);
@@ -136,7 +124,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(false);
       return response;
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Signup failed. Please try again.';
+      const errorMessage = err.message || 'Signup failed. Please try again.';
       setError(errorMessage);
       setLoading(false);
       throw err;
@@ -153,13 +141,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (response.user) {
         setCurrentUser(response.user);
         
-        // After successful login, migrate local cart items
         const accessToken = localStorage.getItem('accessToken');
         if (accessToken) {
+          // Migrate local cart items
           try {
             await migrateLocalCartToUserCart(accessToken);
           } catch (cartError) {
             console.error("Failed to migrate cart items:", cartError);
+          }
+
+          // Migrate local wishlist items
+          try {
+            const localWishlistItems = getWishlistFromLocalStorage();
+            if (localWishlistItems && localWishlistItems.length > 0) {
+              // Fetch current DB wishlist to avoid duplicates
+              const dbWishlistItems = await WishData(); // Fetches for the now logged-in user
+              const dbProductIds = new Set(dbWishlistItems.map(item => item.product.id));
+
+              for (const localItem of localWishlistItems) {
+                if (!dbProductIds.has(localItem.product.id)) {
+                  await addWishItem(localItem.product.id);
+                }
+              }
+              clearWishlistLocalStorage();
+              
+            }
+          } catch (wishlistError) {
+            console.error("Failed to migrate wishlist items:", wishlistError);
           }
         }
       } else {
@@ -169,7 +177,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(false);
       return response;
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Login failed. Please check your credentials.';
+      const errorMessage = err.message || 'Login failed. Please try again.';
       setError(errorMessage);
       setLoading(false);
       throw err;
@@ -196,9 +204,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     clearError();
     
     try {
-      console.log(`Attempting to verify OTP with email: ${email}, otp: ${otp}`);
+      
       const response = await authService.verifySignupOTP(email, otp);
-      console.log('Verification response:', response);
+      
       setLoading(false);
       return response;
     } catch (err: any) {
@@ -215,9 +223,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     clearError();
     
     try {
-      console.log(`Resending OTP to email: ${email}`);
+      
       const response = await authService.resendSignupOTP(email);
-      console.log('Resend response:', response);
+      
       setLoading(false);
       return response;
     } catch (err: any) {

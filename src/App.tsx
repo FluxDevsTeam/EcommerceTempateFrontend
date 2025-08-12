@@ -21,6 +21,7 @@ import AddNewProduct from "./admin/pages/products/product components/AddNewProdu
 import EditProduct from "./admin/pages/products/product components/EditProduct";
 import AdminProductDetails from "./admin/pages/products/product components/AdminProductDetails";
 import AdminCategories from "./admin/pages/products/product components/AdminCategories";
+import ProductPrioritization from "./admin/pages/products/product components/ProductPrioritization";
 import AdminSubCategories from "./admin/pages/products/product components/AdminSubCategories";
 import Orders from "./pages/orders/Order";
 import ProductDetail from "./components/products/ProductDetail";
@@ -42,7 +43,6 @@ import Producter from "./card/Ade";
 import ProductCategory from "./pages/categories/ProductCategory";
 import PrivateRoute from "./routing/PrivateRoute";
 
-
 const queryClient = new QueryClient();
 
 const App: React.FC = () => {
@@ -60,7 +60,7 @@ const App: React.FC = () => {
 
 const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
-  
+
   return (
     <Routes>
       {/* Public routes with MainLayout */}
@@ -71,28 +71,26 @@ const AppContent: React.FC = () => {
         <Route path="/suggested/:id" element={<SuggestedItemDetails />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/cart" element={<Cart />} />
-        <Route path="/cart/error/" element={<PaymentFailed />} />
         <Route path="/orders" element={<Orders />} />
-        <Route path="//verify-reset-otp" element={<VerifyForgotPassword />} />
+        <Route path="/verify-reset-otp" element={<VerifyForgotPassword />} />
         <Route path="/new-arrivals" element={<NewArrivals />} />
-         <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/filtered-products" element={<ProductsPage />} />
         <Route path="/faqs" element={<FAQs />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
-        <Route path="/confirm-order" element={<ConfirmOrder />} />
         <Route path="/contact-us" element={<Contact />} />
         <Route path="/ade" element={<Producter />} />
-         
+        {/* <Route path="/orders/:id" element={<Confirm />} /> */}
       </Route>
 
       {/* Protected routes */}
       <Route element={<PrivateRoute isAuthenticated={isAuthenticated} />}>
         <Route element={<Mainlayout />}>
           <Route path="/orders" element={<Orders />} />
-            <Route path="/orders/:id" element={<Confirm />} />
+          <Route path="/cart/error/" element={<PaymentFailed />} />
+          <Route path="/orders/:id" element={<Confirm />} />
           <Route path="/general-settings" element={<GeneralSettings />} />
-       
-       
+          <Route path="/confirm-order" element={<ConfirmOrder />} />
         </Route>
       </Route>
 
@@ -111,9 +109,16 @@ const AppContent: React.FC = () => {
         <Route path="products" element={<Products />} />
         <Route path="add-new-product" element={<AddNewProduct />} />
         <Route path="products/edit/:id" element={<EditProduct />} />
-        <Route path="admin-products-details/:id" element={<AdminProductDetails />} />
+        <Route path="products/Prioritize" element={<ProductPrioritization />} />
+        <Route
+          path="admin-products-details/:id"
+          element={<AdminProductDetails />}
+        />
         <Route path="admin-categories" element={<AdminCategories />} />
-        <Route path="admin-categories/subcategories" element={<AdminSubCategories />} />
+        <Route
+          path="admin-categories/subcategories"
+          element={<AdminSubCategories />}
+        />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="settings" element={<Settings />} />
       </Route>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FiArrowRight } from "react-icons/fi";
-// import { ThreeDots } from "react-loader-spinner";
+import { FiArrowRight, FiInfo, FiPhone } from "react-icons/fi";
+import CopyablePhone from '@/components/CopyablePhone';
 
 const ConfirmOrder = () => {
   const navigate = useNavigate();
@@ -32,8 +32,36 @@ const ConfirmOrder = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string>("paystack");
   const [error, setError] = useState<string | null>(null);
-  const baseURL = `https://ecommercetemplate.pythonanywhere.com`;
+  const baseURL = `https://api.kidsdesigncompany.com`;
   const [availableStates, setAvailableStates] = useState<string[]>([]);
+  const [includeDeliveryFee, setIncludeDeliveryFee] = useState(true);
+  const [showDeliveryInfo, setShowDeliveryInfo] = useState(false);
+  const [phoneCopied, setPhoneCopied] = useState(false);
+
+  const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
+  const [isFormModified, setIsFormModified] = useState(false); // New state to track form changes
+
+  // Handle tooltip collapse on click outside or scroll
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".delivery-info-container")) {
+        setShowDeliveryInfo(false);
+      }
+    };
+
+    const handleScroll = () => {
+      setShowDeliveryInfo(false);
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -43,6 +71,8 @@ const ConfirmOrder = () => {
       ...prevState,
       [name]: value,
     }));
+    setIsFormModified(true);
+    setIsOrderConfirmed(false);
   };
 
   // ORDER SUMMARY Fetch Function
@@ -61,27 +91,28 @@ const ConfirmOrder = () => {
     }
 
     try {
-      const response = await fetch(`${baseURL}/api/v1/payment/summary/`, {
-        method: "GET",
-        headers: {
-          Authorization: `JWT ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${baseURL}/api/v1/payment/summary/?include_delivery_fee=${includeDeliveryFee}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `JWT ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        console.log(data)
         
       } else {
-        console.log("Order summary fetched/refreshed:", data);
+        
         setOrderSummary(data);
         setError(null);
       }
-
     } catch (err) {
-      console.error("Failed to fetch order summary:", err);
+      
       if (!error || error.includes("summary")) {
         setError(
           err instanceof Error
@@ -97,11 +128,10 @@ const ConfirmOrder = () => {
 
   useEffect(() => {
     fetchOrderSummary();
-  }, []);
+  }, [includeDeliveryFee]);
 
   useEffect(() => {
     const fetchCartData = async () => {
-      // setIsLoadingCart(true);
       setError(null);
       const accessToken = localStorage.getItem("accessToken");
 
@@ -111,7 +141,6 @@ const ConfirmOrder = () => {
         );
         setCartDetails(null);
         setCartId(null);
-        // setIsLoadingCart(false);
         setError("User not logged in (cart details).");
         return;
       }
@@ -135,13 +164,13 @@ const ConfirmOrder = () => {
         }
 
         const data = await response.json();
-        console.log("Cart details fetched:", data);
+        
 
         if (data && data.results && data.results.length > 0) {
           const cartResult = data.results[0];
           setCartDetails(cartResult);
           setCartId(cartResult.id);
-          // console.log("Cart ID set:", cartResult.id);
+          setIncludeDeliveryFee(cartResult.include_delivery_fee ?? true);
         } else {
           console.warn("No cart data found in response results.");
           setCartDetails(null);
@@ -149,7 +178,7 @@ const ConfirmOrder = () => {
           setError("No cart found for this user.");
         }
       } catch (err) {
-        console.error("Failed to fetch cart data:", err);
+        
         if (!error || error.includes("cart")) {
           setError(
             err instanceof Error
@@ -159,8 +188,6 @@ const ConfirmOrder = () => {
         }
         setCartDetails(null);
         setCartId(null);
-      } finally {
-        // setIsLoadingCart(false);
       }
     };
 
@@ -169,10 +196,8 @@ const ConfirmOrder = () => {
 
   useEffect(() => {
     if (cartDetails) {
-      console.log(
-        "Populating form data from fetched cart details:",
-        cartDetails
-      );
+      
+
       setFormData((prevData) => ({
         ...prevData,
         first_name: cartDetails.first_name || "",
@@ -183,6 +208,7 @@ const ConfirmOrder = () => {
         delivery_address: cartDetails.delivery_address || "",
         phone_number: cartDetails.phone_number || "",
       }));
+      setIsFormModified(false);
     }
   }, [cartDetails]);
 
@@ -199,7 +225,6 @@ const ConfirmOrder = () => {
       return;
     }
     if (!cartId) {
-      // Check using the separate cartId state
       setError("Cart ID not found. Cannot update details.");
       setIsSubmitting(false);
       return;
@@ -213,9 +238,10 @@ const ConfirmOrder = () => {
       city: formData.city,
       delivery_address: formData.delivery_address,
       phone_number: formData.phone_number,
+      include_delivery_fee: includeDeliveryFee,
     };
 
-    console.log("Submitting (PATCH) customer details:", payload);
+
 
     try {
       const response = await fetch(`${baseURL}/api/v1/cart/${cartId}/`, {
@@ -227,16 +253,14 @@ const ConfirmOrder = () => {
         body: JSON.stringify(payload),
       });
 
-      // console.log("PATCH Response Status:", response.status);
-
       if (!response.ok) {
         let errorData;
         try {
           errorData = await response.json();
-          console.error("API Error Response:", errorData);
+
         } catch (parseError) {
           errorData = await response.text();
-          console.error("API Error Response (non-JSON):", errorData);
+
         }
         setError(
           `Failed to update details: ${response.statusText} ${JSON.stringify(
@@ -244,20 +268,23 @@ const ConfirmOrder = () => {
           )}`
         );
         throw new Error(`API error: ${response.status}`);
+        setIsOrderConfirmed(false);
       }
 
       const responseData = await response.json();
-      console.log("Successfully patched customer details:", responseData);
+      
 
-      console.log("Refreshing order summary after successful PATCH...");
+      setIsOrderConfirmed(true);
+      setIsFormModified(false);
+
       await fetchOrderSummary();
 
       setShowSuccessModal(true);
       setTimeout(() => {
         setShowSuccessModal(false);
-      }, 3000);
+      }, 2000);
     } catch (error) {
-      console.error("Error patching customer details:", error);
+      
       if (!error) {
         setError(
           error instanceof Error
@@ -270,6 +297,17 @@ const ConfirmOrder = () => {
     }
   };
 
+  // Helper function to format numbers with commas
+  const formatCurrency = (amount: number | undefined | null): string => {
+    if (amount === undefined || amount === null || isNaN(amount)) {
+      return "N/A";
+    }
+    return amount.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
   const formatDeliveryDate = (dates: string[] | undefined): string => {
     if (!dates || dates.length < 2) {
       return "Not available";
@@ -277,7 +315,6 @@ const ConfirmOrder = () => {
     try {
       const startDate = new Date(dates[0]);
       const endDate = new Date(dates[1]);
-      // Basic formatting, adjust as needed
       const options: Intl.DateTimeFormatOptions = {
         month: "short",
         day: "numeric",
@@ -292,17 +329,14 @@ const ConfirmOrder = () => {
       if (startStr === "Invalid Date" || endStr === "Invalid Date")
         return "Currently not delivering to that state";
 
-      // Simple range display
       return `${startStr} - ${endStr}`;
     } catch (e) {
-      console.error("Error formatting date:", e);
+
       return "Date unavailable";
     }
   };
 
   const initiatePayment = async () => {
-    console.log("btn was clicked");
-    // Directly manipulate the button element
     const paymentButton = document.querySelector(
       ".paymentBtn"
     ) as HTMLButtonElement | null;
@@ -318,7 +352,6 @@ const ConfirmOrder = () => {
       paymentButton.classList.remove("bg-black", "hover:bg-gray-800");
     }
 
-    // Set timeout to re-enable the button after 5 seconds
     setTimeout(() => {
       if (paymentButton) {
         paymentButton.disabled = false;
@@ -350,24 +383,25 @@ const ConfirmOrder = () => {
         },
         body: JSON.stringify({
           provider: selectedProvider,
+          include_delivery_fee: includeDeliveryFee,
         }),
       });
 
       const logData = await response.json();
-      console.log("Initiate Payment Response:", logData);
+      
 
       if (response.ok && logData?.data?.payment_link) {
-        console.log("Redirecting to:", logData.data.payment_link);
+
         window.location.href = logData.data.payment_link;
       } else {
         const errorMessage =
           logData?.message ||
           `Failed to initiate payment. Status: ${response.status}`;
-        console.error("Payment initiation failed:", errorMessage, logData);
+
         setError(errorMessage);
       }
     } catch (error) {
-      console.error("Error initiating payment:", error);
+      
       setError(
         error instanceof Error
           ? error.message
@@ -376,10 +410,22 @@ const ConfirmOrder = () => {
     }
   };
 
+  // Handle phone number click
+  const handlePhoneClick = () => {
+    const phoneNumber = "+2348063224027";
+    // Try to open phone app
+    window.location.href = `tel:${phoneNumber}`;
+    // Copy to clipboard as fallback
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(phoneNumber).then(() => {
+        setPhoneCopied(true);
+        setTimeout(() => setPhoneCopied(false), 2000);
+      });
+    }
+  };
+
   useEffect(() => {
     const fetchAvailableStates = async () => {
-      // setIsLoadingStates(true);
-
       const accessToken = localStorage.getItem("accessToken");
 
       if (!accessToken) {
@@ -402,16 +448,11 @@ const ConfirmOrder = () => {
         );
         if (!response.ok) throw new Error("Failed to fetch states");
         const data = await response.json();
-        console.log(data);
+        
         setAvailableStates(data.available_states);
-
-        // console.log(data.available_states)
       } catch (error) {
-        console.error("Error fetching states:", error);
+        
       }
-      //  finally {
-      //   // setIsLoadingStates(false);
-      // }
     };
 
     fetchAvailableStates();
@@ -419,21 +460,8 @@ const ConfirmOrder = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 font-poppins relative">
-      {/* Breadcrumbs */}
-      <div className="flex items-center text-sm mb-6">
-        <Link to="/" className="text-gray-500">
-          Home
-        </Link>
-        <span className="mx-2">›</span>
-        <Link to="/cart" className="text-gray-500">
-          Cart
-        </Link>
-        <span className="mx-2">›</span>
-        <span>Confirm Order</span>
-      </div>
-
       <h1
-        className="font-bold mb-8"
+        className="mt-11 font-bold mb-8 md:mt-0"
         style={{ fontSize: "clamp(18px, 3vw, 24px)" }}
       >
         Confirm your Order
@@ -560,6 +588,61 @@ const ConfirmOrder = () => {
               />
             </div>
 
+            {/* Delivery Fee Toggle with Info Icon */}
+            <div className="relative delivery-info-container">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="includeDeliveryFee"
+                  checked={includeDeliveryFee}
+                  onChange={(e) => {
+                    setIncludeDeliveryFee(e.target.checked);
+                    setIsFormModified(true); // Mark form as modified
+                    setIsOrderConfirmed(false); // Reset order confirmation
+                  }}
+                  className="mr-2 cursor-pointer"
+                  disabled={isSubmitting}
+                />
+                <label htmlFor="includeDeliveryFee" className="text-sm">
+                  Include Delivery Fee
+                </label>
+                <FiInfo
+                  className="ml-2 text-gray-500 cursor-pointer hover:text-gray-700"
+                  size={16}
+                  onClick={() => setShowDeliveryInfo(!showDeliveryInfo)}
+                />
+              </div>
+              {showDeliveryInfo && (
+                <div className="absolute top-full mt-2 left-0 z-10 bg-white border border-gray-200 rounded-lg shadow-lg p-4 text-sm text-gray-600 max-w-xs">
+                  Delivery is optional. Choose to opt out if you prefer to pick up your order in person. The delivery fee may vary based on your location, order quantity, and preferred delivery method. For more details or to discuss custom delivery options,{" "}
+                  <a
+                    href="https://wa.me/message/SJIYCBTVPXA6G1"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 underline hover:text-blue-700"
+                  >
+                    contact us here
+                  </a>.
+                </div>
+              )}
+            </div>
+
+            {/* Note when delivery is unchecked */}
+            {!includeDeliveryFee && (
+              <div className="text-sm text-gray-600 mt-1">
+                By opting out of delivery, you agree to pick up your order in person at our designated location.{" "}
+                <a
+                  href="https://wa.me/message/SJIYCBTVPXA6G1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline hover:text-blue-700"
+                >
+                  Contact us here
+                </a>{" "}
+                for pickup details.
+              </div>
+            )}
+
             {/* Display Submission Error if any */}
             {error && error.includes("update details") && (
               <div className="text-red-500 text-sm mt-[-1rem]">{error}</div>
@@ -567,150 +650,180 @@ const ConfirmOrder = () => {
 
             <button
               type="submit"
-              className={`w-full bg-black text-white py-3 px-6 rounded-full ${
+              className={`w-full bg-customBlue text-white py-3 px-6 rounded-full ${
                 isSubmitting ? "opacity-50 cursor-not-allowed" : ""
               }`}
               disabled={isSubmitting || isLoadingSummary}
             >
-              {isSubmitting ? "Confirming..." : "Confirm Order"}
+              {isSubmitting ? "Confirming..." : "Confirm Details"}
             </button>
           </form>
 
           {/* --- Update Order Summary section --- */}
-          <div className="border border-gray-200 rounded-lg p-6 md:h-fit">
-            <h2 className="text-xl font-bold mb-6">Order Summary</h2>
-            {/* Conditionally render content based on loading/error/data */}
-            {isLoadingSummary && (
-              // loader
-              <div>
-                <div className="relative flex w-64 animate-pulse gap-2 p-4">
-                  <div className="h-12 w-12 rounded-full bg-slate-400"></div>
-                  <div className="flex-1">
-                    <div className="mb-1 h-5 w-3/5 rounded-lg bg-slate-400 text-lg"></div>
-                    <div className="h-5 w-[90%] rounded-lg bg-slate-400 text-sm"></div>
+          <div>
+            <div className="border border-gray-200 rounded-lg p-6 md:h-fit">
+              <h2 className="text-xl font-bold mb-6">Order Summary</h2>
+              {isLoadingSummary && (
+                <div>
+                  <div className="relative flex w-64 animate-pulse gap-2 p-4">
+                    <div className="h-12 w-12 rounded-full bg-slate-400"></div>
+                    <div className="flex-1">
+                      <div className="mb-1 h-5 w-3/5 rounded-lg bg-slate-400 text-lg"></div>
+                      <div className="h-5 w-[90%] rounded-lg bg-slate-400 text-sm"></div>
+                    </div>
+                    <div className="absolute bottom-5 right-0 h-4 w-4 rounded-full bg-slate-400"></div>
                   </div>
-                  <div className="absolute bottom-5 right-0 h-4 w-4 rounded-full bg-slate-400"></div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {error && !isLoadingSummary && (
-              <div className="text-center text-red-500">Error: {error}</div>
-            )}
+              {error && !isLoadingSummary && (
+                <div className="text-center text-red-500">Error: {error}</div>
+              )}
 
-            {orderSummary && !isLoadingSummary && !error && (
-              <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span className="font-semibold">
-                    &#8358; {orderSummary?.subtotal?.toFixed(2) ?? "N/A"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>No. of Items</span>
-                  <span>
-                    {cartDetails?.cart_items?.reduce(
-                      (total: number, item: { quantity: number }) =>
-                        total + item.quantity,
-                      0
-                    ) ?? "N/A"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Delivery Fee</span>
-                  <span className="font-semibold">
-                    &#8358;
-                    {Number(orderSummary?.delivery_fee)?.toFixed(2) ?? "N/A"}
-                  </span>
-                </div>
-                <div className="border-t pt-4 mt-4">
+              {orderSummary && !isLoadingSummary && !error && (
+                <div className="space-y-4">
                   <div className="flex justify-between">
-                    <span className="font-bold">Total</span>
-                    <span className="font-bold">
-                      &#8358; {orderSummary?.total?.toFixed(2) ?? "N/A"}
+                    <span>Subtotal</span>
+                    <span className="font-semibold">
+                      ₦ {formatCurrency(orderSummary?.subtotal)}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-500 mt-2">
-                    Estimated delivery:{" "}
-                    {formatDeliveryDate(orderSummary?.estimated_delivery)}
+                  <div className="flex justify-between">
+                    <span>No. of Items</span>
+                    <span>
+                      {cartDetails?.cart_items?.reduce(
+                        (total: number, item: { quantity: number }) =>
+                          total + item.quantity,
+                        0
+                      ) ?? "N/A"}
+                    </span>
                   </div>
-                </div>
+                  <div className="flex justify-between">
+                    <span>Delivery Fee</span>
+                    <span className="font-semibold">
+                      {includeDeliveryFee
+                        ? `₦ ${formatCurrency(Number(orderSummary?.delivery_fee))}`
+                        : "Not included"}
+                    </span>
+                  </div>
+                  <div className="border-t pt-4 mt-4">
+                    <div className="flex justify-between">
+                      <span className="font-bold">Total</span>
+                      <span className="font-bold">
+                        ₦ {formatCurrency(orderSummary?.total)}
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-500 mt-2">
+                      Estimated delivery:{" "}
+                      {formatDeliveryDate(orderSummary?.estimated_delivery)}
+                    </div>
+                  </div>
 
-                {/* Payment Provider Selection */}
-                <div className="payProviders flex justify-center gap-x-6 py-3 border-t border-b border-gray-200 my-4">
-                  <div>
-                    <input
-                      type="radio"
-                      name="paymentProvider"
-                      id="paystack"
-                      value="paystack"
-                      checked={selectedProvider === "paystack"}
-                      onChange={(e) => setSelectedProvider(e.target.value)}
-                      className="mr-1 cursor-pointer"
-                    />
-                    <label htmlFor="paystack">PayStack</label>
-                  </div>
-                  <div>
-                    <input
-                      type="radio"
-                      name="paymentProvider"
-                      id="flutterwave"
-                      value="flutterwave"
-                      checked={selectedProvider === "flutterwave"}
-                      onChange={(e) => setSelectedProvider(e.target.value)}
-                      className="mr-1 cursor-pointer"
-                    />
-                    <label htmlFor="flutterwave">Flutterwave</label>
-                  </div>
-                </div>
+                  <div className="payProviders flex justify-center gap-x-6 py-3 border-t border-b border-gray-200 my-4">
+                    <div className="flex justify-center items-center">
+                      <input
+                        type="radio"
+                        name="paymentProvider"
+                        id="paystack"
+                        value="paystack"
+                        checked={selectedProvider === "paystack"}
+                        onChange={(e) => setSelectedProvider(e.target.value)}
+                        className="mr-1 cursor-pointer"
+                      />
+                      <img
+                        src="https://th.bing.com/th/id/R.45adb7d2e08de3f29a8194c790a6d1f6?rik=tFgLQDy65jK5Sg&pid=ImgRaw&r=0"
+                        alt="Paystack logo"
+                        className="h-4 ml-1 object-contain"
+                      />
+                    </div>
 
-                <button
-                  onClick={initiatePayment}
-                  className={`paymentBtn w-full bg-black text-white py-3 px-6 rounded-full mt-4 flex items-center justify-center gap-2 ${
-                    isSubmitting ||
-                    isLoadingSummary ||
-                    !formData.city ||
-                    !formData.delivery_address ||
-                    !formData.email ||
-                    !formData.first_name ||
-                    !formData.last_name ||
-                    !formData.phone_number ||
-                    !formData.state
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-gray-800"
-                  }`}
-                  disabled={
-                    isSubmitting ||
-                    isLoadingSummary ||
-                    !formData.city ||
-                    !formData.delivery_address ||
-                    !formData.email ||
-                    !formData.first_name ||
-                    !formData.last_name ||
-                    !formData.phone_number ||
-                    !formData.state
-                  }
-                >
-                  Proceed to Payment
-                  <FiArrowRight />
-                </button>
-                <p className="text-red-700 text-xs">
-                  Note: always fill in correct details and confirm order before
-                  proceeding to payment
-                </p>
-              </div>
-            )}
-            {/* Show message if summary couldn't load but page is otherwise fine */}
-            {!orderSummary && !isLoadingSummary && !error && (
-              <div className="text-center text-gray-500">
-                Summary unavailable.
-              </div>
-            )}
+                    <div className="">
+                      <div className="flex justify-center items-center">
+                        <input
+                          type="radio"
+                          name="paymentProvider"
+                          id="flutterwave"
+                          value="flutterwave"
+                          checked={selectedProvider === "flutterwave"}
+                          onChange={(e) => setSelectedProvider(e.target.value)}
+                          className="mr-1 cursor-pointer"
+                        />
+                        <img
+                          src="https://leadership.ng/wp-content/uploads/2022/09/Flutterwave-New-Logo-2022-Transparent-1-2048x323.png"
+                          alt="Flutterwave logo"
+                          className="h-4 ml-1 object-contain"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={initiatePayment}
+                    className={`paymentBtn w-full bg-customBlue text-white py-3 px-6 rounded-full mt-4 flex items-center justify-center gap-2 ${
+                      isSubmitting ||
+                      isLoadingSummary ||
+                      !isOrderConfirmed ||
+                      isFormModified
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:bg-gray-800"
+                    }`}
+                    disabled={
+                      isSubmitting ||
+                      isLoadingSummary ||
+                      !isOrderConfirmed ||
+                      isFormModified
+                    }
+                  >
+                    {isOrderConfirmed && !isFormModified
+                      ? "Proceed to payment"
+                      : "Confirm details to proceed"}
+                    <FiArrowRight />
+                  </button>
+                </div>
+              )}
+              {!orderSummary && !isLoadingSummary && !error && (
+                <div className="flex flex-col items-center justify-center text-center text-gray-500 py-6">
+                  <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="mx-auto mb-3">
+                    <rect x="18" y="18" width="44" height="54" rx="6" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="3"/>
+                    <rect x="28" y="12" width="24" height="12" rx="4" fill="#3B82F6" stroke="#3B82F6" strokeWidth="2"/>
+                    <path d="M30 44L38 52L50 36" stroke="#2563EB" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="font-semibold text-lg text-gray-700">Confirm your order to see the summary</span>
+                  <span className="text-sm text-gray-500 mt-1">Fill in your details and confirm to view your order summary and proceed to payment.</span>
+                </div>
+              )}
+            </div>
+            {/* Order Summary Note */}
+            <div className="text-sm text-gray-600 mt-4">
+              Delivery is optional, with convenient on-site pickup available. Delivery fees can be tailored based on your order quantity, location, and preferred delivery method. For personalized support or questions before purchasing, contact our support team: {"  "}
+              <FiPhone
+                className="inline-block mx-1 cursor-pointer text-gray-500 hover:text-blue-700"
+                size={16}
+                onClick={handlePhoneClick}
+              />
+              <CopyablePhone 
+                phoneNumber="+234 903 123 8704" 
+                className="text-blue-500 underline hover:text-blue-700 cursor-pointer"
+              />
+              {" "}or message us{" "}
+              <a
+                href="https://wa.me/message/SJIYCBTVPXA6G1"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 underline hover:text-blue-700"
+              >
+                here
+              </a>.
+              {phoneCopied && (
+                <span className="ml-2 text-green-600 bg-green-100 px-2 py-1 rounded">
+                  Phone number copied
+                </span>
+              )}
+            </div>
           </div>
 
           {orderSummary && !isLoadingSummary && !error && (
-            <div className=" grid md:grid-cols-2 items-center mt-6 border border-gray-200 rounded-lg p-6 md:col-span-2">
-              {" "}
+            <div className="grid md:grid-cols-2 items-center mt-6 border border-gray-200 rounded-lg p-6 md:col-span-2">
               <div className="mb-8 md:mb-0">
                 <h2 className="text-xl font-bold mb-4">Payment Method</h2>
                 <p className="text-sm text-gray-600 mb-4">
@@ -719,21 +832,20 @@ const ConfirmOrder = () => {
                 <p className="text-xs text-gray-500">Secure and encrypted</p>
               </div>
               <div className="flex space-x-8">
-                {/* Payment icons */}
                 <img
                   src={`https://th.bing.com/th/id/OIP.vcIxy5gIS3D_hTxtBHDSLgHaCf?w=349&h=117&c=7&r=0&o=5&pid=1.7`}
                   alt="Visa"
-                  className="h-4 md:h-6 w-fit"
+                  className="h-6 w-fit"
                 />
                 <img
                   src={`https://th.bing.com/th/id/OIP.E1H7K1pGXLYUVUvedgFMHwHaBy?w=349&h=84&c=7&r=0&o=5&pid=1.7`}
                   alt="PayPal"
-                  className="h-[16.5px] md:h-6 w-fit"
+                  className="h-6 w-fit"
                 />
                 <img
                   src={`https://th.bing.com/th/id/OIP.JwOmOEpCOes2zw-Evu14XQHaEK?w=321&h=180&c=7&r=0&o=5&pid=1.7`}
                   alt="Mastercard"
-                  className="h-5 md:h-7 w-fit"
+                  className="h-7 w-fit"
                 />
               </div>
             </div>
@@ -745,12 +857,20 @@ const ConfirmOrder = () => {
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div
-            className="bg-green-100 border border-green-400 text-green-700 px-8 py-6 rounded-lg shadow-xl max-w-md w-full text-center"
+            className="bg-green-100 border border-blue-400 text-customBlue px-8 py-6 rounded-lg shadow-xl max-w-md w-full text-center relative"
             role="alert"
           >
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="absolute top-2 right-2 text-customBlue hover:text-blue-700 focus:outline-none"
+              aria-label="Close success modal"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
             <strong className="font-bold text-xl block mb-2">Success!</strong>
             <span className="block sm:inline text-lg">
-              {" "}
               Details confirmed. You can now proceed to payment.
             </span>
           </div>

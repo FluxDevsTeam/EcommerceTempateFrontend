@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 
-// Define interfaces for our data structures
 interface DeveloperSettingsData {
   brand_name: string;
   contact_us: string;
@@ -34,36 +34,36 @@ const DeveloperSettings: React.FC = () => {
   const [initialData, setInitialData] = useState<DeveloperSettingsData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
-  const [showModal, setShowModal] = useState<boolean>(false);
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
+  const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false); // Changed to false to open by default
 
   useEffect(() => {
     fetchDeveloperSettings();
   }, []);
 
-  const fetchDeveloperSettings = async (): Promise<void> => {
+  const fetchDeveloperSettings = async () => {
     try {
+      const token = localStorage.getItem('accessToken');
       setLoading(true);
-      const token = localStorage.getItem("accessToken");
-      // Simulating API call for demo purposes
-      setTimeout(() => {
-        const data: DeveloperSettingsData = {
-          brand_name: "Demo Company",
-          contact_us: "contact@demo.com",
-          terms_of_service: "https://demo.com/terms",
-          backend_base_route: "https://api.demo.com",
-          frontend_base_route: "https://demo.com",
-          order_route_frontend: "/orders",
-          payment_failed_url: "/payment/failed",
-        };
-        setFormData(data);
-        setInitialData(data);
-        setLoading(false);
-      }, 1000);
+      const response = await axios.get<DeveloperSettingsData>(
+        'https://api.kidsdesigncompany.com/api/v1/admin/developer-settings/',
+        {
+          headers: {
+            'Authorization': `JWT ${token}`,
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+      
+      if (response.data) {
+        setFormData(response.data);
+        setInitialData(response.data);
+      }
+      setError(null);
     } catch (err) {
-      setError("Failed to load developer settings");
-      console.error("Error fetching developer settings:", err);
+      setError('Failed to load Developer settings');
+    } finally {
       setLoading(false);
     }
   };
@@ -104,27 +104,47 @@ const DeveloperSettings: React.FC = () => {
   };
 
   const handleSaveConfirm = (): void => {
-    setShowModal(false);
+    setShowConfirmModal(false);
     handleSave();
   };
 
-  const handleSave = async (): Promise<void> => {
+  const handleSave = async () => {
     try {
       setLoading(true);
-      // Simulating API call for demo purposes
+      
+      const apiFormData = {
+        brand_name: formData.brand_name,
+        contact_us: formData.contact_us,
+        terms_of_service: formData.terms_of_service,
+        backend_base_route: formData.backend_base_route,
+        frontend_base_route: formData.frontend_base_route,
+        order_route_frontend: formData.order_route_frontend,
+        payment_failed_url: formData.payment_failed_url,
+      };
+      const token = localStorage.getItem('accessToken');
+
+      await axios.patch(
+        'https://api.kidsdesigncompany.com/api/v1/admin/developer-settings/',
+        apiFormData,
+        {
+          headers: {
+            'Authorization': `JWT ${token}`,
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+      
+      setShowSuccessModal(true);
+      setError(null);
+      setInitialData(formData);
+      
       setTimeout(() => {
-        setSuccessMessage("Developer settings updated successfully");
-        setError(null);
-        setInitialData({...formData});
-        setLoading(false);
-        
-        setTimeout(() => {
-          setSuccessMessage(null);
-        }, 3000);
-      }, 1000);
+        setShowSuccessModal(false);
+      }, 3000);
     } catch (err) {
-      setError("Failed to update developer settings");
-      console.error("Error updating developer settings:", err);
+      setError('Failed to update developer settings');
+      console.error('Error updating developer settings:', err);
+    } finally {
       setLoading(false);
     }
   };
@@ -162,12 +182,6 @@ const DeveloperSettings: React.FC = () => {
         </div>
       )}
 
-      {successMessage && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          {successMessage}
-        </div>
-      )}
-
       <div className="mb-4">
         <div
           className="flex justify-between items-center cursor-pointer p-2 hover:bg-gray-50 rounded"
@@ -192,7 +206,7 @@ const DeveloperSettings: React.FC = () => {
           </svg>
         </div>
 
-        {isCollapsed && (
+        {!isCollapsed && (
           <div className="mt-4 transition-all duration-300 ease-in-out">
             <div className="mb-6 bg-gray-100 p-4 rounded-lg shadow border border-gray-200">
               <h3 className="font-medium text-lg mb-3">Current Developer Settings</h3>
@@ -215,7 +229,7 @@ const DeveloperSettings: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Terms of Service</p>
-                  <p className="font-medium truncate">{initialData?.terms_of_service|| 'Not set'}</p>
+                  <p className="font-medium truncate">{initialData?.terms_of_service || 'Not set'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Backend Base URL</p>
@@ -231,7 +245,7 @@ const DeveloperSettings: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Order Route</p>
-                  <p className="font-medium truncate">{initialData?.order_route_frontend|| 'Not set'}</p>
+                  <p className="font-medium truncate">{initialData?.order_route_frontend || 'Not set'}</p>
                 </div>
               </div>
             </div>
@@ -355,7 +369,7 @@ const DeveloperSettings: React.FC = () => {
 
             <div className="flex justify-end space-x-4 mt-8">
               <button
-                className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleCancel}
                 disabled={loading || !hasChanges()}
                 type="button"
@@ -363,8 +377,8 @@ const DeveloperSettings: React.FC = () => {
                 Cancel
               </button>
               <button
-                className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
-                onClick={() => setShowModal(true)}
+                className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:cursor-not-allowed"
+                onClick={() => setShowConfirmModal(true)}
                 disabled={loading || !hasChanges()}
                 type="button"
               >
@@ -376,7 +390,7 @@ const DeveloperSettings: React.FC = () => {
       </div>
 
       {/* Confirmation Modal */}
-      {showModal && (
+      {showConfirmModal && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
             <h3 className="text-lg font-medium mb-4">Confirm Changes</h3>
@@ -386,7 +400,7 @@ const DeveloperSettings: React.FC = () => {
             <div className="flex justify-end space-x-4">
               <button
                 className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-                onClick={() => setShowModal(false)}
+                onClick={() => setShowConfirmModal(false)}
                 type="button"
               >
                 Cancel
@@ -397,6 +411,27 @@ const DeveloperSettings: React.FC = () => {
                 type="button"
               >
                 Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-lg font-medium mb-4 text-green-700">Success</h3>
+            <p className="mb-6">
+              Developer settings updated successfully!
+            </p>
+            <div className="flex justify-end">
+              <button
+                className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+                onClick={() => setShowSuccessModal(false)}
+                type="button"
+              >
+                OK
               </button>
             </div>
           </div>

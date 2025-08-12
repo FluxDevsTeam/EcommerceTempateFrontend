@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { IoChevronBack, IoSearch, IoClose } from "react-icons/io5";
+import { IoChevronBack } from "react-icons/io5";
 import Modal from "../../../../components/ui/Modal";
-import PaginatedDropdown from '../components/PaginatedDropdown';
+import PaginatedDropdown from "./PaginatedDropdown";
 
 interface SubCategory {
   id: number;
@@ -11,6 +11,12 @@ interface SubCategory {
     id: number;
     name: string;
   };
+}
+
+interface WeightSizePair {
+  label: string;
+  weight: string;
+  size: string;
 }
 
 const EditProduct: React.FC = () => {
@@ -23,9 +29,6 @@ const EditProduct: React.FC = () => {
   ]);
   const [previewImages, setPreviewImages] = useState<string[]>(["", "", ""]);
   const [categories, setCategories] = useState<SubCategory[]>([]);
-  const [individualProductCategory, setIndividualProductCategory] =
-    useState<string>("");
-
   const [viewProductPreviewModal, setViewProductPreviewModal] = useState(false);
   const [selectedPreviewImage, setSelectedPreviewImage] = useState(0);
   const [modalConfig, setModalConfig] = useState({
@@ -34,6 +37,20 @@ const EditProduct: React.FC = () => {
     message: "",
     type: "success" as "success" | "error",
   });
+
+  const weightSizePairs: WeightSizePair[] = [
+    { label: "Very Light - Very Small (3000 - 7500)", weight: "Very Light", size: "Very Small"},
+    { label: "Very Light - Small (4000 - 8500)", weight: "Very Light", size: "Small" },
+    { label: "Light - Small (5000 - 9500)", weight: "Light", size: "Small" },
+    { label: "Light - Medium (14000 - 27000)", weight: "Light", size: "Medium" },
+    { label: "Medium - Medium (23000 - 41000)", weight: "Medium", size: "Medium" },
+    { label: "Medium - Large (32200 - 51000)", weight: "Medium", size: "Large" },
+    { label: "Heavy - Large (37000 - 55000)", weight: "Heavy", size: "Large" },
+    { label: "Heavy - Very Large (42000 - 74000)", weight: "Heavy", size: "Very Large" },
+    { label: "Very Heavy - Very Large (50000 - 92000)", weight: "Very Heavy", size: "Very Large"},
+    { label: "Very Heavy - XXL (55000 - 106000)", weight: "Very Heavy", size: "XXL" },
+    { label: "XXHeavy - XXL (69000 - 138000)", weight: "XXHeavy", size: "XXL" },
+  ];
 
   // Update formData to match API input structure
   const [formData, setFormData] = useState({
@@ -48,12 +65,12 @@ const EditProduct: React.FC = () => {
     is_available: false,
     latest_item: false,
     latest_item_position: null as number | null,
-    dimensional_size: null as string | null,
-    weight: null as string | null,
+    weightSizePair: "" as string,
     top_selling_items: false,
     top_selling_position: null as number | null,
     unlimited: false,
     production_days: null as number | null,
+    total_quantity: null as number | null,
   });
 
   const [initialFormData, setInitialFormData] = useState({
@@ -61,47 +78,28 @@ const EditProduct: React.FC = () => {
     description: "",
     sub_category: "",
     colour: "",
+    image1: null,
+    image2: null,
+    image3: null,
+    undiscounted_price: null as number | null,
     is_available: false,
     latest_item: false,
     latest_item_position: null as number | null,
-    dimensional_size: null as string | null,
-    weight: null as string | null,
+    weightSizePair: "" as string,
     top_selling_items: false,
     top_selling_position: null as number | null,
     unlimited: false,
     production_days: null as number | null,
+    total_quantity: null as number | null,
   });
 
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Define size and weight options
-  const sizeOptions = [
-    "Very Small",
-    "Small",
-    "Medium",
-    "Large",
-    "Very Large",
-    "XXL",
-  ];
-  const weightOptions = [
-    "Very Light",
-    "Light",
-    "Medium",
-    "Heavy",
-    "Very Heavy",
-    "XX Heavy",
-  ];
-
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredCategories, setFilteredCategories] = useState<SubCategory[]>(
     []
   );
-
-  const [isSearchMode, setIsSearchMode] = useState(false);
-
-  const [loading, setLoading] = useState(false);
-  const [updateLoading, setUpdateLoading] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -119,7 +117,7 @@ const EditProduct: React.FC = () => {
 
       try {
         const initialResponse = await fetch(
-          "https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/",
+          "https://api.kidsdesigncompany.com/api/v1/product/sub-category/",
           {
             headers: {
               Authorization: `JWT ${accessToken}`,
@@ -137,33 +135,28 @@ const EditProduct: React.FC = () => {
         const itemsPerPage = 10;
         const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-        // Fetch all pages
         const fetchPromises = [];
         for (let page = 1; page <= totalPages; page++) {
           fetchPromises.push(
             fetch(
-              `https://ecommercetemplate.pythonanywhere.com/api/v1/product/sub-category/?page=${page}`,
+              `https://api.kidsdesigncompany.com/api/v1/product/sub-category/?page=${page}`,
               {
                 headers: {
                   Authorization: `JWT ${accessToken}`,
                   "Content-Type": "application/json",
-                }
+                },
               }
             ).then((response) => response.json())
           );
         }
 
-        // Wait for all requests to complete
         const responses = await Promise.all(fetchPromises);
-
-        // Combine all results
         const allCategories = responses.reduce((acc, response) => {
           return [...acc, ...response.results];
         }, []);
 
         setCategories(allCategories);
       } catch (error) {
-        console.error("Error fetching categories:", error);
         setModalConfig({
           isOpen: true,
           title: "Error",
@@ -176,7 +169,6 @@ const EditProduct: React.FC = () => {
     fetchCategories();
   }, []);
 
-  // Add this new useEffect to handle category filtering
   useEffect(() => {
     const filtered = categories.filter((category) =>
       category.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -199,7 +191,7 @@ const EditProduct: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${id}/`,
+        `https://api.kidsdesigncompany.com/api/v1/product/item/${id}/`,
         {
           headers: {
             Authorization: `JWT ${accessToken}`,
@@ -213,26 +205,40 @@ const EditProduct: React.FC = () => {
       }
 
       const data = await response.json();
+
+      const weightSizePair =
+        weightSizePairs.find(
+          (pair) =>
+            pair.weight === data.weight && pair.size === data.dimensional_size
+        )?.label || "";
+
       const formattedData = {
         name: data.name || "",
-        description: data.description || "",
-        sub_category: data.sub_category.id,
-        colour: data.colour || "",
-        is_available: data.is_available ?? false,
-        latest_item: data.latest_item ?? false,
-        latest_item_position: data.latest_item_position,
-        dimensional_size: data.dimensional_size,
-        weight: data.weight,
-        top_selling_items: data.top_selling_items ?? false,
-        top_selling_position: data.top_selling_position,
-        unlimited: data.unlimited ?? false,
-        production_days: data.production_days || 0,
+        description: data?.description || "",
+        sub_category: data?.sub_category?.id,
+        colour: data?.colour || "",
+        image1: null,
+        image2: null,
+        image3: null,
+        undiscounted_price: data?.undiscounted_price || null,
+        is_available: data?.is_available ?? false,
+        latest_item: data?.latest_item ?? false,
+        latest_item_position: data?.latest_item_position || null,
+        weightSizePair,
+        top_selling_items: data?.top_selling_items ?? false,
+        top_selling_position: data?.top_selling_position || null,
+        unlimited: data?.unlimited ?? false,
+        production_days: data?.production_days || null,
+        total_quantity: data?.total_quantity || null,
       };
 
       setInitialFormData(formattedData);
       setFormData(formattedData);
-      setIndividualProductCategory(data.sub_category.name);
-      setPreviewImages([data.image1 || "", data.image2 || "", data.image3 || ""]);
+      setPreviewImages([
+        data?.image1 || "",
+        data?.image2 || "",
+        data?.image3 || "",
+      ]);
     } catch (error) {
       console.error("Error fetching product:", error);
       setModalConfig({
@@ -244,16 +250,17 @@ const EditProduct: React.FC = () => {
       });
     }
   };
+
   useEffect(() => {
     if (id) {
       fetchProduct();
     }
   }, [id]);
 
-  // Add effect to check for changes
   useEffect(() => {
-    const hasFormChanges = JSON.stringify(formData) !== JSON.stringify(initialFormData);
-    const hasImageChanges = selectedImages.some(img => img !== null);
+    const hasFormChanges =
+      JSON.stringify(formData) !== JSON.stringify(initialFormData);
+    const hasImageChanges = selectedImages.some((img) => img !== null);
     setHasChanges(hasFormChanges || hasImageChanges);
   }, [formData, selectedImages, initialFormData]);
 
@@ -265,7 +272,6 @@ const EditProduct: React.FC = () => {
     e.preventDefault();
     setIsSaving(true);
     const accessToken = localStorage.getItem("accessToken");
-    console.log("Starting product update...");
 
     if (!accessToken) {
       setModalConfig({
@@ -279,11 +285,27 @@ const EditProduct: React.FC = () => {
     }
 
     const changedFields = new FormData();
-  
-    // Compare and only add changed fields
-    Object.keys(formData).forEach(key => {
+    const selectedPair = weightSizePairs.find(
+      (pair) => pair.label === formData.weightSizePair
+    );
+
+    // Compare and add changed fields
+    Object.keys(formData).forEach((key) => {
       const typedKey = key as keyof typeof formData;
-      if (JSON.stringify(formData[typedKey]) !== JSON.stringify(initialFormData[typedKey])) {
+      if (key === "weightSizePair") {
+        if (
+          JSON.stringify(formData.weightSizePair) !==
+          JSON.stringify(initialFormData.weightSizePair)
+        ) {
+          if (selectedPair) {
+            changedFields.append("weight", selectedPair.weight);
+            changedFields.append("dimensional_size", selectedPair.size);
+          }
+        }
+      } else if (
+        JSON.stringify(formData[typedKey]) !==
+        JSON.stringify(initialFormData[typedKey])
+      ) {
         changedFields.append(key, String(formData[typedKey]));
       }
     });
@@ -296,12 +318,13 @@ const EditProduct: React.FC = () => {
     });
 
     if ([...changedFields.entries()].length === 0) {
+      setIsSaving(false);
       return;
     }
 
     try {
       const response = await fetch(
-        `https://ecommercetemplate.pythonanywhere.com/api/v1/product/item/${id}/`,
+        `https://api.kidsdesigncompany.com/api/v1/product/item/${id}/`,
         {
           method: "PATCH",
           headers: {
@@ -321,7 +344,7 @@ const EditProduct: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log("Update response:", data);
+      
 
       setModalConfig({
         isOpen: true,
@@ -330,7 +353,6 @@ const EditProduct: React.FC = () => {
         type: "success",
       });
 
-      // Refresh the product data
       await fetchProduct();
     } catch (error) {
       console.error("Error updating product:", error);
@@ -370,7 +392,6 @@ const EditProduct: React.FC = () => {
       newSelectedImages[index] = file;
       setSelectedImages(newSelectedImages);
 
-      // Create preview URL
       const reader = new FileReader();
       reader.onload = () => {
         const newPreviewImages = [...previewImages];
@@ -379,6 +400,17 @@ const EditProduct: React.FC = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  // Helper to get weight and size for preview
+  const getWeightSizeForPreview = () => {
+    const selectedPair = weightSizePairs.find(
+      (pair) => pair.label === formData.weightSizePair
+    );
+    return {
+      weight: selectedPair ? selectedPair.weight : "Not specified",
+      size: selectedPair ? selectedPair.size : "Not specified",
+    };
   };
 
   return (
@@ -412,7 +444,6 @@ const EditProduct: React.FC = () => {
           </div>
         )}
 
-        {/* Header Section */}
         <div className="mb-8">
           <div className="grid md:flex md:items-center md:justify-between">
             <div>
@@ -427,19 +458,43 @@ const EditProduct: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setViewProductPreviewModal(true)}
+                disabled={isSaving}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Preview Product
+                {isSaving ? (
+                  <div className="flex items-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-700"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Loading Preview...
+                  </div>
+                ) : (
+                  "Preview Product"
+                )}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Main Form */}
         <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
           <div className="bg-white shadow rounded-lg overflow-hidden">
-            {/* Basic Information Section */}
-            {/* <div className="p-6 border-b border-gray-200"> */}
             <div className="p-6 border-b border-gray-200 bg-gray-50">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Basic Information
@@ -461,13 +516,13 @@ const EditProduct: React.FC = () => {
                 </div>
 
                 <div>
-                    <div className="flex justify-between items-center mb-2">
+                  <div className="flex justify-between items-center mb-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Category
+                      Sub-Category
                     </label>
                     <button
                       type="button"
-                      onClick={() => navigate('/admin/admin-categories')}
+                      onClick={() => navigate("/admin/admin-categories")}
                       className="text-sm text-blue-600 hover:text-blue-700"
                     >
                       Manage Categories
@@ -476,8 +531,13 @@ const EditProduct: React.FC = () => {
                   <PaginatedDropdown
                     options={categories}
                     value={formData.sub_category}
-                    onChange={(value) => setFormData(prev => ({ ...prev, sub_category: value }))}
-                    placeholder="Select Category"
+                    onChange={(value) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        sub_category: String(value),
+                      }))
+                    }
+                    placeholder="Select Sub-Category"
                     required
                   />
                 </div>
@@ -499,7 +559,6 @@ const EditProduct: React.FC = () => {
               </div>
             </div>
 
-            {/* Specifications Section */}
             <div className="p-6 border-b border-gray-50">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Specifications
@@ -521,37 +580,19 @@ const EditProduct: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Transport Size
+                    Weight & Size (Lagos - Kano)
                   </label>
                   <select
-                    name="dimensional_size"
-                    value={formData.dimensional_size || ""}
+                    name="weightSizePair"
+                    value={formData.weightSizePair}
                     onChange={handleChange}
+                    required
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                   >
-                    <option value="">Select Size</option>
-                    {sizeOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Transport Weight
-                  </label>
-                  <select
-                    name="weight"
-                    value={formData.weight || ""}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                  >
-                    <option value="">Select Weight</option>
-                    {weightOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
+                    <option value="">Select Weight & Size</option>
+                    {weightSizePairs.map((pair) => (
+                      <option key={pair.label} value={pair.label}>
+                        {pair.label}
                       </option>
                     ))}
                   </select>
@@ -579,7 +620,6 @@ const EditProduct: React.FC = () => {
               </div>
             </div>
 
-            {/* Product Options Section */}
             <div className="p-6 border-b border-gray-200 bg-gray-50">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Product Options
@@ -717,7 +757,6 @@ const EditProduct: React.FC = () => {
               </div>
             </div>
 
-            {/* Images Section */}
             <div className="p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Product Images
@@ -778,7 +817,6 @@ const EditProduct: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Additional Images */}
                 {[1, 2].map((num) => (
                   <div key={num} className="space-y-4">
                     <div>
@@ -819,7 +857,7 @@ const EditProduct: React.FC = () => {
                                   strokeLinejoin="round"
                                 />
                               </svg>
-                              <label className="relative cursor-pointer rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                              <label className="relative cursor-pointer rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus:within:ring-blue-500">
                                 <span>Upload a file</span>
                                 <input
                                   type="file"
@@ -839,21 +877,83 @@ const EditProduct: React.FC = () => {
             </div>
           </div>
 
-          {/* Form Actions */}
           <div className="flex justify-end space-x-4">
             <button
               type="button"
               onClick={handleCancel}
               className="px-6 py-3 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              disabled={isSaving}
             >
-              Cancel
+              {isSaving ? (
+                <div className="flex items-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-700"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Cancelling...
+                </div>
+              ) : (
+                "Cancel"
+              )}
             </button>
             <button
-              type="button" // Change from "submit" to "button"
+              type="button"
+              onClick={() => setViewProductPreviewModal(true)}
+              disabled={isSaving}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              {isSaving ? (
+                <div className="flex items-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-700"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Loading Preview...
+                </div>
+              ) : (
+                "Preview Product"
+              )}
+            </button>
+            <button
+              type="button"
               onClick={handleSaveChanges}
               disabled={!hasChanges || isSaving}
               className={`px-6 py-3 border border-transparent text-base font-medium rounded-md text-white ${
-                hasChanges ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
+                hasChanges
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : "bg-gray-400 cursor-not-allowed"
               } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50`}
             >
               {isSaving ? (
@@ -888,11 +988,9 @@ const EditProduct: React.FC = () => {
         </form>
       </div>
 
-      {/* Preview Modal */}
       {viewProductPreviewModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-white w-full max-w-[1000px] rounded-2xl max-h-[90vh] overflow-y-auto">
-            {/* Mobile Header */}
             <div className="flex items-center p-4 md:hidden border-b">
               <button
                 onClick={() => setViewProductPreviewModal(false)}
@@ -905,7 +1003,6 @@ const EditProduct: React.FC = () => {
               </h1>
             </div>
 
-            {/* Desktop Header */}
             <div className="hidden md:flex justify-between items-center p-6 border-b">
               <h1 className="text-2xl font-bold text-gray-800">
                 Product Preview
@@ -920,9 +1017,7 @@ const EditProduct: React.FC = () => {
 
             <div className="p-6">
               <div className="md:flex md:space-x-8">
-                {/* Image Section */}
                 <div className="md:w-1/2 space-y-4">
-                  {/* Main Image Display */}
                   <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
                     {previewImages[selectedPreviewImage] ? (
                       <img
@@ -950,7 +1045,6 @@ const EditProduct: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Thumbnail Images */}
                   <div className="grid grid-cols-3 gap-4">
                     {previewImages.map((url, index) => (
                       <button
@@ -978,24 +1072,17 @@ const EditProduct: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Product Details */}
                 <div className="md:w-1/2 mt-6 md:mt-0">
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-3xl font-bold text-gray-900 mb-2">
                         {formData.name || "Product Name"}
                       </h2>
-                      {/* <div className="flex items-baseline space-x-4">
+                      <div className="flex items-baseline space-x-4">
                         <span className="text-2xl font-bold text-gray-900">
-                          ₦{formData.price || "0.00"}
+                          {formData.undiscounted_price ? formatCurrency(formData.undiscounted_price) : "₦0"}
                         </span>
-                        {formData.undiscounted_price && (
-                          <span className="text-lg text-gray-500 line-through">
-                            ₦{formData.undiscounted_price}
-                          </span>
-                        )}
                       </div>
-                       */}
                     </div>
 
                     <div className="bg-gray-50 rounded-lg p-4">
@@ -1035,7 +1122,7 @@ const EditProduct: React.FC = () => {
                           Size
                         </h3>
                         <p className="text-gray-600">
-                          {formData.dimensional_size || "Not specified"}
+                          {getWeightSizeForPreview().size}
                         </p>
                       </div>
 
@@ -1044,7 +1131,7 @@ const EditProduct: React.FC = () => {
                           Weight
                         </h3>
                         <p className="text-gray-600">
-                          {formData.weight || "Not specified"}
+                          {getWeightSizeForPreview().weight}
                         </p>
                       </div>
                     </div>
@@ -1052,13 +1139,11 @@ const EditProduct: React.FC = () => {
                     <div className="space-y-4">
                       <div className="flex items-center space-x-2">
                         <span className="text-gray-700">
-                          {formData.is_available ? (
-                            formData.unlimited ? 
-                              "Unlimited Stock" : 
-                              `${formData.total_quantity ?? 0} in Stock`
-                          ) : (
-                            "Out of Stock"
-                          )}
+                          {formData.is_available
+                            ? formData.unlimited
+                              ? "Unlimited Stock"
+                              : `${formData.total_quantity ?? 0} in Stock`
+                            : "Out of Stock"}
                         </span>
                       </div>
 

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 
 type VerifyEmailFormData = {
   code: string;
@@ -97,7 +97,7 @@ const VerifyEmail = () => {
 
   const onSubmit = async (data: VerifyEmailFormData) => {
     if (!currentEmail) {
-      console.error('Email is missing. Current email state:', currentEmail);
+      
       return;
     }
 
@@ -142,7 +142,7 @@ const VerifyEmail = () => {
     <div className="flex justify-center items-center">
       <div className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mb-6 text-2xl font-bold">SHOP.CO</div>
+          <div className="mb-6 text-2xl font-bold">KIDS DESIGN COMPANY</div>
           <CardTitle className="text-xl font-medium">Verify Your Email</CardTitle>
         </CardHeader>
         <CardContent>

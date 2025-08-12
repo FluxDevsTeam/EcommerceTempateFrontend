@@ -6,13 +6,15 @@ type DropdownProps = {
   options: string[];    
   menuBgClass?: string;      
   onSelect?: (value: string) => void;
+  disabled?: boolean;
 };
 
 const Dropdown = ({
   label = "Select Option",
   options,
   menuBgClass = "bg-white",
-  onSelect
+  onSelect,
+  disabled = false
 }: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(label);
@@ -28,6 +30,7 @@ const Dropdown = ({
   };
 
   const handleOptionClick = (option: string) => {
+    if (disabled) return;
     setSelected(option);
     setIsOpen(false);
     onSelect?.(option);
@@ -41,20 +44,22 @@ const Dropdown = ({
   }, []);
 
   useEffect(() => {
-  setSelected(label); // Keeps it in sync when label prop changes
-}, [label]);
+    setSelected(label); // Keeps it in sync when label prop changes
+  }, [label]);
 
   return (
     <div ref={dropdownRef} className="relative inline-block text-sm px-2 py-1 sm:px-4 sm:py-2.5">
       <button
-        onClick={() => setIsOpen(prev => !prev)}
-        className={`px-2 py-1 sm:px-4 sm:py-2 text-[12px] sm:text-base flex items-center justify-between gap-4 border border-[#CACACA] rounded-lg min-w-[100px] sm:min-w-[150px] ${menuBgClass} z-10`}
+        onClick={() => !disabled && setIsOpen(prev => !prev)}
+        className={`px-2 py-1 sm:px-4 sm:py-2 text-[12px] sm:text-base flex items-center justify-between gap-4 border rounded-lg min-w-[100px] sm:min-w-[150px] z-10 
+                    ${disabled ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : menuBgClass + ' border-[#CACACA] hover:border-gray-400'}`}
+        disabled={disabled}
       >
         <span>{selected}</span>
-        <FiChevronDown />
+        <FiChevronDown className={`${disabled ? 'text-gray-300' : ''}`} />
       </button>
 
-      {isOpen && (
+      {isOpen && !disabled && (
         <ul
           className={`absolute left-0 mt-2 w-36 sm:w-48 border rounded shadow z-10 bg-white`}
         >
@@ -76,7 +81,7 @@ const Dropdown = ({
               {option === "CANCELLED" && (
                 <span className="w-2 h-2 rounded-full bg-[#F44336]"></span>
               )}
-              <span>{option}</span>
+              <span>{option.charAt(0).toUpperCase() + option.slice(1).toLowerCase()}</span>
             </li>
           ))}
         </ul>
