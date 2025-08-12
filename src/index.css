@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* Your custom styles below */
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Override default slick arrow styles */
+.slick-prev:before,
+.slick-next:before {
+  color: black !important; /* Makes arrows black */
+  font-size: 20px !important; /* Adjust size if needed */
+}
+
+/* Keep your custom styles below */
+.slick-carousel-container {
+  width: 50%;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+/* Slide styling */
+.slick-slide {
+  padding: 0 10px;
+  /* Adds some spacing between slides */
+}
+
+.slick-slide img {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+  display: block;
+}
+
+/* Dots/pagination styling */
+.slick-dots {
+  bottom: -25px;
+}
+
+.slick-dots li button:before {
+  font-size: 10px;
+  color: #999;
+  opacity: 1;
+}
+
+.slick-dots li.slick-active button:before {
+  color: #333;
+}
+
+/* Arrow styling */
+.slick-prev:before,
+.slick-next:before {
+  color: #333;
+}
+
+/* Center mode adjustments */
+.slick-center {
+  transform: scale(1.05);
+  transition: transform 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .slick-carousel-container {
+    width: 80%;
+  }
+
+  .slick-slide img {
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .slick-carousel-container {
+    width: 90%;
+  }
+
+  .slick-slide img {
+    max-height: 250px;
+  }
+}
+
+.SliderThumb {
+	background-color:#0078A5;
+}

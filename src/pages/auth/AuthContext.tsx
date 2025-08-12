@@ -1,0 +1,388 @@
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import authService from './authservice';
+import { migrateLocalCartToUserCart } from '../../utils/cartStorage';
+import { addWishItem, clearWishlistLocalStorage, getWishlistFromLocalStorage, WishData } from '../../pages/orders/api';
+import type { WishItem } from '../../pages/orders/types';
+
+interface User {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone_number: string;
+}
+
+interface SignupData {
+  first_name: string;
+  last_name: string;
+  phone_number: string;
+  email: string;
+  password: string;
+  verify_password: string;
+}
+
+interface AuthContextType {
+  currentUser: User | null;
+  loading: boolean;
+  isAuthenticated: boolean;
+  error: string | null;
+  clearError: () => void;
+  signup: (userData: SignupData) => Promise<any>;
+  login: (email: string, password: string) => Promise<any>;
+  logout: () => Promise<void>;
+  verifySignupOTP: (email: string, otp: string) => Promise<any>;
+  resendSignupOTP: (email: string) => Promise<any>;
+  requestForgotPassword: (email: string) => Promise<any>;
+  resendForgotPasswordOTP: (email: string) => Promise<any>;
+  verifyForgotPasswordOTP: (email: string, otp: string) => Promise<any>;
+  setNewPassword: (data: { email: string; new_password: string; confirm_password: string }) => Promise<any>;
+  requestPasswordChange: (old_password: string, new_password: string, confirm_password: string) => Promise<any>;
+  resendPasswordChangeOTP: () => Promise<any>;
+  verifyPasswordChange: (otp: string) => Promise<any>;
+  refreshUserData: () => Promise<void>;
+}
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [tempEmail, setTempEmail] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const clearError = () => {
+    setError(null);
+  };
+
+  // Function to refresh user data from localStorage or API
+  const refreshUserData = async (): Promise<void> => {
+    try {
+      // If we already have current user data, don't refresh
+      if (currentUser?.first_name) {
+        return;
+      }
+
+      // First check if we have the user in localStorage
+      const storedUser = authService.getCurrentUser();
+      if (storedUser?.first_name) {
+        setCurrentUser(storedUser);
+        return;
+      }
+      
+      // If not, try to fetch from API if we have a token
+      const accessToken = localStorage.getItem('accessToken');
+      if (accessToken) {
+        const userProfile = await authService.getUserProfile();
+        if (userProfile) {
+          setCurrentUser(userProfile);
+        }
+      } else {
+        setCurrentUser(null);
+      }
+    } catch (err) {
+      console.error("Failed to refresh user data", err);
+      setCurrentUser(null);
+    }
+  };
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const accessToken = localStorage.getItem('accessToken');
+        const refreshToken = localStorage.getItem('refreshToken');
+        
+        if (!accessToken || !refreshToken) {
+          setCurrentUser(null);
+          return;
+        }
+
+        await refreshUserData();
+      } catch (err) {
+        console.error("Auth check failed:", err);
+        setCurrentUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []); // Run only once on mount
+
+  const signup = async (userData: SignupData): Promise<any> => {
+    setLoading(true);
+    clearError();
+    
+    try {
+      const response = await authService.signup(userData);
+      // Store email in localStorage for verification
+      localStorage.setItem('signupEmail', userData.email);
+      setTempEmail(userData.email);
+      setLoading(false);
+      return response;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Signup failed. Please try again.';
+      setError(errorMessage);
+      setLoading(false);
+      throw err;
+    }
+  };
+
+  const login = async (email: string, password: string): Promise<any> => {
+    setLoading(true);
+    clearError();
+    
+    try {
+      const response = await authService.login({ email, password });
+      
+      if (response.user) {
+        setCurrentUser(response.user);
+        
+        const accessToken = localStorage.getItem('accessToken');
+        if (accessToken) {
+          // Migrate local cart items
+          try {
+            await migrateLocalCartToUserCart(accessToken);
+          } catch (cartError) {
+            console.error("Failed to migrate cart items:", cartError);
+          }
+
+          // Migrate local wishlist items
+          try {
+            const localWishlistItems = getWishlistFromLocalStorage();
+            if (localWishlistItems && localWishlistItems.length > 0) {
+              // Fetch current DB wishlist to avoid duplicates
+              const dbWishlistItems = await WishData(); // Fetches for the now logged-in user
+              const dbProductIds = new Set(dbWishlistItems.map(item => item.product.id));
+
+              for (const localItem of localWishlistItems) {
+                if (!dbProductIds.has(localItem.product.id)) {
+                  await addWishItem(localItem.product.id);
+                }
+              }
+              clearWishlistLocalStorage();
+              
+            }
+          } catch (wishlistError) {
+            console.error("Failed to migrate wishlist items:", wishlistError);
+          }
+        }
+      } else {
+        await refreshUserData();
+      }
+      
+      setLoading(false);
+      return response;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Login failed. Please try again.';
+      setError(errorMessage);
+      setLoading(false);
+      throw err;
+    }
+  };
+
+  const logout = async (): Promise<void> => {
+    setLoading(true);
+    clearError();
+    
+    try {
+      await authService.logout();
+      setCurrentUser(null);
+    } catch (err: any) {
+      console.error("Logout error", err);
+      setError("Failed to logout. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifySignupOTP = async (email: string, otp: string): Promise<any> => {
+    setLoading(true);
+    clearError();
+    
+    try {
+      
+      const response = await authService.verifySignupOTP(email, otp);
+      
+      setLoading(false);
+      return response;
+    } catch (err: any) {
+      console.error('Verification error:', err);
+      const errorMessage = err.response?.data?.message || 'Verification failed. Please check the code and try again.';
+      setError(errorMessage);
+      setLoading(false);
+      throw err;
+    }
+  };
+
+  const resendSignupOTP = async (email: string): Promise<any> => {
+    setLoading(true);
+    clearError();
+    
+    try {
+      
+      const response = await authService.resendSignupOTP(email);
+      
+      setLoading(false);
+      return response;
+    } catch (err: any) {
+      console.error('Resend error:', err);
+      const errorMessage = err.response?.data?.message || 'Failed to resend verification code. Please try again.';
+      setError(errorMessage);
+      setLoading(false);
+      throw err;
+    }
+  };
+
+  const requestForgotPassword = async (email: string): Promise<any> => {
+    setLoading(true);
+    clearError();
+    
+    try {
+      const response = await authService.requestForgotPassword(email);
+      // Store email for verification component
+      localStorage.setItem('resetEmail', email);
+      setLoading(false);
+      return response;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to process password reset request. Please try again.';
+      setError(errorMessage);
+      setLoading(false);
+      throw err;
+    }
+  };
+
+  const resendForgotPasswordOTP = async (email: string): Promise<any> => {
+    setLoading(true);
+    clearError();
+    
+    try {
+      const response = await authService.resendForgotPasswordOTP(email);
+      setLoading(false);
+      return response;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to resend verification code. Please try again.';
+      setError(errorMessage);
+      setLoading(false);
+      throw err;
+    }
+  };
+
+  const verifyForgotPasswordOTP = async (email: string, otp: string): Promise<any> => {
+    setLoading(true);
+    clearError();
+    
+    try {
+      const response = await authService.verifyForgotPasswordOTP(email, otp);
+      setLoading(false);
+      return response;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to verify code. Please check and try again.';
+      setError(errorMessage);
+      setLoading(false);
+      throw err;
+    }
+  };
+
+  const setNewPassword = async (data: { email: string; new_password: string; confirm_password: string }): Promise<any> => {
+    setLoading(true);
+    clearError();
+    
+    try {
+      const response = await authService.setNewPassword(data);
+      setLoading(false);
+      return response;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to set new password. Please try again.';
+      setError(errorMessage);
+      setLoading(false);
+      throw err;
+    }
+  };
+
+  const requestPasswordChange = async (old_password: string, new_password: string, confirm_password: string): Promise<any> => {
+    setLoading(true);
+    clearError();
+    
+    try {
+      const response = await authService.requestPasswordChange({ 
+        old_password, 
+        new_password, 
+        confirm_password 
+      });
+      setLoading(false);
+      return response;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to request password change. Please try again.';
+      setError(errorMessage);
+      setLoading(false);
+      throw err;
+    }
+  };
+
+  const resendPasswordChangeOTP = async (): Promise<any> => {
+    setLoading(true);
+    clearError();
+    
+    try {
+      const response = await authService.resendPasswordChangeOTP();
+      setLoading(false);
+      return response;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to resend verification code. Please try again.';
+      setError(errorMessage);
+      setLoading(false);
+      throw err;
+    }
+  };
+
+  const verifyPasswordChange = async (otp: string): Promise<any> => {
+    setLoading(true);
+    clearError();
+    
+    try {
+      const response = await authService.verifyPasswordChange(otp);
+      setLoading(false);
+      return response;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Failed to verify code. Please check and try again.';
+      setError(errorMessage);
+      setLoading(false);
+      throw err;
+    }
+  };
+
+  const value: AuthContextType = {
+    currentUser,
+    loading,
+    isAuthenticated: !!currentUser,
+    error,
+    clearError,
+    signup,
+    login,
+    logout,
+    verifySignupOTP,
+    resendSignupOTP,
+    requestForgotPassword,
+    resendForgotPasswordOTP,
+    verifyForgotPasswordOTP,
+    setNewPassword,
+    requestPasswordChange,
+    resendPasswordChangeOTP,
+    verifyPasswordChange,
+    refreshUserData
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
