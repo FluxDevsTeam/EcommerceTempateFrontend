@@ -814,32 +814,57 @@ const [isDbPriceRangeInitialized, setIsDbPriceRangeInitialized] = useState(false
                 ))}
                 {filteredProducts.length === 0 && !loading && (
                   <tr>
-                    <td colSpan={9} className="text-center py-4 text-gray-500">
-                                        <div className="col-span-full flex flex-col items-center justify-center py-12 px-6 border border-dashed border-gray-300 rounded-2xl bg-gray-50 shadow-sm">
-                    {/* SVG Icon */}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-16 w-16 text-gray-400 mb-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m12-9l2 9m-6-9v9"
-                      />
-                    </svg>
+                  <td className="md:table-cell hidden text-center py-4 text-gray-500" colSpan={9}>
+                    <div className="flex flex-col items-center justify-center py-12 px-6 border border-dashed border-gray-300 rounded-2xl bg-gray-50 shadow-sm w-full">
+                      {/* SVG Icon */}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-16 w-16 text-gray-400 mb-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m12-9l2 9m-6-9v9"
+                        />
+                      </svg>
 
-                    {/* Message */}
-                    <p className="text-lg font-medium text-gray-600">No products found</p>
-                    <p className="text-sm text-gray-500 mt-2">
-                      Try adjusting your search or filter to find what you’re looking for.
-                    </p>
-                  </div>
-                    </td>
-                  </tr>
+                      {/* Message */}
+                      <p className="text-lg font-medium text-gray-600">No products found</p>
+                      <p className="text-sm text-gray-500 mt-2">
+                        Try adjusting your search or filter to find what you’re looking for.
+                      </p>
+                    </div>
+                  </td>
+                  <td className="table-cell md:hidden text-center py-4 text-gray-500" colSpan={4}>
+                    <div className="flex flex-col items-center justify-center py-12 px-6 border border-dashed border-gray-300 rounded-2xl bg-gray-50 shadow-sm w-full">
+                      {/* SVG Icon */}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-16 w-16 text-gray-400 mb-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m12-9l2 9m-6-9v9"
+                        />
+                      </svg>
+
+                      {/* Message */}
+                      <p className="text-lg font-medium text-gray-600">No products found</p>
+                      <p className="text-sm text-gray-500 mt-2">
+                        Try adjusting your search or filter to find what you’re looking for.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
                 )}
               </tbody>
             </table>
