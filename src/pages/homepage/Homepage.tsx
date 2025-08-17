@@ -9,7 +9,7 @@ import type { WishItem } from "../orders/types";
 import { ProductAPIResponse, ProductItem } from "../homepage/types/data-types";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import banner from "/images/banner.png";
+import banner from "/images/Frame 1618876996.png";
 
 const getPageSize = () => (window.innerWidth < 768 ? 10 : 12); // md breakpoint
 
@@ -134,7 +134,7 @@ const Homepage = () => {
           ...newData.latest_items.results,
         ]);
         setHasMoreItems(!!newData.latest_items?.next);
-        setCurrentPage(nextPage);
+        setCurrentPage(nextPage); 
         queryClient.setQueryData(["products", nextPage, pageSize], newData);
       } else {
         setHasMoreItems(false);
@@ -207,7 +207,7 @@ const Homepage = () => {
 
   return (
     <div className="w-full  py-4 px-5 md:px-16 lg:px-24">
-      <div className="flex flex-col md:grid md:grid-cols-2 gap-8 lg:gap-12 container mx-auto mb-4 mt-8 md:mt-8 md:place-items-center">
+      <div className="flex flex-col md:grid md:grid-cols-2 gap-8 lg:gap-12 lg:px-6 container mx-auto mb-4 mt-8 md:mt-8 md:place-items-center">
         <div className="w-full md:col-start-2 md:row-start-1 flex items-center justify-center ">
           <div className="relative w-full flex justify-center">
             <img
@@ -217,7 +217,7 @@ const Homepage = () => {
             />
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
               <Link to="/new-arrivals">
-                <button className="bg-customBlue text-white text-sm md:text-base font-medium rounded-md px-8 py-3 hover:brightness-90 transition-all duration-300 shadow-lg hover:shadow-xl opacity-70 animate-pulse">
+                <button className="bg-gray-800 text-white text-sm md:text-base font-medium rounded-md px-8 py-3 hover:brightness-90 transition-all duration-300 shadow-lg hover:shadow-xl opacity-70 animate-pulse">
                   Shop Now
                 </button>
               </Link>
@@ -226,14 +226,16 @@ const Homepage = () => {
         </div>
         <div className="flex flex-col justify-center items-center space-y-4 md:space-y-6 md:max-w-xl w-full px-2 md:px-0 md:col-start-1">
           <div className="w-full space-y-3 md:space-y-4 lg:space-y-6 text-center md:text-left">
-            <h1 className="text-[22px] font-bold leading-[1.3] tracking-[-0.02em] sm:text-3xl md:text-4xl lg:text-5xl text-gray-900 px-3 md:px-0">
+            <h1 className="font-bold text-3xl md:text-4xl lg:text-5xl spa text-gray-900 px-3 md:px-0">
+              <span className="block mb-2">
+                Shop Smarter,
+              </span>
               <span className="block mb-1">
-                Furnish with Fun, Discover What Your Little Ones Love!
+                 Find What You Love
               </span>
             </h1>
-            <p className="hidden md:block text-base sm:text-lg md:text-xl text-gray-600 leading-relaxed max-w-[90%] mx-auto md:mx-0">
-              Exclusive Deals. Stress-Free Shopping for Your Kids' Perfect
-              Space.
+            <p className=" md:block text-xs md:text-sm text-gray-600 leading-relaxed max-w-[90%] mx-auto md:mx-0">
+              *This is Fluxdevs demo e-commerce website created for marketing and presentation purposes only. All products are fictitious and not for sale.
             </p>
           </div>
         </div>

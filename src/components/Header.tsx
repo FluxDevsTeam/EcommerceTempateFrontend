@@ -10,7 +10,7 @@ import SearchInput from "./SearchInput";
 import { useAuth } from "@/pages/auth/AuthContext";
 import { FaUserCheck } from "react-icons/fa6";
 import { FaRegHeart } from "react-icons/fa";
-import logo from '/images/logo.png'
+import logo from '/images/full_logo.png'
 
 interface FilterState {
   selectedSubCategories: number[];
@@ -433,12 +433,12 @@ const Header = () => {
         {/* Desktop Navigation */}
         <div className="hidden md:block">
           <div className="flex justify-between items-center">
-            <Link to='/'><img src={logo} alt="logo" /></Link>  
+            <Link to='/'><img src={logo} alt="logo" className="h-10" /></Link>  
             <div className="flex space-x-6 items-center">
               <div className="relative">
                 {isUserAuthenticated ? (
                   <div className="flex items-center gap-3 cursor-pointer">
-                    <span className="text-sm font-medium bg-blue-200 px-3 py-1 rounded-md">
+                    <span className="text-sm font-medium bg-gray-300 px-3 py-1 rounded-md">
                       Welcome, {displayName}
                     </span>
                     <span onClick={toggleUserDropdown}><FaUserCheck size={24} /></span>  
@@ -539,7 +539,7 @@ const Header = () => {
               >
                 {isMobileMenuOpen ? <AiOutlineClose size={28} /> : <AiOutlineMenu size={28} />}
               </button>
-              <Link to='/'><img src={logo} alt="logo" /></Link>
+              <Link to='/'><img src={logo} className="h-10" alt="logo" /></Link>
             </div>
             
             <div className="flex items-center space-x-4">

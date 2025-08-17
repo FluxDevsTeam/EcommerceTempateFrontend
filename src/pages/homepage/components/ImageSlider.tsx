@@ -115,12 +115,12 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ data }) => {
                   <h3 className="line-clamp-3 text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 leading-tight pb-0 mb-0 capitalize">
                     {image.name.toUpperCase()}
                   </h3>
-                  <div className="h-1 w-44 mt-0 pt-0 bg-blue-600"></div>
+                  <div className="h-1 w-44 mt-0 pt-0 bg-gray-600"></div>
                   <p className="text-gray-600 text-lg lg:text-xl">
                     Discover our exclusive collection
                   </p>
                   <button
-                    className="bg-customBlue text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors w-fit"
+                    className="bg-gray-800 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-gray-700 transition-colors w-fit"
                     onClick={() => handleClick(image.id.split("-")[0])}
                   >
                     Shop Now

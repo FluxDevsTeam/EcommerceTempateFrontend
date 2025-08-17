@@ -78,7 +78,7 @@ const Sidebar = ({
           // Mobile Flyout Menu Top
           <>
             <Link to="/admin" onClick={() => handleNavClick("/admin")} className="focus:outline-none focus:ring-2 focus:ring-gray-400 rounded-sm">
-              <img src={"/images/logo.png"} alt={"SHOP.CO Logo"} className="h-9 w-auto" />
+              <img src={"/images/logo.png"} alt={"SHOP.CO Logo"} className="h-9 aspect-square" />
             </Link>
             <button 
               onClick={toggleMobileMenu} 

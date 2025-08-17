@@ -76,7 +76,7 @@ const Login = () => {
         <div className="mb-8 text-center">
           <Link to="/">
             <img
-              src="/images/logo.png"
+              src="/images/full_logo.png"
               alt="KidsDesignCompanyLogo Logo"
               className="h-10 w-auto mx-auto cursor-pointer"
             />

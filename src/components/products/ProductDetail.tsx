@@ -429,7 +429,7 @@ const ProductDetail = () => {
             <div
               className={`bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4 border-t-4 ${
                 modalConfig.type === "success"
-                  ? "border-customBlue"
+                  ? "border-gray-800"
                   : "border-red-500"
               } relative`}
             >
@@ -445,7 +445,7 @@ const ProductDetail = () => {
               <h2
                 className={`text-2xl font-bold mb-4 ${
                   modalConfig.type === "success"
-                    ? "text-customBlue"
+                    ? "text-gray-800"
                     : "text-red-600"
                 }`}
               >
@@ -466,7 +466,7 @@ const ProductDetail = () => {
                 <div
                   key={index}
                   className={`bg-gray-100 p-1.5 rounded-md cursor-pointer hover:opacity-90 ${
-                    mainImage === img ? "ring-2 ring-blue-500" : ""
+                    mainImage === img ? "ring-2 ring-gray-500" : ""
                   }`}
                   onClick={() => setMainImage(img)}
                 >
@@ -506,7 +506,7 @@ const ProductDetail = () => {
                 {product.name}
               </h1>
 
-              <span className="inline-block bg-blue-100 text-blue-800 text-xs md:text-sm rounded-xl p-1.5">
+              <span className="inline-block bg-gray-100 text-gray-800 text-xs md:text-sm rounded-xl p-1.5">
                 {product.unlimited
                   ? "Unlimited stock"
                   : `${availableQuantity} left in stock`}
@@ -570,12 +570,12 @@ const ProductDetail = () => {
                         }
                         className={`p-2 text-xs sm:text-sm border rounded-xl transition-colors ${
                           item.size === selectedSize
-                            ? "bg-blue-200 text-blue-800 border-blue-300" // Selected: light blue background
+                            ? "bg-gray-200 text-gray-800 border-gray-300" // Selected: light blue background
                             : isSizeInCart(product.id, item.id)
                             ? "bg-green-100 text-green-800 border-green-300 cursor-pointer" // In cart: light green background
                             : !product.unlimited && item.quantity <= 0
                             ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed" // Disabled
-                            : "bg-white text-blue-600 border-blue-300 hover:bg-gray-100 cursor-pointer" // Not selected: White background
+                            : "bg-white text-gray-600 border-gray-300 hover:bg-gray-100 cursor-pointer" // Not selected: White background
                         }`}
                         title={
                           isSizeInCart(product.id, item.id)
@@ -629,7 +629,7 @@ const ProductDetail = () => {
                   className={`w-full py-2.5 px-3 text-white rounded-xl transition-colors cursor-pointer ${
                     !isInStock || isAddingToCart
                       ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-customBlue hover:brightness-90"
+                      : "bg-gray-800 hover:brightness-90"
                   }`}
                   type="button"
                   disabled={!isInStock || isAddingToCart}
@@ -661,7 +661,7 @@ const ProductDetail = () => {
             </p>
             {product.description.length > 300 && (
               <span
-                className={` text-blue-800 text-xs cursor-pointer`}
+                className={` text-gray-800 text-xs cursor-pointer`}
                 onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
               >
                 {isDescriptionExpanded ? "view less" : "view full description"}

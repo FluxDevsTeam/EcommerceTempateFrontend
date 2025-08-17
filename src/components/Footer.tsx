@@ -1,6 +1,6 @@
 import { FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import logo from '/images/logo.png'
+import logo from '/images/full_logo.png'
 
 
 const Footer = () => {
@@ -8,7 +8,7 @@ const Footer = () => {
     <footer className="bg-gray-100 pb-10 px-6">
       <div className="max-w-6xl mx-auto">
         {/* Newsletter Subscription */}
-        <div className="bg-customBlue md:w-[40%] w-full mx-auto text-white p-6 rounded-lg text-center mb-10">
+        <div className="bg-black md:w-[40%] w-full mx-auto text-white p-6 rounded-lg text-center mb-10">
           <input 
             type="email" 
             placeholder="Enter your email address" 
@@ -22,7 +22,7 @@ const Footer = () => {
         <div className="flex max-md:flex-col justify-evenly">
           {/* Shop Info */}
           <div className="font-poppins">
-           <img src={logo} alt="logo" />
+           <img src={logo} alt="logo" className="h-10"/>
             <p className="text-gray-600 mt-2">
               We don't just design spaces,we <br className="max-md:hidden"/> define Destinies
             </p>
@@ -77,7 +77,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-10 text-center font-poppins ">
-          <p className="text-gray-600 text-sm">KidsDesignCompany  © {new Date().getFullYear()}, All Rights Reserved</p>
+          <p className="text-gray-600 text-sm">Shop  © {new Date().getFullYear()}, All Rights Reserved</p>
         </div>
       </div>
     </footer>
