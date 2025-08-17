@@ -174,7 +174,7 @@ const Contact = () => {
             {errors.message && <span className="text-red-500 text-xs mt-1">{errors.message}</span>}
           </div>
 
-          <button type="submit" className='text-white bg-gray-600 w-full p-3 rounded-full block text-center'>
+          <button type="submit" className='opacity-50 cursor-not-allowed pointer-events-none text-white bg-gray-600 w-full p-3 rounded-full block text-center'>
             Send Message
           </button>
         </form>

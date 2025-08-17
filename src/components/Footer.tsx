@@ -7,7 +7,7 @@ const Footer = () => {
     <footer className="bg-gray-100 pb-10 px-6">
       <div className="max-w-6xl mx-auto">
         {/* Newsletter Subscription */}
-        <div className="bg-black md:w-[40%] w-full mx-auto text-white p-6 rounded-lg text-center mb-10">
+        <div className="bg-gray-900 md:w-[40%] w-full mx-auto text-white p-6 rounded-lg text-center mb-10">
           <input
             type="email"
             placeholder="Enter your email address"
