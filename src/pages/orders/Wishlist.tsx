@@ -220,7 +220,7 @@ import { SubCategory } from "@/card/types";interface WishItem {
       </h2>
       <Link
         to="/products"
-        className="inline-block bg-customBlue text-white py-3 px-8 rounded-full  transition-colors"
+        className="inline-block bg-gray-600 text-white py-3 px-8 rounded-full  transition-colors"
       >
         Continue Browsing Our Products
       </Link>

@@ -142,7 +142,7 @@ const VerifyEmail = () => {
     <div className="flex justify-center items-center">
       <div className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mb-6 text-2xl font-bold">KIDS DESIGN COMPANY</div>
+          <div className="mb-6 text-2xl font-bold">SHOP</div>
           <CardTitle className="text-xl font-medium">Verify Your Email</CardTitle>
         </CardHeader>
         <CardContent>

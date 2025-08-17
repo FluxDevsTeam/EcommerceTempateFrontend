@@ -539,7 +539,7 @@ const Header = () => {
               >
                 {isMobileMenuOpen ? <AiOutlineClose size={28} /> : <AiOutlineMenu size={28} />}
               </button>
-              <Link to='/'><img src={logo} className="h-10" alt="logo" /></Link>
+              <Link to='/'><img src={logo} className="h-8" alt="logo" /></Link>
             </div>
             
             <div className="flex items-center space-x-4">

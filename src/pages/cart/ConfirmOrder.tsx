@@ -616,7 +616,7 @@ const ConfirmOrder = () => {
                 <div className="absolute top-full mt-2 left-0 z-10 bg-white border border-gray-200 rounded-lg shadow-lg p-4 text-sm text-gray-600 max-w-xs">
                   Delivery is optional. Choose to opt out if you prefer to pick up your order in person. The delivery fee may vary based on your location, order quantity, and preferred delivery method. For more details or to discuss custom delivery options,{" "}
                   <a
-                    href="https://wa.me/message/SJIYCBTVPXA6G1"
+                    href="https://wa.me/message/IJCGAQKFVMKUB1 "
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-500 underline hover:text-blue-700"
@@ -632,7 +632,7 @@ const ConfirmOrder = () => {
               <div className="text-sm text-gray-600 mt-1">
                 By opting out of delivery, you agree to pick up your order in person at our designated location.{" "}
                 <a
-                  href="https://wa.me/message/SJIYCBTVPXA6G1"
+                  href="https://wa.me/message/IJCGAQKFVMKUB1 "
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-500 underline hover:text-blue-700"
@@ -650,7 +650,7 @@ const ConfirmOrder = () => {
 
             <button
               type="submit"
-              className={`w-full bg-customBlue text-white py-3 px-6 rounded-full ${
+              className={`w-full bg-gray-600 text-white py-3 px-6 rounded-full ${
                 isSubmitting ? "opacity-50 cursor-not-allowed" : ""
               }`}
               disabled={isSubmitting || isLoadingSummary}
@@ -759,7 +759,7 @@ const ConfirmOrder = () => {
 
                   <button
                     onClick={initiatePayment}
-                    className={`paymentBtn w-full bg-customBlue text-white py-3 px-6 rounded-full mt-4 flex items-center justify-center gap-2 ${
+                    className={`paymentBtn w-full bg-gray-600 text-white py-3 px-6 rounded-full mt-4 flex items-center justify-center gap-2 ${
                       isSubmitting ||
                       isLoadingSummary ||
                       !isOrderConfirmed ||
@@ -802,12 +802,12 @@ const ConfirmOrder = () => {
                 onClick={handlePhoneClick}
               />
               <CopyablePhone 
-                phoneNumber="+234 903 123 8704" 
+                phoneNumber="+234 916 409 7582" 
                 className="text-blue-500 underline hover:text-blue-700 cursor-pointer"
               />
               {" "}or message us{" "}
               <a
-                href="https://wa.me/message/SJIYCBTVPXA6G1"
+                href="https://wa.me/message/IJCGAQKFVMKUB1"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-500 underline hover:text-blue-700"
@@ -857,12 +857,12 @@ const ConfirmOrder = () => {
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div
-            className="bg-green-100 border border-blue-400 text-customBlue px-8 py-6 rounded-lg shadow-xl max-w-md w-full text-center relative"
+            className="bg-green-100 border border-blue-400 text-gray-600 px-8 py-6 rounded-lg shadow-xl max-w-md w-full text-center relative"
             role="alert"
           >
             <button
               onClick={() => setShowSuccessModal(false)}
-              className="absolute top-2 right-2 text-customBlue hover:text-blue-700 focus:outline-none"
+              className="absolute top-2 right-2 text-gray-600 hover:text-blue-700 focus:outline-none"
               aria-label="Close success modal"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

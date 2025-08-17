@@ -420,7 +420,7 @@ const Cart = () => {
         <p className="p-10 text-red-500">{error}</p>
         <Link
           to="/products"
-          className="inline-block bg-customBlue text-white py-3 px-8 rounded-full hover:bg-gray-800 transition-colors"
+          className="inline-block bg-gray-600 text-white py-3 px-8 rounded-full hover:bg-gray-800 transition-colors"
         >
           Continue Browsing Our Products
         </Link>
@@ -436,7 +436,7 @@ const Cart = () => {
         {isLoading ? (
           <div className="flex justify-center items-center py-16">
             <div className="relative flex flex-col items-center gap-2">
-              <div className="w-12 h-12 border-4 border-gray-200 border-t-customBlue rounded-full animate-spin"></div>
+              <div className="w-12 h-12 border-4 border-gray-200 border-t-gray-600 rounded-full animate-spin"></div>
               <span className="text-lg text-gray-500 mt-2">Loading cart...</span>
             </div>
           </div>
@@ -445,7 +445,7 @@ const Cart = () => {
             <h2 className="text-2xl font-medium text-gray-600 mb-4">No Items In Cart</h2>
             <Link
               to="/products"
-              className="inline-block bg-customBlue text-white py-3 px-8 rounded-full hover:bg-gray-800 transition-colors"
+              className="inline-block bg-gray-600 text-white py-3 px-8 rounded-full hover:bg-gray-800 transition-colors"
             >
               Continue Browsing Our Products
             </Link>
@@ -581,7 +581,7 @@ const Cart = () => {
                     to={localStorage.getItem("accessToken") ? "/confirm-order" : "/login?redirect=/confirm-order"}
                     className="w-full"
                   >
-                    <button className="w-full bg-customBlue text-white py-3 px-6 rounded-full mt-4 flex items-center justify-center gap-2">
+                    <button className="w-full bg-gray-600 text-white py-3 px-6 rounded-full mt-4 flex items-center justify-center gap-2">
                       Go To Checkout
                       <FiArrowRight size={20} />
                     </button>

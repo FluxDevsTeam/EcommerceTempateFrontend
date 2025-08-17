@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import call from './img/call-calling.png';
 import location from './img/location.png';
-import { FaFacebook, FaInstagram, FaTiktok } from 'react-icons/fa';
+import { FaFacebook, FaInstagram, FaTiktok, FaTwitter, FaLinkedin } from 'react-icons/fa';
 import { useEffect, useState } from "react";
 import validator from 'validator';
 import emailjs from '@emailjs/browser';
@@ -24,7 +24,6 @@ const Contact = () => {
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [successMessage, setSuccessMessage] = useState('');
-
 
   const useResponsiveIconSize = () => {
     const [size, setSize] = useState(20);
@@ -63,48 +62,47 @@ const Contact = () => {
     return newErrors;
   };
 
-    const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length === 0) {
-        emailjs.send(
+      emailjs.send(
         "template_84fde4r",
         "template_bky3h07",
         {
-            from_name: `${formData.firstName} ${formData.lastName}`,
-            from_email: formData.email,
-            message: formData.message,
-            to_email: "kidsdesigncompanyng@gmail.com",
+          from_name: `${formData.firstName} ${formData.lastName}`,
+          from_email: formData.email,
+          message: formData.message,
+          to_email: "fluxdevs.company@gmail.com",
         },
         "Wx7WXc6lpS8NOV7mq"
-        ).then((result) => {
-        
+      ).then(() => {
         setSuccessMessage("Message has been sent successfully!");
         setFormData({ firstName: '', lastName: '', email: '', message: '' });
 
         setTimeout(() => setSuccessMessage(''), 3000);
-        }, (error) => {
-        
+      }).catch(() => {
         alert("Something went wrong. Please try again.");
-        });
+      });
     } else {
-        setErrors(validationErrors);
+      setErrors(validationErrors);
     }
-    };
+  };
 
   return (
-    <div className="w-full min-h-full flex flex-col px-6  md:px-24  py-12 md:py-0 relative">
+    <div className="w-full min-h-full flex flex-col px-6 md:px-24 py-12 md:py-0 relative">
       <h2 className="font-normal text-[32px] sm:text-[40px] tracking mb-8">Contact Us</h2>
       <div className="flex flex-col sm:flex-row gap-4 sm:gap-20 items-start mb-12">
         {successMessage && (
-        <div className="absolute top-[35%] left-[20%] mb-6 p-4 rounded bg-green-100 text-green-800 text-sm font-medium shadow">
+          <div className="absolute top-[35%] left-[20%] mb-6 p-4 rounded bg-green-100 text-green-800 text-sm font-medium shadow">
             {successMessage}
-        </div>
+          </div>
         )}
         <form
           onSubmit={handleSubmit}
           className="p-0 border-0 sm:p-8 sm:border sm:border-[#0000000D] rounded-2xl w-full sm:w-[60%]"
         >
+          {/* Inputs */}
           <div className='flex flex-wrap justify-between items-center gap-4 mb-10'>
             <div className="flex flex-col w-full md:w-[30%]">
               <label className="text-[#00000094] mb-2.5">First Name <span className="text-orange-700">*</span></label>
@@ -113,14 +111,14 @@ const Contact = () => {
                 placeholder="John"
                 value={formData.firstName}
                 onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData({ ...formData, firstName: value });
-                    if (errors.firstName && value.trim().length >= 3) {
+                  const value = e.target.value;
+                  setFormData({ ...formData, firstName: value });
+                  if (errors.firstName && value.trim().length >= 3) {
                     setErrors(prev => ({ ...prev, firstName: undefined }));
-                    }
+                  }
                 }}
                 className="border border-[#CACACA80] rounded-[10px] py-2 px-5"
-                />
+              />
               {errors.firstName && <span className="text-red-500 text-xs mt-1">{errors.firstName}</span>}
             </div>
             <div className="flex flex-col w-full md:w-[30%]">
@@ -130,11 +128,11 @@ const Contact = () => {
                 placeholder="Doe"
                 value={formData.lastName}
                 onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData({ ...formData, lastName: value });
-                    if (errors.lastName && value.trim().length >= 3) {
+                  const value = e.target.value;
+                  setFormData({ ...formData, lastName: value });
+                  if (errors.lastName && value.trim().length >= 3) {
                     setErrors(prev => ({ ...prev, lastName: undefined }));
-                    }
+                  }
                 }}
                 className="border border-[#CACACA80] rounded-[10px] py-2 px-5"
               />
@@ -147,11 +145,11 @@ const Contact = () => {
                 placeholder="abc@example.com"
                 value={formData.email}
                 onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData({ ...formData, email: value });
-                    if (errors.email && validator.isEmail(value)) {
+                  const value = e.target.value;
+                  setFormData({ ...formData, email: value });
+                  if (errors.email && validator.isEmail(value)) {
                     setErrors(prev => ({ ...prev, email: undefined }));
-                    }
+                  }
                 }}
                 className="border border-[#CACACA80] rounded-[10px] py-2 px-5"
               />
@@ -159,6 +157,7 @@ const Contact = () => {
             </div>
           </div>
 
+          {/* Message */}
           <div className="flex flex-col mb-10">
             <label htmlFor="message" className="text-[#00000094] mb-2.5">Message</label>
             <textarea
@@ -167,19 +166,20 @@ const Contact = () => {
                 const value = e.target.value;
                 setFormData({ ...formData, message: value });
                 if (errors.message && value.trim().length >= 10) {
-                setErrors(prev => ({ ...prev, message: undefined }));
+                  setErrors(prev => ({ ...prev, message: undefined }));
                 }
-            }}
+              }}
               className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-gray-700 text-sm resize-none h-[120px] sm:h-[200px]"
             ></textarea>
             {errors.message && <span className="text-red-500 text-xs mt-1">{errors.message}</span>}
           </div>
 
-          <button type="submit" className='text-white bg-customBlue w-full p-3 rounded-full block text-center'>
+          <button type="submit" className='text-white bg-gray-600 w-full p-3 rounded-full block text-center'>
             Send Message
           </button>
         </form>
 
+        {/* Contact Info + Socials */}
         <div className="mt-12 md:mt-5 w-full sm:w-[40%]">
           <p className="font-hanken-grotesk font-medium mb-10">
             We’re here to help!<br />Our Customer Service Team is available<br />8am - 5pm, seven days a week.
@@ -188,33 +188,37 @@ const Contact = () => {
             <p className="flex gap-3 items-center">
               <img src={call} alt="call" className="w-[20px] sm:w-[24px]" />
               <span className="font-semibold text-[18px] sm:text-[24px] text-right">
-                Call: <CopyablePhone phoneNumber="+234 903123 8704" />
+                Call: <CopyablePhone phoneNumber="+234 916 409 7582" />
               </span>
-              
             </p>
             <p className="text-[#333333] mb-0.5">Talk to a Customer Service<br />Representative for help with our site,<br />app, or finding our products.</p>
-            <p className="text-[#063AF5]">Email: kidsdesigncompanyng@gmail.com</p>
+            <p className="text-[#063AF5]">Email: fluxdevs.company@gmail.com</p>
           </div>
           <div className="mb-8">
             <p className="flex gap-3 items-center">
               <img src={location} alt="location" className="w-[20px] sm:w-[24px]" />
               <span className="font-semibold text-[18px] sm:text-[24px]">Address</span>
             </p>
-            <p className="text-[#333333] mb-0.5">Surulere, Lagos State, Nigeria.</p>
+            <p className="text-[#333333] mb-0.5">Lagos State, Nigeria.</p>
           </div>
           <div>
             <p className="font-semibold text-[20px] sm:text-[24px] text-[#292929] mb-2">Connect with us</p>
             <div className="flex gap-4 sm:gap-6">
-              <Link to="https://www.instagram.com/kidsdesigncompany" target="_blank" rel="noopener noreferrer" className="bg-customBlue text-white p-3 rounded-full hover:opacity-90 transition">
+              <Link to="https://www.instagram.com/fluxdevs" target="_blank" rel="noopener noreferrer" className="bg-gray-600 text-white p-3 rounded-full hover:opacity-90 transition">
                 <FaInstagram size={iconSize} />
               </Link>
-              <Link to="https://www.facebook.com/kidsdesigncompanyng" target="_blank" rel="noopener noreferrer" className="bg-customBlue text-white p-3 rounded-full hover:opacity-90 transition">
+              <Link to="https://x.com/flux_devs" target="_blank" rel="noopener noreferrer" className="bg-gray-600 text-white p-3 rounded-full hover:opacity-90 transition">
+                <FaTwitter size={iconSize} />
+              </Link>
+              <Link to="https://www.linkedin.com/company/flux-devs/" target="_blank" rel="noopener noreferrer" className="bg-gray-600 text-white p-3 rounded-full hover:opacity-90 transition">
+                <FaLinkedin size={iconSize} />
+              </Link>
+              <Link to="https://web.facebook.com/fluxxdevs/" target="_blank" rel="noopener noreferrer" className="bg-gray-600 text-white p-3 rounded-full hover:opacity-90 transition">
                 <FaFacebook size={iconSize} />
               </Link>
-              <Link to="https://www.tiktok.com/@kidsdesigncompanyng" target="_blank" rel="noopener noreferrer" className="bg-customBlue text-white p-3 rounded-full hover:opacity-90 transition">
+              <Link to="https://www.tiktok.com/@fluxdevs" target="_blank" rel="noopener noreferrer" className="bg-gray-600 text-white p-3 rounded-full hover:opacity-90 transition">
                 <FaTiktok size={iconSize} />
               </Link>
-
             </div>
           </div>
         </div>

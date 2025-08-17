@@ -183,7 +183,7 @@ const GoogleLoginButton = () => {
           <div className="bg-white rounded-lg shadow-xl overflow-hidden w-full max-w-md transform transition-all">
             <div className="px-6 py-8 border-b border-gray-100">
               <h1 className="font-medium text-gray-800" style={{fontSize: "clamp(13px, 3vw, 22px)"}}>
-                Welcome to Kids Design Company
+                Welcome to SHOP
               </h1>
               <p className="mt-2 text-sm text-gray-500" style={{fontSize: "clamp(10px, 3vw, 14px)"}}>
                 Hi {names || "there"}, please set a password

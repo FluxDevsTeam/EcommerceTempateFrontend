@@ -81,7 +81,7 @@ export default function SettingsPage() {
         {/* Optional Footer */}
         <div className="mt-16 pt-8 border-t border-gray-200 text-center">
           <p className="text-xs text-gray-500">
-            Kids Design Company Admin Panel &copy; {new Date().getFullYear()} | Empowering Your E-commerce
+            SHOP Admin Panel &copy; {new Date().getFullYear()} | Empowering Your E-commerce
           </p>
         </div>
       </div>
