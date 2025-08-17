@@ -50,7 +50,7 @@ const AdminCategories = () => {
     type: "success" as "success" | "error",
   });
 
-  const baseURL = `https://api.kidsdesigncompany.com`;
+  const baseURL = `https://shop.fluxdevs.com`;
 
   // Debounce the search input
   useEffect(() => {

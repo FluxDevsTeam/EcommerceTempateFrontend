@@ -56,7 +56,7 @@ const OrganizationalSettings = () => {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
       const response = await axios.get<OrganizationSettings>(
-        'https://api.kidsdesigncompany.com/api/v1/admin/organisation-settings/',
+        'https://api.fluxdevs.com/api/v1/admin/organisation-settings/',
         {
           headers: {
             'Authorization': `JWT ${token}`,
@@ -188,7 +188,7 @@ const OrganizationalSettings = () => {
       }
 
       const response = await axios.patch<OrganizationSettings>(
-        'https://api.kidsdesigncompany.com/api/v1/admin/organisation-settings/',
+        'https://api.fluxdevs.com/api/v1/admin/organisation-settings/',
         formDataToSend,
         {
           headers: {

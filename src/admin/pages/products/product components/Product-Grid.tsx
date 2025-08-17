@@ -97,7 +97,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   const [editingCategory, setEditingCategory] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const baseURL = `https://api.kidsdesigncompany.com`;
+  const baseURL = `https://shop.fluxdevs.com`;
 
   const fetchProducts = async (page: number) => {
     setLoading(true);

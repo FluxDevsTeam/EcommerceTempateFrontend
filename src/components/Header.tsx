@@ -79,7 +79,7 @@ const Header = () => {
           return;
         }
 
-        const response = await fetch('https://api.kidsdesigncompany.com/api/v1/product/category/');
+        const response = await fetch('https://api.fluxdevs.com/api/v1/product/category/');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         

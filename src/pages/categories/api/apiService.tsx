@@ -2,7 +2,7 @@ import { ProductAPIResponse } from "@/pages/homepage/types/data-types";
 
 
 export const fetchProducts = async () :Promise<ProductAPIResponse>   => {
-    const res = await fetch('https://api.kidsdesigncompany.com/api/v1/product/category/');
+    const res = await fetch('https://api.fluxdevs.com/api/v1/product/category/');
     if (!res.ok) throw new Error('Failed to fetch');
     return res.json();
   };
@@ -14,7 +14,7 @@ export const fetchProducts = async () :Promise<ProductAPIResponse>   => {
 // export const fetchProducts = async (page = 1, pageSize = 12): Promise<ProductAPIResponse> => {
 //   try {
 //     const res = await fetch(
-//       `https://api.kidsdesigncompany.com/api/v1/product/item/homepage/?page=${page}&page_size=${pageSize}&latest_item=true&top_selling_items=true`
+//       `https://api.fluxdevs.com/api/v1/product/item/homepage/?page=${page}&page_size=${pageSize}&latest_item=true&top_selling_items=true`
 //     );
     
 //     if (!res.ok) {
@@ -32,7 +32,7 @@ export const fetchProducts = async () :Promise<ProductAPIResponse>   => {
 // };
 
 // export const fetchSuggestedProducts = async (): Promise<ProductItemsResponse> => {
-//   const res = await fetch('https://api.kidsdesigncompany.com/api/v1/product/item/suggestions/');
+//   const res = await fetch('https://api.fluxdevs.com/api/v1/product/item/suggestions/');
 //   if (!res.ok) throw new Error('Failed to fetch');
 //   return res.json();
 // };
@@ -51,7 +51,7 @@ export const fetchProducts = async () :Promise<ProductAPIResponse>   => {
 //     if (secondSubCategoryId) {
 //       params.append('second_sub_category_id', secondSubCategoryId.toString());
 //     }
-//     const url = `https://api.kidsdesigncompany.com/api/v1/product/item/suggestions/?${params.toString()}`;
+//     const url = `https://api.fluxdevs.com/api/v1/product/item/suggestions/?${params.toString()}`;
 
 //     const res = await fetch(url, {
 //       headers: {
@@ -81,7 +81,7 @@ export const fetchProducts = async () :Promise<ProductAPIResponse>   => {
 // export const fetchSuggestedProductsDetails = async (subCategoryId: any) => {
 //   try {
 //     const response = await fetch(
-//       `https://api.kidsdesigncompany.com/api/v1/product/item/suggestions/?sub_category_id=${subCategoryId}`
+//       `https://api.fluxdevs.com/api/v1/product/item/suggestions/?sub_category_id=${subCategoryId}`
 //     );
 //     if (!response.ok) {
 //       throw new Error('Failed to fetch suggested products');

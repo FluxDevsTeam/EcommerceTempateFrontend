@@ -1,5 +1,5 @@
 const JWT_TOKEN = localStorage.getItem('accessToken')
-const BASE_URL = 'https://api.kidsdesigncompany.com/api/v1/admin/order/';
+const BASE_URL = 'https://api.fluxdevs.com/api/v1/admin/order/';
 
 export const fetchData = async (url = `${BASE_URL}`) => {
   try {
@@ -26,7 +26,7 @@ export const fetchData = async (url = `${BASE_URL}`) => {
 
 export const PatchOrderStatus = async (orderId: string, newStatus: string) => {
   try {
-    const response = await fetch(`https://api.kidsdesigncompany.com/api/v1/admin/order/${orderId}/`, {
+    const response = await fetch(`https://api.fluxdevs.com/api/v1/admin/order/${orderId}/`, {
       method: 'PATCH',
       headers: {
         'Authorization': `JWT ${JWT_TOKEN}`,

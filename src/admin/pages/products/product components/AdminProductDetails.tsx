@@ -106,7 +106,7 @@ const AdminProductDetails: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://api.kidsdesigncompany.com/api/v1/product/item/${id}/`,
+        `https://api.fluxdevs.com/api/v1/product/item/${id}/`,
         {
           headers: {
             Authorization: `JWT ${accessToken}`,
@@ -151,7 +151,7 @@ const AdminProductDetails: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://api.kidsdesigncompany.com/api/v1/product/item/${editSizeFormData.product}/size/${editSizeFormData.id}/`,
+        `https://api.fluxdevs.com/api/v1/product/item/${editSizeFormData.product}/size/${editSizeFormData.id}/`,
         {
           method: "PATCH",
           headers: {
@@ -203,7 +203,7 @@ const AdminProductDetails: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://api.kidsdesigncompany.com/api/v1/product/item/${product.id}/size/${deleteModalConfig.sizeId}/`,
+        `https://api.fluxdevs.com/api/v1/product/item/${product.id}/size/${deleteModalConfig.sizeId}/`,
         {
           method: "DELETE",
           headers: {
@@ -258,7 +258,7 @@ const AdminProductDetails: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://api.kidsdesigncompany.com/api/v1/product/item/${product.id}/size/`,
+        `https://api.fluxdevs.com/api/v1/product/item/${product.id}/size/`,
         {
           method: "POST",
           headers: {

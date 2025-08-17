@@ -7,7 +7,7 @@ import { WishData } from '@/card/wishListApi';
 import { WishItem } from '@/card/types';
 
 // Full search API endpoint
-const SEARCH_API_URL = "https://api.kidsdesigncompany.com/api/v1/product/item/search/";
+const SEARCH_API_URL = "https://api.fluxdevs.com/api/v1/product/item/search/";
 
 export interface Category {
   id: number;

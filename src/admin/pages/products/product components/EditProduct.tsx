@@ -117,7 +117,7 @@ const EditProduct: React.FC = () => {
 
       try {
         const initialResponse = await fetch(
-          "https://api.kidsdesigncompany.com/api/v1/product/sub-category/",
+          "https://api.fluxdevs.com/api/v1/product/sub-category/",
           {
             headers: {
               Authorization: `JWT ${accessToken}`,
@@ -139,7 +139,7 @@ const EditProduct: React.FC = () => {
         for (let page = 1; page <= totalPages; page++) {
           fetchPromises.push(
             fetch(
-              `https://api.kidsdesigncompany.com/api/v1/product/sub-category/?page=${page}`,
+              `https://api.fluxdevs.com/api/v1/product/sub-category/?page=${page}`,
               {
                 headers: {
                   Authorization: `JWT ${accessToken}`,
@@ -191,7 +191,7 @@ const EditProduct: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://api.kidsdesigncompany.com/api/v1/product/item/${id}/`,
+        `https://api.fluxdevs.com/api/v1/product/item/${id}/`,
         {
           headers: {
             Authorization: `JWT ${accessToken}`,
@@ -324,7 +324,7 @@ const EditProduct: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://api.kidsdesigncompany.com/api/v1/product/item/${id}/`,
+        `https://api.fluxdevs.com/api/v1/product/item/${id}/`,
         {
           method: "PATCH",
           headers: {

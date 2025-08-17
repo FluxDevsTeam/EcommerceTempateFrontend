@@ -102,7 +102,7 @@ const AddNewProduct: React.FC = () => {
 
       try {
         const initialResponse = await fetch(
-          "https://api.kidsdesigncompany.com/api/v1/product/sub-category/?page_size=100",
+          "https://api.fluxdevs.com/api/v1/product/sub-category/?page_size=100",
           {
             headers: {
               Authorization: `JWT ${accessToken}`,
@@ -124,7 +124,7 @@ const AddNewProduct: React.FC = () => {
         for (let page = 1; page <= totalPages; page++) {
           fetchPromises.push(
             fetch(
-              `https://api.kidsdesigncompany.com/api/v1/product/sub-category/?page=${page}&page_size=${itemsPerPage}`,
+              `https://api.fluxdevs.com/api/v1/product/sub-category/?page=${page}&page_size=${itemsPerPage}`,
               {
                 headers: {
                   Authorization: `JWT ${accessToken}`,
@@ -256,7 +256,7 @@ const AddNewProduct: React.FC = () => {
 
     try {
       const response = await fetch(
-        "https://api.kidsdesigncompany.com/api/v1/product/item/",
+        "https://api.fluxdevs.com/api/v1/product/item/",
         {
           method: "POST",
           headers: {

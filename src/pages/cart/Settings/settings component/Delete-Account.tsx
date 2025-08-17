@@ -36,7 +36,7 @@ const DeleteAccount = () => {
 
     try {
       const response = await fetch(
-        'https://api.kidsdesigncompany.com/auth/profile/delete-account/',
+        'https://api.fluxdevs.com/auth/profile/delete-account/',
         {
           method: 'POST',
           headers: {

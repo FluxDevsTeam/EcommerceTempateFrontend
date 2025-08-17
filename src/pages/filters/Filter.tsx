@@ -88,7 +88,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
       setLoading(true);
       try {
         const response = await fetch(
-          `https://api.kidsdesigncompany.com/api/v1/product/sub-category/?page=1&page_size=${itemsPerPage}`
+          `https://api.fluxdevs.com/api/v1/product/sub-category/?page=1&page_size=${itemsPerPage}`
         );
         
         if (!response.ok) {
@@ -134,7 +134,7 @@ const FiltersComponent: React.FC<FiltersComponentProps> = ({
     // }
     try {
       let allProducts: Product[] = [];
-      let nextPageUrl = `https://api.kidsdesigncompany.com/api/v1/product/item/?page_size=100`;
+      let nextPageUrl = `https://api.fluxdevs.com/api/v1/product/item/?page_size=100`;
 
       while (nextPageUrl) {
         const response = await fetch(nextPageUrl, {

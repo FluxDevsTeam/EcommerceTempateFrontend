@@ -98,7 +98,7 @@ const [isDbPriceRangeInitialized, setIsDbPriceRangeInitialized] = useState(false
   const [editingCategory, setEditingCategory] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const baseURL = `https://api.kidsdesigncompany.com`;
+  const baseURL = `https://shop.fluxdevs.com`;
 
   useEffect(() => {
     const loadProducts = async () => {

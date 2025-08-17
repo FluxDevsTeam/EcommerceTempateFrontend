@@ -31,7 +31,7 @@ const DeliverySettings = () => {
       const token = localStorage.getItem('accessToken');
       setLoading(true);
       const response = await axios.get<DeliverySettings>(
-        'https://api.kidsdesigncompany.com/api/v1/admin/delivery-settings/',
+        'https://api.fluxdevs.com/api/v1/admin/delivery-settings/',
         {
           headers: {
             'Authorization': `JWT ${token}`,
@@ -79,7 +79,7 @@ const DeliverySettings = () => {
       const token = localStorage.getItem('accessToken');
 
       await axios.patch<DeliverySettings>(
-        'https://api.kidsdesigncompany.com/api/v1/admin/delivery-settings/',
+        'https://api.fluxdevs.com/api/v1/admin/delivery-settings/',
         apiFormData,
         {
           headers: {

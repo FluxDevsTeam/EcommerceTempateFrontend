@@ -44,7 +44,7 @@ export interface ApiResponse {
   results: Product[];
 }
 
-export const baseURL = 'https://api.kidsdesigncompany.com';
+export const baseURL = 'https://shop.fluxdevs.com';
 
 // Utility Functions
 export const buildQueryParams = (params: Record<string, string>) => {

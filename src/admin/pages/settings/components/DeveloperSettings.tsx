@@ -47,7 +47,7 @@ const DeveloperSettings: React.FC = () => {
       const token = localStorage.getItem('accessToken');
       setLoading(true);
       const response = await axios.get<DeveloperSettingsData>(
-        'https://api.kidsdesigncompany.com/api/v1/admin/developer-settings/',
+        'https://api.fluxdevs.com/api/v1/admin/developer-settings/',
         {
           headers: {
             'Authorization': `JWT ${token}`,
@@ -124,7 +124,7 @@ const DeveloperSettings: React.FC = () => {
       const token = localStorage.getItem('accessToken');
 
       await axios.patch(
-        'https://api.kidsdesigncompany.com/api/v1/admin/developer-settings/',
+        'https://api.fluxdevs.com/api/v1/admin/developer-settings/',
         apiFormData,
         {
           headers: {

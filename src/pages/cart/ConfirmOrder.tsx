@@ -32,7 +32,7 @@ const ConfirmOrder = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string>("paystack");
   const [error, setError] = useState<string | null>(null);
-  const baseURL = `https://api.kidsdesigncompany.com`;
+  const baseURL = `https://shop.fluxdevs.com`;
   const [availableStates, setAvailableStates] = useState<string[]>([]);
   const [includeDeliveryFee, setIncludeDeliveryFee] = useState(true);
   const [showDeliveryInfo, setShowDeliveryInfo] = useState(false);

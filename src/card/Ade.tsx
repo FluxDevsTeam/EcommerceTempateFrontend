@@ -38,7 +38,7 @@ const Producter = () => {
     const fetchData = async () => {
       try {
         const [productRes, wishlistRes] = await Promise.all([
-          fetch('https://api.kidsdesigncompany.com/api/v1/product/item/').then(res => res.json()), // Ensure res.json() is called here
+          fetch('https://api.fluxdevs.com/api/v1/product/item/').then(res => res.json()), // Ensure res.json() is called here
           WishData()
         ]);
 

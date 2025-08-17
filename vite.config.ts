@@ -12,7 +12,7 @@ export default defineConfig({
   server: {
     port: 5173,
     cors: {
-      origin: ['https://accounts.google.com', 'https://api.kidsdesigncompany.com'],
+      origin: ['https://accounts.google.com', 'https://shop.fluxdevs.com'],
       credentials: true
     },
     headers: {
@@ -21,7 +21,7 @@ export default defineConfig({
     },
     proxy: {
       '/auth': {
-        target: 'https://api.kidsdesigncompany.com',
+        target: 'https://shop.fluxdevs.com',
         changeOrigin: true,
         secure: false
       }

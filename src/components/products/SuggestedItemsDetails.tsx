@@ -53,11 +53,11 @@ interface ProductDetailParams {
   id: string;
 }
 
-const baseURL = "https://api.kidsdesigncompany.com";
+const baseURL = "https://shop.fluxdevs.com";
 
 const fetchProduct = async (id: number): Promise<Product> => {
   const response = await fetch(
-    `https://api.kidsdesigncompany.com/api/v1/product/item/${id}/`
+    `https://api.fluxdevs.com/api/v1/product/item/${id}/`
   );
   if (!response.ok) {
     throw new Error("Network response was not ok");

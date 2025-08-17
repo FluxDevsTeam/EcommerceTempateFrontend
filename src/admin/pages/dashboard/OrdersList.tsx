@@ -68,7 +68,7 @@ const OrdersList: React.FC = () => {
         }
 
         const response = await axios.get(
-          `https://api.kidsdesigncompany.com/api/v1/admin/order/?page=${page}&page_size=${ITEMS_PER_PAGE}`,
+          `https://api.fluxdevs.com/api/v1/admin/order/?page=${page}&page_size=${ITEMS_PER_PAGE}`,
           {
             headers: {
               'Authorization': `JWT ${token}`,

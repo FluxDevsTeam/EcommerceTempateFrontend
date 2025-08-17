@@ -133,7 +133,7 @@ export const isItemInUserCart = async (productId: number, sizeId: number): Promi
   }
 };
 
-const baseURL = "https://api.kidsdesigncompany.com";
+const baseURL = "https://shop.fluxdevs.com";
 
 export const migrateLocalCartToUserCart = async (accessToken: string): Promise<boolean> => {
   try {

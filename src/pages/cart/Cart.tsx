@@ -80,7 +80,7 @@ const Cart = () => {
   const [error, setError] = useState<string | null>(null);
   const pageSize = 16;
 
-  const baseURL = "https://api.kidsdesigncompany.com";
+  const baseURL = "https://shop.fluxdevs.com";
 
   const subCategoryParams = useMemo(() => {
     if (cartItems.length === 0) {

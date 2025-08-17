@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 const PersonalInfo = () => {
-  const baseURL = `https://api.kidsdesigncompany.com`;
+  const baseURL = `https://shop.fluxdevs.com`;
 
   const [personalInfo, setPersonalInfo] = useState({
     new_first_name: "",
