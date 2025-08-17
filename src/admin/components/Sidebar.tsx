@@ -52,7 +52,7 @@ const Sidebar = ({
   return (
     <div
       className={`
-       bg-[#222222] text-white border-r border-gray-600 
+       bg-[#393737] bg-gradient-to-t text-white border-r border-gray-600 
        fixed top-0 left-0 h-screen z-50 flex-col transition-all duration-300
        ${
          isMobileMenuOpen
@@ -78,7 +78,7 @@ const Sidebar = ({
           // Mobile Flyout Menu Top
           <>
             <Link to="/admin" onClick={() => handleNavClick("/admin")} className="focus:outline-none focus:ring-2 focus:ring-gray-400 rounded-sm">
-              <img src={"/images/logo.png"} alt={"SHOP.CO Logo"} className="h-9 aspect-square" />
+              <img src={"/images/full_logo.png"} alt={"SHOP.CO Logo"} className="h-9 aspect-square" />
             </Link>
             <button 
               onClick={toggleMobileMenu} 
@@ -92,7 +92,7 @@ const Sidebar = ({
           // Desktop Expanded View (w-64)
           <>
             <Link to="/admin" onClick={() => handleNavClick("/admin")} className="focus:outline-none focus:ring-2 focus:ring-gray-400 rounded-sm">
-              <img src={"/images/logo.png"} alt={"SHOP.CO Logo"} className="h-10 w-auto" />
+              <img src={"/images/full_logo.png"} alt={"SHOP.CO Logo"} className="h-10 w-auto" />
             </Link>
             <button
               onClick={toggleCollapse}
@@ -107,7 +107,7 @@ const Sidebar = ({
           <>
             <Link to="/admin" onClick={() => handleNavClick("/admin")} className="block focus:outline-none focus:ring-1 focus:ring-gray-400 rounded-sm">
               <img
-                src={"/images/logo.png"} 
+                src={"/images/full_logo.png"} 
                 alt="Logo"
                 className="h-8 w-8 object-contain" // Small logo icon - increased size
               />

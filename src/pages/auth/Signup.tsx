@@ -97,7 +97,7 @@ const Signup = () => {
         <div className="mb-3 md:mb-8 text-center">
           <Link to="/">
             <img
-              src="/images/logo.png"
+              src="/images/full_logo.png"
               alt="KidsDesignCompany Logo"
               className="h-10 w-auto mx-auto cursor-pointer"
             />

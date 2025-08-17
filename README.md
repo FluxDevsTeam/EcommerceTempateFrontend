@@ -57,7 +57,7 @@ public\
 │   ├── beautiful-smiling-young-blonde-woman-pointing-sunglasses-holding-shopping-bags-credit-card-pink-wall 1.png
 │   ├── image 39 (1).png
 │   ├── image2.png
-│   ├── logo.png
+│   ├── full_logo.png
 │   ├── shutterstock_2081336278@2x 1 (2).png
 │   ├── shutterstock_2081336278@2x 1 (3).png
 │   └── shutterstock_2081336278@2x 1 (4).png
