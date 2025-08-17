@@ -48,7 +48,7 @@ const GoogleLoginButton = () => {
   const [isGoogleCallback, setIsGoogleCallback] = useState(false);
 
   const backendUrl =
-    import.meta.env.VITE_BACKEND_URL || "https://shop.fluxdevs.com";
+    import.meta.env.VITE_BACKEND_URL || "https://api.fluxdevs.com";
 
   const handleGoogleSuccess = async (
     credentialResponse: CredentialResponse

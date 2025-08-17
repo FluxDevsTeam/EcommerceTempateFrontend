@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 
-const API_URL = 'https://shop.fluxdevs.com';
+const API_URL = 'https://api.fluxdevs.com';
 
 // Type definitions for API responses
 interface AuthResponse {
@@ -234,7 +234,7 @@ const authService = {
   // Forgot password request
   requestForgotPassword: async (email: string): Promise<any> => {
     try {
-      const frontendUrl = 'https://shop.fluxdevs.com/change-password';
+      const frontendUrl = 'https://api.fluxdevs.com/change-password';
       
       // Pass the frontend URL to the backend so it knows where to send users
       const response = await api.post('/auth/forgot-password/request-forgot-password/', { 

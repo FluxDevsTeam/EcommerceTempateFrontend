@@ -3,7 +3,7 @@ import validator from "validator";
 import OtpInput from "react-otp-input";
 
 const ChangeEmail = () => {
-  const baseURL = `https://shop.fluxdevs.com`;
+  const baseURL = `https://api.fluxdevs.com`;
 
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 

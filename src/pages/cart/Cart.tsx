@@ -80,7 +80,7 @@ const Cart = () => {
   const [error, setError] = useState<string | null>(null);
   const pageSize = 16;
 
-  const baseURL = "https://shop.fluxdevs.com";
+  const baseURL = "https://api.fluxdevs.com";
 
   const subCategoryParams = useMemo(() => {
     if (cartItems.length === 0) {

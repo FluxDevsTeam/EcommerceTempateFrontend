@@ -12,7 +12,7 @@ import DescriptionList from "./DescriptionList";
 import { useMediaQuery } from "react-responsive";
 import { formatNumberWithCommas } from "../../admin/utils/formatting";
 
-const baseURL = "https://shop.fluxdevs.com";
+const baseURL = "https://api.fluxdevs.com";
 
 // Define TypeScript interfaces for the API responses
 interface Category {

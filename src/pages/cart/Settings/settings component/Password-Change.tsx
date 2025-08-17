@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import OtpInput from "react-otp-input";
 
 const PasswordChange = () => {
-  const baseURL = `https://shop.fluxdevs.com`;
+  const baseURL = `https://api.fluxdevs.com`;
 
   const [passwordChangeFormData, setPasswordChangeFormData] = useState({
     old_password: "",

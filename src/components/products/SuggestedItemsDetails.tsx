@@ -53,7 +53,7 @@ interface ProductDetailParams {
   id: string;
 }
 
-const baseURL = "https://shop.fluxdevs.com";
+const baseURL = "https://api.fluxdevs.com";
 
 const fetchProduct = async (id: number): Promise<Product> => {
   const response = await fetch(
