@@ -859,8 +859,29 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             ))}
 
             {filteredProducts.length === 0 && !loading && (
-              <div className="col-span-full text-center py-8 text-gray-500">
-                No products found matching the criteria.
+              <div className="col-span-full flex flex-col items-center justify-center py-12 px-6 border border-dashed border-gray-300 rounded-2xl bg-gray-50 shadow-sm">
+                {/* SVG Icon */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-16 w-16 text-gray-400 mb-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 3h18M9 3v18m6-18v18M4 9h16M4 15h16"
+                  />
+                </svg>
+
+                {/* Message */}
+                <p className="text-lg font-medium text-gray-600">No products found</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Try adjusting your search or filter to find what you’re looking for.
+                </p>
+
               </div>
             )}
           </div>
