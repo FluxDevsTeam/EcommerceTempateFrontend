@@ -7,6 +7,20 @@ import validator from 'validator';
 import emailjs from '@emailjs/browser';
 import CopyablePhone from '@/components/CopyablePhone';
 
+// Load environment variables using import.meta.env
+const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID as string;
+const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID as string;
+const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY as string;
+
+// Debug environment variables
+console.log('Service ID:', SERVICE_ID);
+console.log('Template ID:', TEMPLATE_ID);
+console.log('Public Key:', PUBLIC_KEY);
+console.log('Environment variables loaded:', !!SERVICE_ID && !!TEMPLATE_ID && !!PUBLIC_KEY);
+
+// Initialize EmailJS
+emailjs.init(PUBLIC_KEY);
+
 type FormData = {
   firstName: string;
   lastName: string;
@@ -24,6 +38,7 @@ const Contact = () => {
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [successMessage, setSuccessMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const useResponsiveIconSize = () => {
     const [size, setSize] = useState(20);
@@ -62,28 +77,36 @@ const Contact = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const validationErrors = validateForm();
+
     if (Object.keys(validationErrors).length === 0) {
-      emailjs.send(
-        "template_84fde4r",
-        "template_bky3h07",
-        {
+      setIsSubmitting(true);
+      try {
+        const templateParams = {
           from_name: `${formData.firstName} ${formData.lastName}`,
           from_email: formData.email,
           message: formData.message,
           to_email: "fluxdevs.company@gmail.com",
-        },
-        "Wx7WXc6lpS8NOV7mq"
-      ).then(() => {
+        };
+
+        console.log('Sending email with params:', templateParams);
+
+        const response = await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams);
+        console.log('EmailJS response:', response);
+
         setSuccessMessage("Message has been sent successfully!");
         setFormData({ firstName: '', lastName: '', email: '', message: '' });
+        setErrors({});
 
         setTimeout(() => setSuccessMessage(''), 3000);
-      }).catch(() => {
-        alert("Something went wrong. Please try again.");
-      });
+      } catch (error) {
+        console.error('EmailJS error:', error);
+        alert("Something went wrong. Please try again or contact us at fluxdevs.company@gmail.com");
+      } finally {
+        setIsSubmitting(false);
+      }
     } else {
       setErrors(validationErrors);
     }
@@ -174,8 +197,14 @@ const Contact = () => {
             {errors.message && <span className="text-red-500 text-xs mt-1">{errors.message}</span>}
           </div>
 
-          <button type="submit" className='opacity-50 cursor-not-allowed pointer-events-none text-white bg-gray-600 w-full p-3 rounded-full block text-center'>
-            Send Message
+          <button
+            type="submit"
+            className={`w-full p-3 rounded-full text-white text-center transition ${
+              isSubmitting ? 'opacity-50 cursor-not-allowed bg-gray-600' : 'bg-gray-800 hover:bg-gray-900'
+            }`}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Sending...' : 'Send Message'}
           </button>
         </form>
 
@@ -204,19 +233,19 @@ const Contact = () => {
           <div>
             <p className="font-semibold text-[20px] sm:text-[24px] text-[#292929] mb-2">Connect with us</p>
             <div className="flex gap-4 sm:gap-6">
-              <Link to="https://www.instagram.com/fluxdevs" target="_blank" rel="noopener noreferrer" className="bg-gray-600 text-white p-3 rounded-full hover:opacity-90 transition">
+              <Link to="https://www.instagram.com/fluxdevs" target="_blank" rel="noopener noreferrer" className="bg-gray-800 text-white p-3 rounded-full hover:opacity-90 transition">
                 <FaInstagram size={iconSize} />
               </Link>
-              <Link to="https://x.com/flux_devs" target="_blank" rel="noopener noreferrer" className="bg-gray-600 text-white p-3 rounded-full hover:opacity-90 transition">
+              <Link to="https://x.com/flux_devs" target="_blank" rel="noopener noreferrer" className="bg-gray-800 text-white p-3 rounded-full hover:opacity-90 transition">
                 <FaTwitter size={iconSize} />
               </Link>
-              <Link to="https://www.linkedin.com/company/flux-devs/" target="_blank" rel="noopener noreferrer" className="bg-gray-600 text-white p-3 rounded-full hover:opacity-90 transition">
+              <Link to="https://www.linkedin.com/company/flux-devs/" target="_blank" rel="noopener noreferrer" className="bg-gray-800 text-white p-3 rounded-full hover:opacity-90 transition">
                 <FaLinkedin size={iconSize} />
               </Link>
-              <Link to="https://web.facebook.com/fluxxdevs/" target="_blank" rel="noopener noreferrer" className="bg-gray-600 text-white p-3 rounded-full hover:opacity-90 transition">
+              <Link to="https://web.facebook.com/fluxxdevs/" target="_blank" rel="noopener noreferrer" className="bg-gray-800 text-white p-3 rounded-full hover:opacity-90 transition">
                 <FaFacebook size={iconSize} />
               </Link>
-              <Link to="https://www.tiktok.com/@fluxdevs" target="_blank" rel="noopener noreferrer" className="bg-gray-600 text-white p-3 rounded-full hover:opacity-90 transition">
+              <Link to="https://www.tiktok.com/@fluxdevs" target="_blank" rel="noopener noreferrer" className="bg-gray-800 text-white p-3 rounded-full hover:opacity-90 transition">
                 <FaTiktok size={iconSize} />
               </Link>
             </div>
